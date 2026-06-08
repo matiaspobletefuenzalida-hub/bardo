@@ -21,6 +21,7 @@
                         serif: ['EB Garamond', 'Georgia', 'serif'],
                         fantasy: ['Cinzel', 'serif'],
                         sans: ['Inter', 'sans-serif'],
+                        lotr: ['Uncial Antiqua', 'cursive'],
                     }
                 }
             }
@@ -28,7 +29,7 @@
     </script>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -161,16 +162,48 @@
             transform: translateY(-2px);
         }
 
-        @keyframes floatParticle {
-            0% { transform: translateY(110vh) translateX(0) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.8; }
-            90% { opacity: 0.8; }
-            100% { transform: translateY(-10vh) translateX(150px) rotate(360deg); opacity: 0; }
+        /* FUENTE ESTILO SEÑOR DE LOS ANILLOS PARA BOTONES */
+        .btn-fantasy,
+        button[onclick^="filterGames"],
+        button[type="submit"],
+        button[onclick="closeGameModal()"],
+        button[onclick="resetContactForm()"],
+        a[href="#sobremi"].border {
+            font-family: 'Uncial Antiqua', cursive !important;
+            font-size: 1.15em; /* Aumentamos ligeramente para mejorar la legibilidad */
         }
-        .particle {
-            position: fixed; bottom: -5%; pointer-events: none; z-index: 0;
-            animation: floatParticle 15s linear infinite; opacity: 0;
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+
+        /* ANIMACIÓN DE HOJAS CAYENDO (REEMPLAZA PARTICULAS ANTERIORES) */
+        @keyframes fall {
+            0% { transform: translate3d(0, -10vh, 0); opacity: 0; }
+            10% { opacity: 0.35; } /* Transparencia muy sutil */
+            90% { opacity: 0.35; }
+            100% { transform: translate3d(0, 110vh, 0); opacity: 0; }
+        }
+        @keyframes sway {
+            0% { transform: translate3d(-30px, 0, 0) rotate(-20deg); }
+            50% { transform: translate3d(30px, 0, 0) rotate(20deg); }
+            100% { transform: translate3d(-30px, 0, 0) rotate(-20deg); }
+        }
+        .leaf-container {
+            position: fixed; 
+            top: 0; left: 0; width: 100vw; height: 100vh; 
+            pointer-events: none; 
+            z-index: -1; /* Detrás de todo */
+            overflow: hidden;
+        }
+        .leaf {
+            position: absolute;
+            top: -10%;
+            animation: fall linear infinite;
+            opacity: 0;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        .leaf-inner {
+            display: inline-block;
+            animation: sway ease-in-out infinite;
+            width: 100%;
+            height: 100%;
         }
         
         .komorebi {
@@ -191,7 +224,7 @@
     <div class="bg-layer"></div>
     <div class="bg-overlay"></div>
     <div class="komorebi"></div>
-    <div id="particle-container" class="fixed inset-0 pointer-events-none overflow-hidden z-0"></div>
+    <div id="leaf-container" class="leaf-container"></div>
 
     <header class="border-b border-elven-gold/30 bg-forest-moss/90 text-parchment-light sticky top-0 z-40 backdrop-blur-md shadow-2xl">
         <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -541,32 +574,47 @@
             }
         }
 
-        function toggleTheme() {
-            const htmlNode = document.documentElement;
-            const themeIcon = document.getElementById('theme-icon-icon');
-            htmlNode.classList.toggle('dark');
-            if (htmlNode.classList.contains('dark')) {
-                if(themeIcon) themeIcon.className = 'fas fa-sun text-lg';
-                localStorage.setItem('theme', 'dark');
-            } else {
-                if(themeIcon) themeIcon.className = 'fas fa-moon text-lg';
-                localStorage.setItem('theme', 'light');
-            }
-        }
+        // Sistema de Hojas Cayendo
+        function createLeaves() {
+            const container = document.getElementById('leaf-container');
+            
+            // Vectores SVG profesionales de hojas forestales (sin emojis)
+            const leafSVGs = [
+                `<svg viewBox="0 0 384 512" fill="currentColor"><path d="M378.3 46.33c-3-6.54-9.67-10.82-16.94-10.82C355.8 35.51 349.8 37.64 345 42l-18.7 17.06C302.3 42.06 268.1 32 232.8 32c-68.52 0-136.2 33.62-184.2 91.89C13.23 166.8 0 216 0 268.3C0 361.3 64.91 443.2 153.2 473.4c5.152 1.762 10.9 .8242 15.28-2.484c4.375-3.328 6.586-8.734 5.867-14.28L166.7 377.9L220.8 450c3.547 4.719 9.141 7.219 14.88 7.047c5.781-.1719 11.16-3.031 14.41-7.656C289.4 394 384 275.8 384 153.1c0-37.38-7.969-73.41-23.03-106.8H378.3z"/></svg>`,
+                `<svg viewBox="0 0 512 512" fill="currentColor"><path d="M272 96c-78.6 0-145.1 81.5-164.6 112.4c-2.9 4.6-9.1 5.9-14 2.8C58.5 190.2 0 240.3 0 312c0 66.3 53.7 120 120 120h128l16 48c2.1 6.3 8.2 10.4 14.9 10.1c6.7-.2 12.6-4.7 14.3-11.2l23.5-88.5c46.7-27.4 99.3-88.6 99.3-174.4C416 149.7 351.5 96 272 96z"/></svg>`,
+                `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C12,2 10.5,5 8,5C5.5,5 4,7 4,7C4,7 5.5,8 6,9C4,9 2,11 2,11C2,11 4,12 5.5,12C4,14 3,16 3,16C3,16 6,15 8,16C9,18 10,20 10,20L11,22H13L14,20C14,20 15,18 16,16C18,15 21,16 21,16C21,16 20,14 18.5,12C20,12 22,11 22,11C22,11 20,9 18,9C18.5,8 20,7 20,7C20,7 18.5,5 16,5C13.5,5 12,2 12,2Z"/></svg>`
+            ];
+            
+            // Paleta otoñal sutil
+            const colors = ['#D4AF37', '#C98A28', '#8a6d1c', '#A67B27'];
+            const leafCount = 12; // Cantidad drásticamente reducida (escasa)
 
-        // Partículas flotantes mágicas
-        function createParticles() {
-            const container = document.getElementById('particle-container');
-            const items = ['🍂', '🍁', '🍃', '♫', '♪', 'ᚠ', 'ᚨ', 'ᛟ', '✨'];
-            for (let i = 0; i < 25; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.innerText = items[Math.floor(Math.random() * items.length)];
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.fontSize = `${Math.random() * 1 + 0.8}rem`;
-                particle.style.animationDelay = `${Math.random() * 20}s`;
-                particle.style.animationDuration = `${12 + Math.random() * 15}s`;
-                container.appendChild(particle);
+            for (let i = 0; i < leafCount; i++) {
+                const leaf = document.createElement('div');
+                leaf.className = 'leaf';
+                
+                const leafInner = document.createElement('div');
+                leafInner.className = 'leaf-inner';
+                leafInner.innerHTML = leafSVGs[Math.floor(Math.random() * leafSVGs.length)];
+                leafInner.style.color = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Distribución y caída mucho más lenta
+                const leftPos = Math.random() * 100;
+                const fallDuration = 25 + Math.random() * 35; // Entre 25s y 60s (muy lento)
+                const fallDelay = Math.random() * 40; // Retrasos aleatorios largos
+                const swayDuration = 5 + Math.random() * 5; // Balanceo letárgico
+                const size = 18 + Math.random() * 14; // Tamaño discreto en píxeles (18px a 32px)
+
+                leaf.style.left = `${leftPos}vw`;
+                leaf.style.animationDuration = `${fallDuration}s`;
+                leaf.style.animationDelay = `${fallDelay}s`;
+                leaf.style.width = `${size}px`;
+                leaf.style.height = `${size}px`;
+                
+                leafInner.style.animationDuration = `${swayDuration}s`;
+                
+                leaf.appendChild(leafInner);
+                container.appendChild(leaf);
             }
         }
 
@@ -581,7 +629,7 @@
 
         window.onload = function() {
             initializeTheme();
-            createParticles();
+            createLeaves();
             revealSections();
             window.addEventListener('scroll', revealSections);
         };
