@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Claro del Bardo - Videojuegos y Pedagogía Musical</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        forest: {
+                            deep: 'rgb(var(--forest-deep) / <alpha-value>)',
+                            moss: 'rgb(var(--forest-moss) / <alpha-value>)',
+                            leaf: 'rgb(var(--forest-leaf) / <alpha-value>)',
+                            sage: 'rgb(var(--forest-sage) / <alpha-value>)'
+                        },
+                        parchment: {
+                            light: 'rgb(var(--parchment-light) / <alpha-value>)',
+                            base: 'rgb(var(--parchment-base) / <alpha-value>)',
+                            dark: 'rgb(var(--parchment-dark) / <alpha-value>)'
+                        },
+                        elven: {
+                            gold: 'rgb(var(--elven-gold) / <alpha-value>)',
+                            amber: 'rgb(var(--elven-amber) / <alpha-value>)',
+                            bronze: 'rgb(var(--elven-bronze) / <alpha-value>)'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['EB Garamond', 'Georgia', 'serif'],
+                        fantasy: ['Cinzel', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts: Cinzel y EB Garamond -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome: Iconos más temáticos y roleros -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* MODO DÍA: Bosque otoñal luminoso */
+            --forest-deep: 20 50 30;    
+            --forest-moss: 35 80 45;    
+            --forest-leaf: 50 120 65;   
+            --forest-sage: 140 180 150; 
+            --parchment-light: 255 250 240; 
+            --parchment-base: 245 235 220;  
+            --parchment-dark: 210 185 145;  
+            --elven-gold: 240 180 50;   
+            --elven-amber: 220 130 30;  
+            --elven-bronze: 150 90 50;  
+            --bg-image: url("fondo.jpeg"); 
+            --bg-overlay: linear-gradient(to bottom, rgba(30, 50, 25, 0.1) 0%, rgba(15, 30, 20, 0.5) 100%);
+        }
+
+        .dark {
+            /* MODO NOCHE: Bosque místico oscuro */
+            --forest-deep: 7 13 9;      
+            --forest-moss: 15 30 19;    
+            --forest-leaf: 26 51 33;    
+            --forest-sage: 139 168 151; 
+            --parchment-light: 250 246 238; 
+            --parchment-base: 244 236 225;  
+            --parchment-dark: 213 196 161;  
+            --elven-gold: 224 176 92;   
+            --elven-amber: 201 138 40;  
+            --elven-bronze: 122 84 53;  
+            --bg-image: url("fondo.jpeg"); 
+            --bg-overlay: linear-gradient(to bottom, rgba(10, 15, 10, 0.2) 0%, rgba(7, 13, 9, 0.6) 100%);
+        }
+
+        .forest-walk-bg {
+            background-color: rgb(var(--forest-moss));
+            background-image: var(--bg-overlay), var(--bg-image);
+            background-attachment: fixed;
+            background-size: 110%; /* Aleja un poco el fondo en lugar de recortarlo (cover) */
+            background-position: center top;
+            transition: background-image 0.8s ease-in-out, background-color 0.8s ease-in-out;
+        }
+
+        @media (max-width: 768px) {
+            .forest-walk-bg {
+                /* Evita el zoom o "efecto lupa" masivo que causa 'fixed' en celulares */
+                background-attachment: scroll; 
+                background-size: cover;
+            }
+        }
+
+        /* Diseño Base (DÍA) - Pergamino y Madera */
+        .card-elven {
+            background-color: #f4ecd8;
+            background-image: url("https://www.transparenttextures.com/patterns/parchment.png");
+            border: 2px solid #a67b5b; /* Borde madera clara */
+            box-shadow: 4px 4px 12px rgba(0,0,0,0.15), inset 0 0 20px rgba(166, 123, 91, 0.2);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            color: #2a3a29; /* Texto verde oscuro */
+        }
+        
+        .card-elven:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: #e0b05c; /* Brillo dorado al pasar el mouse */
+            box-shadow: 0 15px 30px rgba(166, 123, 91, 0.4), inset 0 0 30px rgba(224, 176, 92, 0.2);
+        }
+
+        /* Diseño (NOCHE) - Tablilla de Madera Oscura */
+        .dark .card-elven {
+            background-color: #0d1410; /* Verde obsidiana pulido y elegante, sin textura sucia */
+            background-image: linear-gradient(135deg, rgba(20, 30, 25, 0.4) 0%, rgba(5, 10, 7, 0.9) 100%);
+            border: 1px solid rgba(224, 176, 92, 0.3); /* Borde dorado élfico */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.8), inset 0 0 20px rgba(224, 176, 92, 0.05);
+            color: #f4ece1; /* Texto claro */
+            backdrop-filter: blur(5px);
+        }
+        
+        .dark .card-elven:hover {
+            border-color: #e0b05c;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.9), inset 0 0 30px rgba(224, 176, 92, 0.2);
+            transform: translateY(-8px) scale(1.02);
+        }
+
+        .dark .card-elven p {
+            color: rgba(244, 236, 225, 0.8) !important;
+        }
+
+        /* Simulación de destellos de sol Komorebi */
+        .komorebi-light {
+            position: fixed;
+            top: 0; left: 10%; right: 10%; bottom: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(224, 176, 92, 0.15) 0%, transparent 75%);
+            pointer-events: none;
+            z-index: 1;
+            animation: pulseKomorebi 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatParticle {
+            0% { transform: translateY(110vh) translateX(0) rotate(0deg) scale(0.8); opacity: 0; }
+            15% { opacity: 0.7; }
+            85% { opacity: 0.7; }
+            100% { transform: translateY(-10vh) translateX(100px) rotate(360deg) scale(1.2); opacity: 0; }
+        }
+
+        .particle {
+            position: fixed;
+            bottom: -5%;
+            pointer-events: none;
+            z-index: 2;
+            font-size: 1.2rem;
+            animation: floatParticle 15s linear infinite;
+            opacity: 0;
+            color: rgba(224, 176, 92, 0.8);
+        }
+
+        /* Botones de fantasía */
+        .btn-fantasy {
+            background: linear-gradient(135deg, #1A3321 0%, #0F1E13 100%);
+            border: 1px solid #E0B05C;
+            box-shadow: 0 4px 12px rgba(7, 13, 9, 0.4);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-fantasy:hover {
+            background: linear-gradient(135deg, #264d32 0%, #162d1d 100%);
+            box-shadow: 0 8px 20px rgba(224, 176, 92, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .border-rune { border-image: linear-gradient(to right, #7A5435, #E0B05C, #7A5435) 1; }
+
+        @keyframes pulseKomorebi {
+            0% { opacity: 0.4; transform: scale(1); }
+            100% { opacity: 0.9; transform: scale(1.1); }
+        }
+
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal-on-scroll.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="forest-walk-bg text-forest-deep font-sans antialiased overflow-x-hidden min-h-screen relative transition-colors duration-700">
+
+    <!-- Capa de Luz y Partículas -->
+    <div class="komorebi-light"></div>
+    <div id="particle-container" class="fixed inset-0 pointer-events-none overflow-hidden z-10"></div>
+
+    <!-- NAVEGACIÓN PRINCIPAL -->
+    <header class="border-b border-rune bg-forest-deep/95 text-parchment-light sticky top-0 z-40 transition-all shadow-xl backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            
+            <a href="#" class="flex items-center space-x-4 group">
+                <div class="relative w-12 h-12 rounded-full border-2 border-elven-gold bg-forest-moss overflow-hidden shadow-lg transition-transform duration-700 group-hover:rotate-12">
+                    <img src="logo.png" alt="Logo" class="w-full h-full object-cover z-10 relative"
+                         onload="document.getElementById('logo-fallback').style.display='none';" 
+                         onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';">
+                    <div id="logo-fallback" class="absolute inset-0 flex items-center justify-center text-elven-gold text-lg bg-forest-deep z-0">
+                        <i class="fa-solid fa-khanda"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-xl font-fantasy font-semibold tracking-wider text-parchment-light leading-none">El Claro del Bardo</h1>
+                    <span class="text-[9px] font-sans font-bold tracking-widest text-elven-gold uppercase block mt-1">Pedagogía Musical</span>
+                </div>
+            </a>
+
+            <!-- Menú Central (Iconos FA) -->
+            <nav class="hidden md:flex space-x-8 text-[11px] font-fantasy font-bold tracking-widest text-parchment-light/85">
+                <a href="#inicio" class="hover:text-elven-gold transition-colors flex items-center gap-1.5"><i class="fa-solid fa-compass"></i> El Claro</a>
+                <a href="#baul" class="hover:text-elven-gold transition-colors flex items-center gap-1.5"><i class="fa-solid fa-scroll"></i> El Baúl de Juegos</a>
+                <a href="#sobremi" class="hover:text-elven-gold transition-colors flex items-center gap-1.5"><i class="fa-solid fa-feather-pointed"></i> El Bardo</a>
+            </nav>
+
+            <div class="flex items-center space-x-4 text-elven-gold">
+                <div class="hidden sm:flex items-center space-x-1.5">
+                    <i class="fa-solid fa-music text-sm animate-pulse"></i>
+                    <span class="text-[11px] font-serif italic text-parchment-light/75">Repositorio interactivo</span>
+                </div>
+                <!-- Botón Día/Noche Repensado y Corregido -->
+                <button id="theme-toggle" onclick="toggleTheme()" class="w-10 h-10 rounded-full border border-elven-gold/30 hover:border-elven-gold text-elven-gold flex items-center justify-center transition-all bg-forest-moss/80 backdrop-blur shadow-lg hover:rotate-12" aria-label="Cambiar tema">
+                    <i id="theme-icon-icon" class="fas fa-moon text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- BIENVENIDA HERO -->
+    <section id="inicio" class="relative py-28 md:py-36 max-w-5xl mx-auto px-6 text-center z-20">
+        <div class="relative z-10 max-w-3xl mx-auto">
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-fantasy font-bold bg-forest-moss/60 text-elven-gold border border-elven-gold/30 mb-6 backdrop-blur">
+                <i class="fa-solid fa-sparkles text-xs text-elven-amber animate-spin"></i> REPOSITORIO DE VIDEOJUEGOS, MÚSICA Y MÁS
+            </span>
+
+            <h2 class="text-5xl sm:text-6xl md:text-7xl font-fantasy font-bold text-parchment-light leading-tight mb-6 drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
+                El Claro del Bardo
+            </h2>
+
+            <div class="flex items-center justify-center gap-4 mb-8 opacity-80">
+                <span class="h-[1px] w-16 bg-gradient-to-r from-transparent to-elven-gold"></span>
+                <span class="text-elven-gold text-lg font-fantasy tracking-[0.3em]">ᚠ ᚨ ᛟ ᚲ</span>
+                <span class="h-[1px] w-16 bg-gradient-to-l from-transparent to-elven-gold"></span>
+            </div>
+
+            <p class="text-lg md:text-2xl text-parchment-light/95 max-w-2xl mx-auto mb-10 leading-relaxed font-serif italic drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                "Donde las leyendas medievales, la precisión del código digital y los juegos musicales se entrelazan bajo la arboleda del bosque eterno."
+            </p>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#baul" class="btn-fantasy text-parchment-light font-fantasy font-semibold tracking-wider px-8 py-4 rounded-xl flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-box-open text-base text-elven-gold"></i> Abrir el Baúl de Juegos
+                </a>
+                <a href="#sobremi" class="border border-parchment-light/30 bg-forest-deep/40 hover:border-elven-gold hover:bg-forest-deep/80 text-parchment-light font-fantasy text-xs tracking-widest font-semibold px-8 py-4 rounded-xl flex items-center justify-center transition-all backdrop-blur">
+                    Conocer al Bardo
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- BAÚL DE RECURSOS (CATÁLOGO DE JUEGOS) -->
+    <section id="baul" class="py-24 bg-forest-moss/90 dark:bg-forest-moss/95 border-t border-b border-rune z-20 relative transition-colors duration-700">
+        <div class="max-w-6xl mx-auto px-6">
+            
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 gap-6">
+                <div>
+                    <h3 class="text-4xl font-fantasy font-bold text-parchment-light tracking-wide drop-shadow-md">El Repositorio de Juegos</h3>
+                    <p class="text-sm text-parchment-light/80 mt-2 font-serif italic drop-shadow-md">Pergaminos interactivos listos para jugar, aprender y explorar.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="filterGames('all')" class="filter-btn px-4 py-2.5 rounded-lg text-[10px] font-fantasy font-bold tracking-widest transition-all bg-elven-gold text-forest-deep border border-elven-gold flex items-center gap-1.5">
+                        <i class="fa-solid fa-border-all text-xs"></i> Todos
+                    </button>
+                    <button onclick="filterGames('ritmo')" class="filter-btn px-4 py-2.5 rounded-lg text-[10px] font-fantasy font-bold tracking-widest transition-all bg-forest-leaf/40 hover:bg-forest-leaf text-parchment-light border border-parchment-light/20 flex items-center gap-1.5">
+                        <i class="fa-solid fa-stopwatch text-xs"></i> Compás & Ritmo
+                    </button>
+                    <button onclick="filterGames('solfeo')" class="filter-btn px-4 py-2.5 rounded-lg text-[10px] font-fantasy font-bold tracking-widest transition-all bg-forest-leaf/40 hover:bg-forest-leaf text-parchment-light border border-parchment-light/20 flex items-center gap-1.5">
+                        <i class="fa-solid fa-music text-xs"></i> Solfeo & Lectura
+                    </button>
+                    <button onclick="filterGames('didactica')" class="filter-btn px-4 py-2.5 rounded-lg text-[10px] font-fantasy font-bold tracking-widest transition-all bg-forest-leaf/40 hover:bg-forest-leaf text-parchment-light border border-parchment-light/20 flex items-center gap-1.5">
+                        <i class="fa-solid fa-graduation-cap text-xs"></i> Didáctica & Viento
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="games-grid">
+                
+                <!-- SUPERSOLFEO -->
+                <div class="card-elven rounded-2xl p-6 flex flex-col justify-between" data-category="solfeo">
+                    <div>
+                        <div class="w-12 h-12 rounded-lg bg-elven-bronze/10 text-elven-bronze border border-elven-bronze/30 flex items-center justify-center text-2xl mb-4 dark:bg-elven-gold/10 dark:text-elven-gold dark:border-elven-gold/30">
+                            <i class="fa-solid fa-book-journal-whills"></i>
+                        </div>
+                        <h4 class="text-xl font-fantasy font-bold leading-none">Super Solfeo</h4>
+                        <p class="text-sm font-serif mt-3 leading-relaxed text-forest-deep/80" style="color: inherit; opacity: 0.8;">Ejercitador melódico interactivo para dominar las notas sagradas grabadas en el pentagrama.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-elven-bronze/20 dark:border-elven-gold/20 flex items-center justify-between">
+                        <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Solfeo & Lectura</span>
+                        <button onclick="openGameModal('supersolfeo')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-5 py-2.5 rounded-lg">
+                            Jugar <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TETRIS -->
+                <div class="card-elven rounded-2xl p-6 flex flex-col justify-between" data-category="ritmo">
+                    <div>
+                        <div class="w-12 h-12 rounded-lg bg-elven-bronze/10 text-elven-bronze border border-elven-bronze/30 flex items-center justify-center text-2xl mb-4 dark:bg-elven-gold/10 dark:text-elven-gold dark:border-elven-gold/30">
+                            <i class="fa-solid fa-cubes"></i>
+                        </div>
+                        <h4 class="text-xl font-fantasy font-bold leading-none">Tetris Rítmico</h4>
+                        <p class="text-sm font-serif mt-3 leading-relaxed text-forest-deep/80" style="color: inherit; opacity: 0.8;">Alinea las piedras y figuras rítmicas para forjar compases antes de que el tiempo se agote.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-elven-bronze/20 dark:border-elven-gold/20 flex items-center justify-between">
+                        <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Compases & Pulso</span>
+                        <button onclick="openGameModal('tetris')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-5 py-2.5 rounded-lg">
+                            Jugar <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- JUEGOVISUAL -->
+                <div class="card-elven rounded-2xl p-6 flex flex-col justify-between" data-category="solfeo">
+                    <div>
+                        <div class="w-12 h-12 rounded-lg bg-elven-bronze/10 text-elven-bronze border border-elven-bronze/30 flex items-center justify-center text-2xl mb-4 dark:bg-elven-gold/10 dark:text-elven-gold dark:border-elven-gold/30">
+                            <i class="fa-solid fa-eye"></i>
+                        </div>
+                        <h4 class="text-xl font-fantasy font-bold leading-none">Juego Visual</h4>
+                        <p class="text-sm font-serif mt-3 leading-relaxed text-forest-deep/80" style="color: inherit; opacity: 0.8;">Identificación veloz de los símbolos arcanos y líneas melódicas a primera vista.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-elven-bronze/20 dark:border-elven-gold/20 flex items-center justify-between">
+                        <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Afinación Visual</span>
+                        <button onclick="openGameModal('Juegovisual')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-5 py-2.5 rounded-lg">
+                            Jugar <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SUPERRITMO -->
+                <div class="card-elven rounded-2xl p-6 flex flex-col justify-between" data-category="ritmo">
+                    <div>
+                        <div class="w-12 h-12 rounded-lg bg-elven-bronze/10 text-elven-bronze border border-elven-bronze/30 flex items-center justify-center text-2xl mb-4 dark:bg-elven-gold/10 dark:text-elven-gold dark:border-elven-gold/30">
+                            <i class="fa-solid fa-heart-pulse"></i>
+                        </div>
+                        <h4 class="text-xl font-fantasy font-bold leading-none">Super Ritmo</h4>
+                        <p class="text-sm font-serif mt-3 leading-relaxed text-forest-deep/80" style="color: inherit; opacity: 0.8;">La base del latido: sigue el pulso constante del metrónomo de la naturaleza.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-elven-bronze/20 dark:border-elven-gold/20 flex items-center justify-between">
+                        <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Sincronía Rítmica</span>
+                        <button onclick="openGameModal('superritmo')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-5 py-2.5 rounded-lg">
+                            Jugar <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PXART -->
+                <div class="card-elven rounded-2xl p-6 flex flex-col justify-between" data-category="solfeo">
+                    <div>
+                        <div class="w-12 h-12 rounded-lg bg-elven-bronze/10 text-elven-bronze border border-elven-bronze/30 flex items-center justify-center text-2xl mb-4 dark:bg-elven-gold/10 dark:text-elven-gold dark:border-elven-gold/30">
+                            <i class="fa-solid fa-palette"></i>
+                        </div>
+                        <h4 class="text-xl font-fantasy font-bold leading-none">Pixel Art</h4>
+                        <p class="text-sm font-serif mt-3 leading-relaxed text-forest-deep/80" style="color: inherit; opacity: 0.8;">Dibuja mosaicos mágicos pintándolos con las notas y distancias auditivas correctas.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-elven-bronze/20 dark:border-elven-gold/20 flex items-center justify-between">
+                        <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Arte & Teoría</span>
+                        <button onclick="openGameModal('pxart')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-5 py-2.5 rounded-lg">
+                            Jugar <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SUPERRITMO 2 -->
+                <div class="card-elven rounded-2xl p-6 flex flex-col justify-between" data-category="ritmo">
+                    <div>
+                        <div class="w-12 h-12 rounded-lg bg-elven-bronze/10 text-elven-bronze border border-elven-bronze/30 flex items-center justify-center text-2xl mb-4 dark:bg-elven-gold/10 dark:text-elven-gold dark:border-elven-gold/30">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <h4 class="text-xl font-fantasy font-bold leading-none">Super Ritmo 2</h4>
+                        <p class="text-sm font-serif mt-3 leading-relaxed text-forest-deep/80" style="color: inherit; opacity: 0.8;">Retos rítmicos complejos con síncopas, compases rotos y contratiempos avanzados.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-elven-bronze/20 dark:border-elven-gold/20 flex items-center justify-between">
+                        <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Síncopa & Desafío</span>
+                        <button onclick="openGameModal('superitmo2')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-5 py-2.5 rounded-lg">
+                            Jugar <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ATRAPA -->
+                <div class="card-elven rounded-2xl p-6 flex flex-col justify-between" data-category="ritmo">
+                    <div>
+                        <div class="w-12 h-12 rounded-lg bg-elven-bronze/10 text-elven-bronze border border-elven-bronze/30 flex items-center justify-center text-2xl mb-4 dark:bg-elven-gold/10 dark:text-elven-gold dark:border-elven-gold/30">
+                            <i class="fa-solid fa-basket-shopping"></i>
+                        </div>
+                        <h4 class="text-xl font-fantasy font-bold leading-none">Atrapa las Notas</h4>
+                        <p class="text-sm font-serif mt-3 leading-relaxed text-forest-deep/80" style="color: inherit; opacity: 0.8;">Recolecta las figuras de las canciones tradicionales en tu canasta mientras caen del dosel forestal.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-elven-bronze/20 dark:border-elven-gold/20 flex items-center justify-between">
+                        <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Reflejos & Ritmo</span>
+                        <button onclick="openGameModal('atrapa')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-5 py-2.5 rounded-lg">
+                            Jugar <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- LANDING -->
+                <div class="card-elven rounded-2xl p-6 flex flex-col justify-between" data-category="didactica">
+                    <div>
+                        <div class="w-12 h-12 rounded-lg bg-elven-bronze/10 text-elven-bronze border border-elven-bronze/30 flex items-center justify-center text-2xl mb-4 dark:bg-elven-gold/10 dark:text-elven-gold dark:border-elven-gold/30">
+                            <i class="fa-solid fa-torii-gate"></i>
+                        </div>
+                        <h4 class="text-xl font-fantasy font-bold leading-none">Portal (Landing)</h4>
+                        <p class="text-sm font-serif mt-3 leading-relaxed text-forest-deep/80" style="color: inherit; opacity: 0.8;">La bienvenida didáctica a esta comarca musical, tratando las veredas a recorrer.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-elven-bronze/20 dark:border-elven-gold/20 flex items-center justify-between">
+                        <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Portal Principal</span>
+                        <button onclick="openGameModal('landing')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-5 py-2.5 rounded-lg">
+                            Jugar <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- DIDACTICA -->
+                <div class="card-elven rounded-2xl p-6 flex flex-col justify-between" data-category="didactica">
+                    <div>
+                        <div class="w-12 h-12 rounded-lg bg-elven-bronze/10 text-elven-bronze border border-elven-bronze/30 flex items-center justify-center text-2xl mb-4 dark:bg-elven-gold/10 dark:text-elven-gold dark:border-elven-gold/30">
+                            <i class="fa-solid fa-flask-vial"></i>
+                        </div>
+                        <h4 class="text-xl font-fantasy font-bold leading-none">Didáctica Acústica</h4>
+                        <p class="text-sm font-serif mt-3 leading-relaxed text-forest-deep/80" style="color: inherit; opacity: 0.8;">Aprende la física de los instrumentos acústicos, la resonancia y la luthería de cuerdas.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-elven-bronze/20 dark:border-elven-gold/20 flex items-center justify-between">
+                        <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Física Acústica</span>
+                        <button onclick="openGameModal('did')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-5 py-2.5 rounded-lg">
+                            Jugar <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BANDONEON -->
+                <div class="card-elven rounded-2xl p-6 flex flex-col justify-between" data-category="didactica">
+                    <div>
+                        <div class="w-12 h-12 rounded-lg bg-elven-bronze/10 text-elven-bronze border border-elven-bronze/30 flex items-center justify-center text-2xl mb-4 dark:bg-elven-gold/10 dark:text-elven-gold dark:border-elven-gold/30">
+                            <i class="fa-solid fa-wind"></i>
+                        </div>
+                        <h4 class="text-xl font-fantasy font-bold leading-none">Bandoneón</h4>
+                        <p class="text-sm font-serif mt-3 leading-relaxed text-forest-deep/80" style="color: inherit; opacity: 0.8;">El latido del aire: presiona las lengüetas acústicas y haz respirar al fuelle.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-elven-bronze/20 dark:border-elven-gold/20 flex items-center justify-between">
+                        <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Fuelle & Viento</span>
+                        <button onclick="openGameModal('bandoneon')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-5 py-2.5 rounded-lg">
+                            Jugar <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PRUEBA 2 -->
+                <div class="card-elven rounded-2xl p-6 flex flex-col justify-between" data-category="didactica">
+                    <div>
+                        <div class="w-12 h-12 rounded-lg bg-elven-bronze/10 text-elven-bronze border border-elven-bronze/30 flex items-center justify-center text-2xl mb-4 dark:bg-elven-gold/10 dark:text-elven-gold dark:border-elven-gold/30">
+                            <i class="fa-solid fa-vial-circle-check"></i>
+                        </div>
+                        <h4 class="text-xl font-fantasy font-bold leading-none">Prueba 2</h4>
+                        <p class="text-sm font-serif mt-3 leading-relaxed text-forest-deep/80" style="color: inherit; opacity: 0.8;">Caja de resonancia mística donde probar escalas antiguas, frecuencias puras y sonidos libres.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-elven-bronze/20 dark:border-elven-gold/20 flex items-center justify-between">
+                        <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Ensayos del Sonido</span>
+                        <button onclick="openGameModal('prueba2')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-5 py-2.5 rounded-lg">
+                            Jugar <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MEMORICE -->
+                <div class="card-elven rounded-2xl p-6 flex flex-col justify-between" data-category="solfeo">
+                    <div>
+                        <div class="w-12 h-12 rounded-lg bg-elven-bronze/10 text-elven-bronze border border-elven-bronze/30 flex items-center justify-center text-2xl mb-4 dark:bg-elven-gold/10 dark:text-elven-gold dark:border-elven-gold/30">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h4 class="text-xl font-fantasy font-bold leading-none">Memorice</h4>
+                        <p class="text-sm font-serif mt-3 leading-relaxed text-forest-deep/80" style="color: inherit; opacity: 0.8;">Relaciona los antiguos glifos con su sonido melódico para entrenar la memoria de bardo.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-elven-bronze/20 dark:border-elven-gold/20 flex items-center justify-between">
+                        <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Memoria Auditiva</span>
+                        <button onclick="openGameModal('memorice')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-5 py-2.5 rounded-lg">
+                            Jugar <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal de Juego (Libre de interferencias para insertar los juegos) -->
+    <div id="game-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-forest-deep/95 backdrop-blur-md hidden transition-all">
+        <div class="bg-parchment-light border-2 border-elven-gold rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col h-[85vh] max-h-[700px] relative">
+            <div class="bg-forest-deep text-parchment-light px-6 py-4 flex items-center justify-between border-b border-elven-gold/30">
+                <div class="flex items-center space-x-3">
+                    <span class="text-xl text-elven-gold"><i id="modal-game-icon" class="fa-solid fa-gamepad"></i></span>
+                    <div>
+                        <h5 class="text-md font-fantasy font-bold tracking-wide text-white" id="modal-game-title">Título</h5>
+                        <p class="text-[9px] font-sans font-bold text-elven-gold tracking-widest uppercase" id="modal-game-category">CATEGORÍA</p>
+                    </div>
+                </div>
+                <button onclick="closeGameModal()" class="w-10 h-10 rounded-full border border-elven-gold/20 hover:border-elven-gold text-parchment-light hover:text-elven-gold flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-times text-lg"></i>
+                </button>
+            </div>
+            <div class="flex-1 bg-[#020503] relative flex items-center justify-center overflow-auto">
+                <div id="game-active-container" class="w-full h-full flex flex-col items-center justify-center text-white">
+                    <!-- Aquí se cargará tu código de juego dinámicamente -->
+                </div>
+            </div>
+            <div class="bg-parchment-base border-t border-rune/20 p-4 flex justify-between items-center">
+                <div class="flex items-center space-x-2 text-forest-deep/70 text-xs font-serif italic">
+                    <i class="fa-solid fa-leaf text-forest-leaf text-sm"></i>
+                    <span id="modal-game-desc">Aventúrate y domina el camino de las armonías.</span>
+                </div>
+                <button onclick="closeGameModal()" class="btn-fantasy text-parchment-light text-xs font-fantasy tracking-widest font-bold px-6 py-2.5 rounded-xl">
+                    Cerrar Pergamino
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILOSOFÍA SOBRE MI -->
+    <section id="sobremi" class="py-24 max-w-5xl mx-auto px-6 z-20 relative reveal-on-scroll">
+        <div class="bg-parchment-base/95 dark:bg-[#1a221b]/95 backdrop-blur border border-elven-gold/40 rounded-3xl p-8 md:p-12 relative overflow-hidden shadow-2xl transition-colors duration-700">
+            <div class="absolute -top-10 -right-10 text-elven-gold/10 font-serif text-9xl select-none pointer-events-none"><i class="fa-solid fa-tree"></i></div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 items-center relative z-10">
+                <div class="md:col-span-2 space-y-6">
+                    <span class="text-[10px] font-fantasy font-bold tracking-widest text-elven-amber bg-elven-gold/10 px-3 py-1 rounded-full border border-elven-amber/20">El Arte del Bardo</span>
+                    <h3 class="text-3xl font-fantasy font-bold text-forest-deep dark:text-parchment-light">Sobre Mí</h3>
+                    <p class="text-sm text-forest-deep/90 dark:text-parchment-light/80 leading-relaxed font-serif italic">
+                        "En mis tierras convergen la lírica imperecedera de la música tradicional, la arquitectura lógica de la programación y la chispa mágica del juego. Dedico mis días a diseñar herramientas y mundos interactivos para que exploradores y estudiantes comprendan el lenguaje de las notas no como un deber frío, sino como una aventura épica en busca de armonía."
+                    </p>
+                </div>
+
+                <div class="flex flex-col items-center text-center">
+                    <div class="relative w-40 h-40 rounded-full border-4 border-elven-gold bg-forest-moss overflow-hidden shadow-2xl flex items-center justify-center mb-4 transition-transform hover:scale-105 duration-500">
+                        <img src="perfil.jpeg" alt="El Claro del Bardo" class="w-full h-full object-cover z-10 relative"
+                             onload="document.getElementById('perfil-fallback').style.display='none';" 
+                             onerror="this.style.display='none'; document.getElementById('perfil-fallback').style.display='flex';">
+                        <div id="perfil-fallback" class="absolute inset-0 flex items-center justify-center bg-forest-moss text-elven-gold text-5xl z-0">
+                            <i class="fa-solid fa-user-ninja"></i>
+                        </div>
+                    </div>
+                    <h4 class="font-fantasy font-bold text-forest-deep dark:text-parchment-light text-lg">El Claro del Bardo</h4>
+                    <p class="text-[10px] text-elven-amber font-fantasy font-bold tracking-widest mt-1">Luthier Digital & Docente</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BUZÓN DE CONTACTO -->
+    <section id="mensajero" class="py-20 bg-forest-deep/95 text-parchment-light border-t border-rune relative overflow-hidden z-20">
+        <div class="max-w-4xl mx-auto px-6 relative z-10 text-center">
+            <span class="text-[10px] font-fantasy font-bold tracking-widest text-elven-gold uppercase block mb-3">Establece Contacto</span>
+            <h3 class="text-3xl sm:text-4xl font-fantasy font-bold text-white mb-4">Envía una Carta al Claro</h3>
+            <p class="text-sm font-serif text-parchment-dark/80 max-w-xl mx-auto mb-10 leading-relaxed">
+                ¿Deseas intercambiar ideas sobre interactividad, música o invocar una nueva aventura?
+            </p>
+
+            <form id="contact-form" onsubmit="handleContactSubmit(event)" class="max-w-lg mx-auto bg-black/20 border border-rune/30 p-8 rounded-2xl space-y-4 text-left backdrop-blur shadow-2xl">
+                <div>
+                    <label class="block text-[9px] font-fantasy font-bold text-parchment-dark tracking-widest uppercase mb-2">Tu Alianza o Nombre</label>
+                    <input type="text" required class="w-full bg-forest-deep/80 border border-rune/30 focus:border-elven-gold rounded-xl px-4 py-3 text-parchment-light text-sm outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-fantasy font-bold text-parchment-dark tracking-widest uppercase mb-2">Mensaje del Viajero</label>
+                    <textarea rows="4" required class="w-full bg-forest-deep/80 border border-rune/30 focus:border-elven-gold rounded-xl px-4 py-3 text-parchment-light text-sm outline-none transition-colors" placeholder="Escribe tu mensaje..."></textarea>
+                </div>
+                <button type="submit" class="w-full btn-fantasy text-parchment-light font-fantasy font-semibold tracking-wider py-4 rounded-xl text-xs flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane text-sm"></i> Entregar Mensaje
+                </button>
+            </form>
+            
+            <div id="contact-success" class="hidden max-w-lg mx-auto bg-parchment-light text-forest-deep p-8 rounded-2xl border-2 border-rune text-center shadow-2xl">
+                <span class="text-4xl block mb-4"><i class="fa-solid fa-dove text-elven-gold"></i></span>
+                <h4 class="text-lg font-fantasy font-bold text-forest-deep">¡La paloma ha partido!</h4>
+                <p class="text-xs font-serif italic mt-2">Tu carta va en camino. Te responderé a la brevedad del viento.</p>
+                <button onclick="resetContactForm()" class="mt-4 text-xs font-fantasy font-bold tracking-widest text-elven-amber hover:underline">Enviar otra</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PIE DE PORTAL -->
+    <footer class="bg-forest-deep border-t border-rune py-12 text-sm text-parchment-light/50 relative z-20">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-6">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-leaf text-elven-gold"></i>
+                <span class="font-fantasy font-bold text-parchment-light">El Claro del Bardo</span>
+            </div>
+            <p class="text-xs text-center sm:text-right font-serif italic">&copy; 2026 El Claro del Bardo. Creado bajo el misticismo del código.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Función de modo día / noche
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('theme-icon-icon');
+            
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if(themeIcon) themeIcon.className = 'fas fa-sun text-lg';
+            } else {
+                document.documentElement.classList.remove('dark');
+                if(themeIcon) themeIcon.className = 'fas fa-moon text-lg';
+            }
+        }
+
+        function toggleTheme() {
+            const htmlNode = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon-icon');
+            
+            htmlNode.classList.toggle('dark');
+            const isDark = htmlNode.classList.contains('dark');
+            
+            if (isDark) {
+                if(themeIcon) themeIcon.className = 'fas fa-sun text-lg';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                if(themeIcon) themeIcon.className = 'fas fa-moon text-lg';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Partículas en paralaje (Follaje, Notas y Runas del Futhark Antiguo)
+        function createParticles() {
+            const container = document.getElementById('particle-container');
+            const items = ['🍂', '🍁', '♫', '♪', '✨', '🍃', '♬', '♩', 'ᚠ', 'ᚨ', 'ᛟ', 'ᚲ', 'ᛝ'];
+            for (let i = 0; i < 25; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.innerText = items[Math.floor(Math.random() * items.length)];
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 20}s`;
+                particle.style.animationDuration = `${12 + Math.random() * 15}s`;
+                container.appendChild(particle);
+            }
+        }
+
+        function revealSections() {
+            document.querySelectorAll('.reveal-on-scroll').forEach(reveal => {
+                if (reveal.getBoundingClientRect().top < window.innerHeight - 150) {
+                    reveal.classList.add('active');
+                }
+            });
+        }
+
+        window.onload = function() {
+            initializeTheme();
+            createParticles();
+            revealSections();
+            window.addEventListener('scroll', revealSections);
+        };
+
+        // Filtro del catálogo interactivo
+        function filterGames(category) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.className = "filter-btn px-4 py-2.5 rounded-lg text-[10px] font-fantasy font-bold tracking-widest transition-all bg-forest-leaf/40 hover:bg-forest-leaf text-parchment-light border border-parchment-light/20 flex items-center gap-1.5";
+            });
+            event.target.className = "filter-btn px-4 py-2.5 rounded-lg text-[10px] font-fantasy font-bold tracking-widest transition-all bg-elven-gold text-forest-deep border border-elven-gold flex items-center gap-1.5";
+
+            document.querySelectorAll('[data-category]').forEach(card => {
+                if (category === 'all' || card.getAttribute('data-category') === category) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Base de Datos Estructurada de tus Juegos de GitHub
+        const GAMES_INFO = {
+            'supersolfeo': { title: "Super Solfeo", category: "Solfeo & Lectura", icon: "fa-solid fa-book-journal-whills", desc: "Ejercitador melódico interactivo para dominar el pentagrama." },
+            'tetris': { title: "Tetris Rítmico", category: "Compases & Pulso", icon: "fa-solid fa-cubes", desc: "Alinea las piedras y figuras rítmicas para forjar compases." },
+            'Juegovisual': { title: "Juego Visual", category: "Afinación Visual", icon: "fa-solid fa-eye", desc: "Identificación veloz de los símbolos arcanos y líneas melódicas." },
+            'superritmo': { title: "Super Ritmo", category: "Sincronía Rítmica", icon: "fa-solid fa-heart-pulse", desc: "La base del latido: sigue el pulso constante del metrónomo." },
+            'pxart': { title: "Pixel Art", category: "Arte & Teoría", icon: "fa-solid fa-palette", desc: "Dibuja mosaicos mágicos pintándolos con las notas correctas." },
+            'superitmo2': { title: "Super Ritmo 2", category: "Síncopa & Desafío", icon: "fa-solid fa-bolt", desc: "Retos rítmicos complejos con síncopas y contratiempos." },
+            'atrapa': { title: "Atrapa las Notas", category: "Reflejos & Ritmo", icon: "fa-solid fa-basket-shopping", desc: "Recolecta las figuras de las canciones tradicionales en tu canasta." },
+            'landing': { title: "Landing", category: "Portal Principal", icon: "fa-solid fa-torii-gate", desc: "La bienvenida didáctica a esta comarca musical." },
+            'did': { title: "Didáctica", category: "Física Acústica", icon: "fa-solid fa-flask-vial", desc: "Aprende la física de los instrumentos acústicos." },
+            'bandoneon': { title: "Bandoneón", category: "Fuelle & Viento", icon: "fa-solid fa-wind", desc: "Presiona las lengüetas acústicas y haz respirar al fuelle." },
+            'prueba2': { title: "Prueba 2", category: "Ensayos del Sonido", icon: "fa-solid fa-vial-circle-check", desc: "Caja de resonancia mística donde probar escalas antiguas." },
+            'memorice': { title: "Memorice", category: "Memoria Auditiva", icon: "fa-solid fa-brain", desc: "Relaciona los antiguos glifos con su sonido melódico." }
+        };
+
+        // Activador de ventana flotante de juego limpia para tus códigos
+        function openGameModal(gameId) {
+            const modal = document.getElementById('game-modal');
+            const data = GAMES_INFO[gameId];
+            if (data) {
+                document.getElementById('modal-game-title').innerText = data.title;
+                document.getElementById('modal-game-category').innerText = data.category.toUpperCase();
+                document.getElementById('modal-game-desc').innerText = data.desc;
+                document.getElementById('modal-game-icon').className = data.icon;
+
+                // Contenedor completamente libre de código instructivo
+                const container = document.getElementById('game-active-container');
+                container.innerHTML = ''; 
+
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+
+                // --- SISTEMA INTERACTIVO DE INYECCIÓN DE TU CÓDIGO DE JUEGO ---
+                /* AQUÍ TU CÓDIGO DE JUEGO */
+                switch (gameId) {
+                    case 'supersolfeo':
+                        container.innerHTML = `<!-- AQUÍ TU CÓDIGO DE JUEGO -->`;
+                        break;
+                    case 'tetris':
+                        container.innerHTML = `<!-- AQUÍ TU CÓDIGO DE JUEGO -->`;
+                        break;
+                    case 'Juegovisual':
+                        container.innerHTML = `<!-- AQUÍ TU CÓDIGO DE JUEGO -->`;
+                        break;
+                    case 'superritmo':
+                        container.innerHTML = `<!-- AQUÍ TU CÓDIGO DE JUEGO -->`;
+                        break;
+                    case 'pxart':
+                        container.innerHTML = `<!-- AQUÍ TU CÓDIGO DE JUEGO -->`;
+                        break;
+                    case 'superitmo2':
+                        container.innerHTML = `<!-- AQUÍ TU CÓDIGO DE JUEGO -->`;
+                        break;
+                    case 'atrapa':
+                        container.innerHTML = `<!-- AQUÍ TU CÓDIGO DE JUEGO -->`;
+                        break;
+                    case 'landing':
+                        container.innerHTML = `<!-- AQUÍ TU CÓDIGO DE JUEGO -->`;
+                        break;
+                    case 'did':
+                        container.innerHTML = `<!-- AQUÍ TU CÓDIGO DE JUEGO -->`;
+                        break;
+                    case 'bandoneon':
+                        container.innerHTML = `<!-- AQUÍ TU CÓDIGO DE JUEGO -->`;
+                        break;
+                    case 'prueba2':
+                        container.innerHTML = `<!-- AQUÍ TU CÓDIGO DE JUEGO -->`;
+                        break;
+                    case 'memorice':
+                        container.innerHTML = `<!-- AQUÍ TU CÓDIGO DE JUEGO -->`;
+                        break;
+                }
+            }
+        }
+
+        function closeGameModal() {
+            document.getElementById('game-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // Envíos del buzón de correo
+        function handleContactSubmit(event) {
+            event.preventDefault();
+            document.getElementById('contact-form').classList.add('hidden');
+            document.getElementById('contact-success').classList.remove('hidden');
+        }
+
+        function resetContactForm() {
+            document.getElementById('contact-form').reset();
+            document.getElementById('contact-form').classList.remove('hidden');
+            document.getElementById('contact-success').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
