@@ -39,6 +39,7 @@
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             z-index: -2;
+            /* Bosque otoñal majestuoso en alta resolución */
             background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?ixlib=rb-4.0.3&auto=format&fit=crop&w=2500&q=80');
             background-size: cover;
             background-position: center 30%;
@@ -227,6 +228,7 @@
 
     <header class="border-b border-elven-gold/30 bg-forest-moss/90 text-parchment-light sticky top-0 z-40 backdrop-blur-md shadow-2xl">
         <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            
             <a href="#" class="flex items-center space-x-4 group">
                 <div class="relative w-12 h-12 rounded-full border-2 border-elven-gold overflow-hidden shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-transform duration-700 group-hover:rotate-12 bg-[#0d1410]">
                     <img src="logo.png" alt="Logo" class="w-full h-full object-cover z-10 relative"
@@ -258,20 +260,25 @@
 
     <section id="inicio" class="relative py-32 md:py-48 max-w-5xl mx-auto px-6 text-center z-10">
         <div class="relative z-10 max-w-4xl mx-auto reveal-on-scroll active">
+            
             <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-fantasy font-bold bg-black/50 text-elven-gold border border-elven-gold/30 mb-8 backdrop-blur shadow-lg">
                 <i class="fa-solid fa-sparkles text-elven-amber animate-spin"></i> LUDOLOGÍA Y PEDAGOGÍA MUSICAL
             </span>
+
             <h2 class="text-5xl sm:text-6xl md:text-8xl font-fantasy font-bold text-white leading-tight mb-6 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]">
                 EL CLARO DEL BARDO
             </h2>
+
             <div class="flex items-center justify-center gap-4 mb-8 opacity-90">
                 <span class="h-[1px] w-20 bg-gradient-to-r from-transparent to-elven-gold"></span>
                 <span class="text-elven-gold text-xl font-fantasy tracking-[0.4em] drop-shadow-lg">ᚠ ᚨ ᛟ ᚲ</span>
                 <span class="h-[1px] w-20 bg-gradient-to-l from-transparent to-elven-gold"></span>
             </div>
+
             <p class="text-lg md:text-2xl text-parchment-light max-w-3xl mx-auto mb-12 leading-relaxed font-serif italic drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                 "Un repositorio de videojuegos didácticos y recursos interactivos diseñados para el aula de música, orientados a ejercitar el ritmo, la lectura en el pentagrama y la teoría de forma dinámica y entretenida."
             </p>
+
             <div class="flex flex-col sm:flex-row justify-center gap-6">
                 <a href="#baul" class="btn-fantasy text-parchment-light font-fantasy font-semibold tracking-wider px-10 py-5 flex items-center justify-center gap-3 text-sm shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
                     <i class="fa-solid fa-box-open text-elven-gold text-lg"></i> Abrir el Baúl de Juegos
@@ -285,6 +292,7 @@
 
     <section id="baul" class="py-24 bg-forest-moss/80 dark:bg-black/80 backdrop-blur-md border-t border-b border-elven-gold/20 z-10 relative">
         <div class="max-w-7xl mx-auto px-6 reveal-on-scroll">
+            
             <div class="text-center mb-16">
                 <h3 class="text-4xl md:text-5xl font-fantasy font-bold text-white tracking-wide drop-shadow-lg">El Repositorio de Juegos</h3>
                 <p class="text-lg text-elven-gold/80 mt-4 font-serif italic">Pergaminos interactivos listos para jugar, aprender y explorar las artes musicales.</p>
@@ -398,29 +406,6 @@
                     <div class="scroll-roller-bottom"></div>
                 </div>
 
-                <!-- PERGAMINO: PIXEL ART -->
-                <div class="scroll-container h-full" data-category="solfeo">
-                    <div class="scroll-roller-top"></div>
-                    <div class="scroll-paper">
-                        <div>
-                            <div class="w-14 h-14 rounded-full bg-black/5 border border-elven-bronze/30 flex items-center justify-center text-3xl mb-5 text-elven-bronze dark:text-elven-gold dark:bg-white/5 dark:border-elven-gold/30 mx-auto shadow-inner">
-                                <i class="fa-solid fa-palette"></i>
-                            </div>
-                            <h4 class="text-2xl font-fantasy font-bold text-center border-b border-elven-bronze/20 dark:border-elven-gold/20 pb-3">Pixel Art</h4>
-                            <p class="text-[15px] font-serif mt-4 text-center leading-relaxed font-medium text-forest-deep/80 dark:text-parchment-light/80">
-                                Dibuja mosaicos mágicos pintándolos con las notas y distancias auditivas correctas.
-                            </p>
-                        </div>
-                        <div class="mt-8 flex flex-col items-center gap-4">
-                            <span class="text-[10px] font-fantasy font-bold text-elven-amber tracking-widest uppercase">Arte & Teoría</span>
-                            <button onclick="openGameModal('pxart')" class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-8 py-3 w-full">
-                                Desenrolar <i class="fa-solid fa-scroll ml-2"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="scroll-roller-bottom"></div>
-                </div>
-
                 <!-- PERGAMINO: SUPER RITMO 2 -->
                 <div class="scroll-container h-full" data-category="ritmo">
                     <div class="scroll-roller-top"></div>
@@ -518,7 +503,7 @@
         </div>
     </footer>
 
-    <!-- Modal de Juego (Maneja IFRAMES) -->
+    <!-- Modal de Juego -->
     <div id="game-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg hidden transition-opacity">
         <div class="bg-[#0A140F] border-2 border-elven-gold w-full max-w-5xl shadow-[0_0_50px_rgba(212,175,55,0.2)] flex flex-col h-[85vh] max-h-[800px] relative">
             <div class="bg-gradient-to-r from-[#0A140F] to-[#162D1D] text-white px-6 py-4 flex items-center justify-between border-b border-elven-gold/30">
@@ -536,8 +521,8 @@
                 </button>
             </div>
             <div class="flex-1 bg-black relative flex items-center justify-center overflow-hidden">
-                <!-- AQUI SE INSERTARÁ EL IFRAME DEL JUEGO DESDE JAVASCRIPT -->
                 <div id="game-active-container" class="w-full h-full flex flex-col items-center justify-center text-white">
+                    <!-- El juego se cargará aquí dinámicamente mediante srcdoc de iframe -->
                 </div>
             </div>
             <div class="bg-[#0A140F] border-t border-elven-gold/20 p-4 flex justify-center">
@@ -549,6 +534,26 @@
     </div>
 
     <script>
+        // ==============================================================================
+        // INSTRUCCIONES DE INTEGRACIÓN DE VIDEOJUEGOS:
+        // Pega el código HTML completo de cada juego dentro de las variables de abajo,
+        // reemplazando el texto de marcado de posición. No borres las comillas invertidas (`).
+        // ==============================================================================
+        
+
+        const SUPER_SOLFEO_GAME_CODE = `<!-- CODIGO AQUÍ: PEGA EL CODIGO COMPLETO DE SUPER SOLFEO AQUÍ (HTML, CSS Y JS) -->`;
+
+        const TETRIS_GAME_CODE = `<!-- CODIGO AQUÍ: PEGA EL CODIGO COMPLETO DE TETRIS RÍTMICO AQUÍ (HTML, CSS Y JS) -->`;
+
+        const JUEGO_VISUAL_GAME_CODE = `<!-- CODIGO AQUÍ: PEGA EL CODIGO COMPLETO DE JUEGO VISUAL AQUÍ (HTML, CSS Y JS) -->`;
+
+        const SUPER_RITMO_GAME_CODE = `<!-- CODIGO AQUÍ: PEGA EL CODIGO COMPLETO DE SUPER RITMO AQUÍ (HTML, CSS Y JS) -->`;
+
+        const SUPER_RITMO_2_GAME_CODE = `<!-- CODIGO AQUÍ: PEGA EL CODIGO COMPLETO DE SUPER RITMO 2 AQUÍ (HTML, CSS Y JS) -->`;
+
+        // ==============================================================================
+
+        // Lógica Día / Noche
         function initializeTheme() {
             const savedTheme = localStorage.getItem('theme');
             const themeIcon = document.getElementById('theme-icon-icon');
@@ -561,15 +566,31 @@
             }
         }
 
+        function toggleTheme() {
+            const themeIcon = document.getElementById('theme-icon-icon');
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if(themeIcon) themeIcon.className = 'fas fa-moon text-lg';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if(themeIcon) themeIcon.className = 'fas fa-sun text-lg';
+            }
+        }
+
+        // Sistema de Hojas Cayendo
         function createLeaves() {
             const container = document.getElementById('leaf-container');
+            
             const leafSVGs = [
                 `<svg viewBox="0 0 384 512" fill="currentColor"><path d="M378.3 46.33c-3-6.54-9.67-10.82-16.94-10.82C355.8 35.51 349.8 37.64 345 42l-18.7 17.06C302.3 42.06 268.1 32 232.8 32c-68.52 0-136.2 33.62-184.2 91.89C13.23 166.8 0 216 0 268.3C0 361.3 64.91 443.2 153.2 473.4c5.152 1.762 10.9 .8242 15.28-2.484c4.375-3.328 6.586-8.734 5.867-14.28L166.7 377.9L220.8 450c3.547 4.719 9.141 7.219 14.88 7.047c5.781-.1719 11.16-3.031 14.41-7.656C289.4 394 384 275.8 384 153.1c0-37.38-7.969-73.41-23.03-106.8H378.3z"/></svg>`,
                 `<svg viewBox="0 0 512 512" fill="currentColor"><path d="M272 96c-78.6 0-145.1 81.5-164.6 112.4c-2.9 4.6-9.1 5.9-14 2.8C58.5 190.2 0 240.3 0 312c0 66.3 53.7 120 120 120h128l16 48c2.1 6.3 8.2 10.4 14.9 10.1c6.7-.2 12.6-4.7 14.3-11.2l23.5-88.5c46.7-27.4 99.3-88.6 99.3-174.4C416 149.7 351.5 96 272 96z"/></svg>`,
                 `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C12,2 10.5,5 8,5C5.5,5 4,7 4,7C4,7 5.5,8 6,9C4,9 2,11 2,11C2,11 4,12 5.5,12C4,14 3,16 3,16C3,16 6,15 8,16C9,18 10,20 10,20L11,22H13L14,20C14,20 15,18 16,16C18,15 21,16 21,16C21,16 20,14 18.5,12C20,12 22,11 22,11C22,11 20,9 18,9C18.5,8 20,7 20,7C20,7 18.5,5 16,5C13.5,5 12,2 12,2Z"/></svg>`
             ];
+            
             const colors = ['#D4AF37', '#C98A28', '#8a6d1c', '#A67B27'];
-            const leafCount = 12; 
+            const leafCount = 12;
 
             for (let i = 0; i < leafCount; i++) {
                 const leaf = document.createElement('div');
@@ -582,9 +603,9 @@
                 
                 const leftPos = Math.random() * 100;
                 const fallDuration = 25 + Math.random() * 35;
-                const fallDelay = Math.random() * 40; 
+                const fallDelay = Math.random() * 40;
                 const swayDuration = 5 + Math.random() * 5;
-                const size = 18 + Math.random() * 14; 
+                const size = 18 + Math.random() * 14;
 
                 leaf.style.left = `${leftPos}vw`;
                 leaf.style.animationDuration = `${fallDuration}s`;
@@ -624,15 +645,12 @@
             });
         }
 
-        // --- SISTEMA ACTUALIZADO PARA LOS JUEGOS ---
-        // Aquí agregamos la propiedad "file" para llamar al HTML que corresponda
         const GAMES_INFO = {
-            'supersolfeo': { title: "Super Solfeo", category: "Solfeo & Lectura", icon: "fa-solid fa-book-journal-whills", file: "supersolfeo.html" },
-            'tetris': { title: "Tetris Rítmico", category: "Compases & Pulso", icon: "fa-solid fa-cubes", file: "" },
-            'Juegovisual': { title: "Juego Visual", category: "Afinación Visual", icon: "fa-solid fa-eye", file: "" },
-            'superritmo': { title: "Super Ritmo", category: "Sincronía Rítmica", icon: "fa-solid fa-heart-pulse", file: "" },
-            'pxart': { title: "Pixel Art", category: "Arte & Teoría", icon: "fa-solid fa-palette", file: "" },
-            'superitmo2': { title: "Super Ritmo 2", category: "Síncopa & Desafío", icon: "fa-solid fa-bolt", file: "" }
+            'supersolfeo': { title: "Super Solfeo", category: "Solfeo & Lectura", icon: "fa-solid fa-book-journal-whills" },
+            'tetris': { title: "Tetris Rítmico", category: "Compases & Pulso", icon: "fa-solid fa-cubes" },
+            'Juegovisual': { title: "Juego Visual", category: "Afinación Visual", icon: "fa-solid fa-eye" },
+            'superritmo': { title: "Super Ritmo", category: "Sincronía Rítmica", icon: "fa-solid fa-heart-pulse" },
+            'superitmo2': { title: "Super Ritmo 2", category: "Síncopa & Desafío", icon: "fa-solid fa-bolt" }
         };
 
         function openGameModal(gameId) {
@@ -642,32 +660,42 @@
                 document.getElementById('modal-game-title').innerText = data.title;
                 document.getElementById('modal-game-category').innerText = data.category;
                 document.getElementById('modal-game-icon').className = data.icon;
-                
                 const container = document.getElementById('game-active-container');
                 
-                // Si el juego tiene un archivo asignado, lo abrimos en un iframe
-                if (data.file) {
-                    container.innerHTML = `<iframe src="${data.file}" class="w-full h-full border-none rounded-sm"></iframe>`;
+                // Mapeo dinámico de códigos de juego
+                const GAME_CODES = {
+                    'supersolfeo': SUPER_SOLFEO_GAME_CODE,
+                    'tetris': TETRIS_GAME_CODE,
+                    'Juegovisual': JUEGO_VISUAL_GAME_CODE,
+                    'superritmo': SUPER_RITMO_GAME_CODE,
+                    'superitmo2': SUPER_RITMO_2_GAME_CODE
+                };
+
+                const gameCode = GAME_CODES[gameId];
+
+                // Comprobamos si el código fue pegado y no es el marcador de posición por defecto
+                if (gameCode && gameCode.trim() !== "" && !gameCode.includes("CODIGO AQUÍ:")) {
+                    // Cargamos el código mediante srcdoc de un iframe seguro
+                    container.innerHTML = `<iframe srcdoc="${gameCode.replace(/"/g, '&quot;')}" class="w-full h-full border-none bg-black"></iframe>`;
                 } else {
-                    // Si aún no has creado el archivo para este juego, muestra este mensaje
+                    // Mensaje elegante por defecto si la variable sigue vacía
                     container.innerHTML = `
-                        <div class="text-center">
-                            <i class="fa-solid fa-hammer text-4xl text-elven-gold mb-4 opacity-50"></i>
-                            <p class="font-serif italic text-parchment-light/60">El pergamino aún se está escribiendo...</p>
+                        <div class="text-center p-8 flex flex-col items-center justify-center">
+                            <i class="fa-solid fa-hammer text-5xl text-elven-gold mb-6 opacity-60 animate-bounce"></i>
+                            <p class="font-serif italic text-lg text-parchment-light/80 mb-2">Este pergamino aún se está escribiendo...</p>
+                            <p class="text-xs text-parchment-dark/60 max-w-md">Para jugar, abre tu archivo "index.html" en un editor y pega el código HTML del videojuego en la sección de variables al final del documento.</p>
                         </div>
                     `;
                 }
-
                 modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; // Evita scrollear el fondo
+                document.body.style.overflow = 'hidden';
             }
         }
 
         function closeGameModal() {
             document.getElementById('game-modal').classList.add('hidden');
             document.body.style.overflow = '';
-            // Importante: Vaciamos el contenedor para destruir el iframe y que la música/juego se detenga
-            document.getElementById('game-active-container').innerHTML = '';
+            document.getElementById('game-active-container').innerHTML = ''; // Limpia el iframe de inmediato para liberar memoria
         }
 
         function handleContactSubmit(event) {
