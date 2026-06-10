@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Memorice Musical - Sir Valerius</title>
+    
+    <!-- Fuentes medievales de El Claro del Bardo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --forest-deep: #070D09;
+            --forest-moss: #121F16;
+            --forest-leaf: #1A3321;
+            --forest-sage: #8BA897;
+            --parchment-light: #F9F6F0;
+            --parchment-base: #F4ECD8;
+            --elven-gold: #D4AF37;
+            --elven-amber: #C98A28;
+            --elven-bronze: #7A5435;
+            --error-red: #8B0000;
+            --success-green: #1F4E2B;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'EB Garamond', 'Georgia', serif;
+            color: var(--forest-deep);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            background-color: var(--forest-deep);
+            position: relative;
+        }
+
+        /* --- FONDO DE TAPIZ MEDIEVAL GEOMÉTRICO (SIN IMÁGENES RANDOM) --- */
+        .bg-pattern {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -2;
+            background-color: #0d1410;
+            background-image: 
+                linear-gradient(30deg, #121F16 12%, transparent 12.5%, transparent 87%, #121F16 87.5%, #121F16),
+                linear-gradient(150deg, #121F16 12%, transparent 12.5%, transparent 87%, #121F16 87.5%, #121F16),
+                linear-gradient(30deg, #121F16 12%, transparent 12.5%, transparent 87%, #121F16 87.5%, #121F16),
+                linear-gradient(150deg, #121F16 12%, transparent 12.5%, transparent 87%, #121F16 87.5%, #121F16),
+                linear-gradient(60deg, rgba(212, 175, 55, 0.03) 25%, transparent 25.5%, transparent 75%, rgba(212, 175, 55, 0.03) 75.5%, rgba(212, 175, 55, 0.03)),
+                linear-gradient(60deg, rgba(212, 175, 55, 0.03) 25%, transparent 25.5%, transparent 75%, rgba(212, 175, 55, 0.03) 75.5%, rgba(212, 175, 55, 0.03));
+            background-size: 80px 140px;
+            background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            background: linear-gradient(to bottom, rgba(7, 13, 9, 0.4) 0%, rgba(3, 5, 4, 0.8) 100%);
+        }
+
+        /* --- CONTENEDOR DE PERGAMINO --- */
+        .scroll-container {
+            position: relative;
+            padding: 24px 0;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.8));
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .scroll-paper {
+            background-color: var(--parchment-base);
+            background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
+            padding: 2.5rem 2rem;
+            margin: 0 12px;
+            border-left: 3px double var(--elven-bronze);
+            border-right: 3px double var(--elven-bronze);
+            box-shadow: inset 0 0 50px rgba(122, 84, 53, 0.25);
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .scroll-roller-top, .scroll-roller-bottom {
+            position: absolute;
+            left: 0; right: 0;
+            height: 22px;
+            background: linear-gradient(to bottom, #5c3a21, #2e1a0d 40%, #5c3a21);
+            border: 1px solid #1a0f07;
+            border-radius: 12px;
+            z-index: 3;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.1), 0 5px 12px rgba(0,0,0,0.7);
+        }
+        
+        .scroll-roller-top::before, .scroll-roller-bottom::before,
+        .scroll-roller-top::after, .scroll-roller-bottom::after {
+            content: ''; position: absolute; width: 16px; height: 30px;
+            background: radial-gradient(circle, #D4AF37, #8a6d1c);
+            border: 1px solid #4a3809; top: -5px; border-radius: 5px;
+        }
+        .scroll-roller-top::before, .scroll-roller-bottom::before { left: -4px; }
+        .scroll-roller-top::after, .scroll-roller-bottom::after { right: -4px; }
+        .scroll-roller-top { top: 12px; }
+        .scroll-roller-bottom { bottom: 12px; }
+
+        /* --- TÍTULO DE LA ACADEMIA --- */
+        h1.medieval-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 0px 4px 10px rgba(0,0,0,0.9), 0px 0px 20px rgba(212, 175, 55, 0.3);
+            text-align: center;
+            letter-spacing: 3px;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        h1.medieval-title span {
+            color: var(--elven-gold);
+        }
+
+        /* --- SECCIÓN DEL PERSONAJE (SIR VALERIUS) --- */
+        .character-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .knight-graphic {
+            width: 180px;
+            height: 240px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+            transition: transform 0.3s ease;
+        }
+
+        .knight-graphic:hover {
+            transform: scale(1.05) rotate(1deg);
+        }
+
+        /* Burbuja de diálogo estilo pergamino medieval */
+        .speech-bubble {
+            flex: 1;
+            min-width: 250px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid var(--elven-bronze);
+            padding: 20px;
+            position: relative;
+            box-shadow: 5px 5px 0px var(--elven-bronze);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .speech-bubble:hover {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 3px 3px 0px var(--elven-bronze);
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 50px;
+            border-width: 8px 15px 8px 0;
+            border-style: solid;
+            border-color: transparent var(--elven-bronze) transparent transparent;
+            display: block;
+            width: 0;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 50px;
+            border-width: 8px 15px 8px 0;
+            border-style: solid;
+            border-color: transparent rgba(255, 255, 255, 0.7) transparent transparent;
+            display: block;
+            width: 0;
+        }
+
+        .bardo-name {
+            font-family: 'Uncial Antiqua', cursive;
+            color: var(--elven-amber);
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bardo-text {
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            font-size: 1.15rem;
+            color: #3d2a1c;
+            line-height: 1.4;
+            font-weight: 600;
+        }
+
+        /* --- CONTROLES Y TIEMPO --- */
+        .game-header {
+            border: 2px dashed rgba(122, 84, 53, 0.4);
+            background: rgba(122, 84, 53, 0.05);
+            padding: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .timer-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--elven-bronze);
+            font-weight: bold;
+        }
+
+        .timer-display {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 3.2rem;
+            color: var(--forest-deep);
+            margin: 5px 0;
+            letter-spacing: 2px;
+        }
+
+        .fuse-bar {
+            width: 100%;
+            max-width: 350px;
+            height: 10px;
+            background-color: rgba(0,0,0,0.1);
+            border: 1px solid var(--elven-bronze);
+            margin: 10px auto 20px;
+            overflow: hidden;
+        }
+
+        .fuse-burn {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(to right, var(--elven-gold), var(--elven-amber));
+            transition: width 1s linear;
+        }
+
+        /* --- BOTONES --- */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-fantasy {
+            background: linear-gradient(135deg, #1A3321 0%, #0F1E13 100%);
+            border: 1px solid #D4AF37;
+            color: var(--parchment-light);
+            font-family: 'Uncial Antiqua', cursive !important;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            padding: 12px 28px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-fantasy::before {
+            content: ''; position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px;
+            border: 1px solid rgba(212, 175, 55, 0.3); clip-path: inherit; pointer-events: none;
+        }
+
+        .btn-fantasy:hover {
+            background: linear-gradient(135deg, #2A4D33 0%, #162D1D 100%);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-fantasy:active {
+            transform: translateY(1px);
+        }
+
+        #reset-button {
+            background: linear-gradient(135deg, #3a1515 0%, #200808 100%);
+            border-color: #a04040;
+        }
+
+        #reset-button:hover {
+            background: linear-gradient(135deg, #501b1b 0%, #2e0b0b 100%);
+            box-shadow: 0 0 15px rgba(160, 64, 64, 0.4);
+        }
+
+        /* --- EL TABLERO DE JUEGO (CORREGIDO Y OPTIMIZADO) --- */
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 650px;
+            margin: 2.5rem auto 1.5rem;
+            padding: 10px;
+            min-height: 280px; /* Asegura espacio si tarda en renderizar */
+        }
+
+        @media (max-width: 600px) {
+            .game-board {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            h1.medieval-title { font-size: 2rem; }
+            .knight-graphic { width: 140px; height: 190px; }
+        }
+
+        /* --- DISEÑO DE LAS CARTAS (HERÁLDICO & PERGAMINO) --- */
+        .card {
+            height: 125px;
+            cursor: pointer;
+            perspective: 1000px;
+            position: relative;
+        }
+
+        .card:active {
+            transform: scale(0.97);
+            transition: transform 0.1s;
+        }
+
+        .card-face, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0px; /* Estilo medieval rústico */
+            border: 2px solid var(--elven-bronze);
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        /* Reverso: Tapiz heráldico con escudo o nota rúnica */
+        .card-back {
+            background-color: var(--forest-moss);
+            background-image: radial-gradient(var(--forest-leaf) 20%, transparent 20%),
+                              radial-gradient(var(--forest-leaf) 20%, transparent 20%);
+            background-size: 10px 10px;
+            background-position: 0 0, 5px 5px;
+            color: var(--elven-gold);
+            transform: rotateY(0deg);
+        }
+
+        .card-back::after {
+            content: '🛡️';
+            font-size: 2.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+
+        /* Anverso: Pergamino iluminado */
+        .card-face {
+            background-color: var(--parchment-light);
+            background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
+            transform: rotateY(180deg);
+        }
+
+        .card.flipped .card-back { transform: rotateY(-180deg); }
+        .card.flipped .card-face { transform: rotateY(0deg); }
+
+        .card.matched {
+            opacity: 0.4;
+            pointer-events: none;
+            transform: scale(0.95);
+            transition: all 0.5s ease;
+        }
+
+        /* --- CONTENIDO INTERNO DE LA TARJETA --- */
+        .card-content-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 4px;
+        }
+
+        .note-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--error-red);
+            height: 20%;
+        }
+
+        .staff-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80%;
+            width: 100%;
+            position: relative;
+        }
+
+        .clef-symbol {
+            position: absolute;
+            font-family: 'Bravura', 'Arial', sans-serif;
+            font-size: 2.4rem;
+            color: #000;
+            left: 2px;
+            top: 45%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+
+        /* --- PANTALLA DE FIN DE JUEGO --- */
+        #game-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden;
+            background-color: rgba(7, 13, 9, 0.9);
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        #game-overlay.visible { opacity: 1; visibility: visible; }
+
+        .overlay-content {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            transform: scale(0.8);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: var(--parchment-base);
+            background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
+            border: 3px double var(--elven-gold);
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        #game-overlay.visible .overlay-content { transform: scale(1); }
+
+        #overlay-main-text {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--elven-amber);
+            margin-bottom: 15px;
+            font-family: 'Uncial Antiqua', cursive;
+        }
+
+        #overlay-duration {
+            font-family: 'EB Garamond', serif;
+            font-size: 1.3rem;
+            color: var(--forest-deep);
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        /* --- CRÉDITOS --- */
+        .credito-profesor {
+            margin-top: 2rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            color: var(--elven-bronze);
+            font-weight: bold;
+            border-top: 1px dashed rgba(122, 84, 53, 0.3);
+            padding-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="bg-overlay"></div>
+
+    <h1 class="medieval-title">Super Memorice <span>Musical</span></h1>
+
+    <div class="scroll-container">
+        <div class="scroll-roller-top"></div>
+        
+        <div class="scroll-paper">
+            
+            <!-- SECCIÓN DEL BARDO INTERACTIVO -->
+            <div class="character-container">
+                <div class="knight-graphic">
+                    <svg viewBox="0 0 200 250" width="100%" height="100%">
+                        <!-- Sombra base -->
+                        <ellipse cx="100" cy="235" rx="55" ry="8" fill="rgba(0,0,0,0.25)" />
+                        
+                        <!-- Capa / Manto (Detrás) -->
+                        <path d="M60 110 L100 85 L140 110 L155 230 L45 230 Z" fill="#4a1515" />
+                        <path d="M75 110 L100 85 L125 110 L135 230 L65 230 Z" fill="#601e1e" />
+                        
+                        <!-- Piernas y Escarpes -->
+                        <rect x="75" y="195" width="20" height="35" fill="#4f565c" rx="4" />
+                        <rect x="105" y="195" width="20" height="35" fill="#4f565c" rx="4" />
+                        <!-- Botas metálicas -->
+                        <path d="M70 230 H95 V235 C95 235 90 238 70 238 Z" fill="#32373a" />
+                        <path d="M105 230 H130 V235 C130 235 125 238 105 238 Z" fill="#32373a" />
+                        
+                        <!-- Túnica militar con tabardo -->
+                        <path d="M60 110 L140 110 L130 205 L70 205 Z" fill="#1b2e1e" />
+                        <path d="M90 110 H110 V205 H90 Z" fill="#D4AF37" /> <!-- Franja de oro heráldico -->
+                        <circle cx="100" cy="140" r="6" fill="#1b2e1e" /> <!-- Sello heráldico en el tabardo -->
+                        <polygon points="100,136 104,144 96,144" fill="#D4AF37" />
+                        
+                        <!-- Cinturón de cuero ancho -->
+                        <rect x="68" y="165" width="64" height="10" fill="#3a1d11" rx="2" />
+                        <rect x="94" y="162" width="12" height="16" fill="#D4AF37" rx="1" />
+                        
+                        <!-- Coraza (Pecho metálico con hombreras) -->
+                        <path d="M65 95 L135 95 L130 155 L70 155 Z" fill="url(#metalGrad)" />
+                        <!-- Hombreras segmentadas (Pauldrons) -->
+                        <path d="M50 85 C50 85 58 115 72 110 C72 110 68 90 60 85 Z" fill="#717a82" />
+                        <path d="M150 85 C150 85 142 115 128 110 C128 110 132 90 140 85 Z" fill="#717a82" />
+                        
+                        <!-- Yelmo real con visor de rejilla -->
+                        <circle cx="100" cy="65" r="28" fill="url(#metalGrad)" />
+                        <path d="M75 60 H125 V78 C125 88 115 95 100 95 C85 95 75 88 75 78 Z" fill="#32373a" />
+                        <!-- Visera móvil con ranuras heráldicas -->
+                        <rect x="82" y="65" width="36" height="6" fill="#151718" rx="1" />
+                        <line x1="88" y1="65" x2="88" y2="71" stroke="#D4AF37" stroke-width="2" />
+                        <line x1="94" y1="65" x2="94" y2="71" stroke="#D4AF37" stroke-width="2" />
+                        <line x1="100" y1="65" x2="100" y2="71" stroke="#D4AF37" stroke-width="2" />
+                        <line x1="106" y1="65" x2="106" y2="71" stroke="#D4AF37" stroke-width="2" />
+                        <line x1="112" y1="65" x2="112" y2="71" stroke="#D4AF37" stroke-width="2" />
+                        
+                        <!-- Ojos brillantes dentro del visor -->
+                        <circle cx="90" cy="68" r="1.5" fill="#5ad" />
+                        <circle cx="110" cy="68" r="1.5" fill="#5ad" />
+                        
+                        <!-- Corona real incrustada sobre el yelmo -->
+                        <polygon points="76,46 84,54 100,38 116,54 124,46 120,58 80,58" fill="#D4AF37" />
+                        <circle cx="100" cy="38" r="2" fill="#8B0000" />
+                        
+                        <!-- Espectacular pluma de caballero carmesí -->
+                        <path d="M100 38 Q115 5 150 18 Q125 25 110 42 Z" fill="#8B0000" />
+                        <path d="M100 38 Q108 15 130 22 Q115 28 106 42 Z" fill="#b02c2c" />
+                        
+                        <!-- Brazo Izquierdo con Escudo medieval heráldico -->
+                        <g transform="translate(0, 0)">
+                            <!-- Brazo -->
+                            <path d="M135 105 Q165 125 150 155" stroke="#717a82" stroke-width="14" stroke-linecap="round" fill="none" />
+                            <!-- Escudo de armas elegante -->
+                            <path d="M140 135 C175 135 190 145 190 175 C190 220 165 235 165 235 C165 235 140 220 140 175 Z" fill="#8B0000" stroke="#D4AF37" stroke-width="4" />
+                            <path d="M140 135 C152 135 165 140 165 175 V235 C165 235 140 220 140 175 Z" fill="#D4AF37" /> <!-- Mitad del escudo dorada -->
+                            <!-- Emblema de la hoja de roble del bardo -->
+                            <path d="M165 165 Q175 175 165 195 Q155 175 165 165 Z" fill="#1b2e1e" />
+                        </g>
+                        
+                        <!-- Brazo Derecho alzando una espada completa brillante -->
+                        <g transform="translate(0, 0)">
+                            <!-- Brazo -->
+                            <path d="M65 105 Q35 120 40 150" stroke="#717a82" stroke-width="14" stroke-linecap="round" fill="none" />
+                            <!-- Guantelete -->
+                            <circle cx="40" cy="150" r="9" fill="#32373a" />
+                            <!-- Empuñadura dorada -->
+                            <rect x="37" y="145" width="6" height="25" fill="#D4AF37" rx="1" transform="rotate(-15 40 150)" />
+                            <rect x="25" y="152" width="30" height="5" fill="#D4AF37" rx="1" transform="rotate(-15 40 150)" />
+                            <!-- Pomo de rubí -->
+                            <circle cx="45" cy="170" r="4" fill="#8B0000" />
+                            <!-- Hoja de espada completa pulida con brillo -->
+                            <path d="M38 150 L20 40 L26 35 L43 145 Z" fill="#d1d9e0" />
+                            <path d="M30 148 L15 41 L20 38 L35 145 Z" fill="#edf2f7" /> <!-- Reflejo de luz -->
+                            <!-- Destello de magia rúnica en la punta -->
+                            <polygon points="17,35 25,23 20,38 9,35 23,41" fill="rgba(212,175,55,0.8)" />
+                        </g>
+                        
+                        <!-- Degradados y filtros -->
+                        <defs>
+                            <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#a0aab2" />
+                                <stop offset="50%" stop-color="#717a82" />
+                                <stop offset="100%" stop-color="#4f565c" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                
+                <div class="speech-bubble" id="bardo-bubble">
+                    <div class="bardo-name"><i class="fa-solid fa-shield-halved"></i> Sir Valerius</div>
+                    <div class="bardo-text" id="bardo-quote">¡Saludos, audaz músico! Las notas sagradas del pentagrama están desordenadas en mi pergamino de guardia. Toca cualquier escudo para iniciar el desafío musical.</div>
+                </div>
+            </div>
+
+            <!-- PANEL DE CONTROL SUPERIOR -->
+            <div class="game-header">
+                <div class="timer-label">Tiempo de Guardia</div>
+                <div class="timer-display" id="game-timer">01:00</div>
+                <div class="fuse-bar"><div class="fuse-burn" id="fuse-burn"></div></div>
+                
+                <div class="action-buttons">
+                    <button id="start-button" class="btn-fantasy"><i class="fa-solid fa-play"></i> Iniciar Guardia</button>
+                    <button id="reset-button" class="btn-fantasy"><i class="fa-solid fa-rotate-left"></i> Reiniciar</button>
+                </div>
+            </div>
+            
+            <!-- EL TABLERO DE JUEGO (DONDE SE RENDERIZAN LAS CARTAS) -->
+            <div id="game-board" class="game-board"></div>
+
+            <div class="credito-profesor">
+                🛡️ Creado por el Profesor Matías Poblete &copy; 2026
+            </div>
+        </div>
+        
+        <div class="scroll-roller-bottom"></div>
+    </div>
+
+    <!-- PANTALLA DE FIN DE JUEGO -->
+    <div id="game-overlay">
+        <div class="overlay-content">
+            <div id="overlay-main-text"></div>
+            <div id="overlay-duration"></div>
+            <button onclick="closeOverlayAndReset()" class="btn-fantasy"><i class="fa-solid fa-arrows-spin"></i> Volver a Intentar</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE COMPORTAMIENTO Y SONIDO -->
+    <script>
+        // Configuración de Audio de Alta Fidelidad para Laúd
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+        }
+
+        // Simulación acústica realista de cuerda pulsada de laúd medieval (Doble coro)
+        function pluckLuteString(frequency, startTime, duration = 1.2) {
+            if (!audioCtx) return;
+            
+            // Coro doble cristalino: Cuerpo puro (Seno) y textura armónica (Triángulo)
+            const oscFundamental = audioCtx.createOscillator();
+            const oscHarmonic = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+
+            oscFundamental.type = 'sine';
+            oscFundamental.frequency.setValueAtTime(frequency, startTime);
+            
+            oscHarmonic.type = 'triangle';
+            oscHarmonic.frequency.setValueAtTime(frequency + 0.8, startTime); // Desafinación leve para brillo
+
+            // Filtro paso-bajo ajustado para máxima nitidez (no apaga el sonido tan rápido)
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(8000, startTime); // Ataque brillante
+            filter.frequency.exponentialRampToValueAtTime(1000, startTime + duration); // Retiene las frecuencias altas
+
+            // Envolvente de volumen más clara y espaciada
+            gainNode.gain.setValueAtTime(0, startTime);
+            gainNode.gain.linearRampToValueAtTime(0.35, startTime + 0.008); 
+            gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration); 
+
+            oscFundamental.connect(filter);
+            oscHarmonic.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscFundamental.start(startTime);
+            oscHarmonic.start(startTime);
+            oscFundamental.stop(startTime + duration + 0.1);
+            oscHarmonic.stop(startTime + duration + 0.1);
+        }
+
+        // Tocar un acorde mayor ascendente brillante de laúd en caso de acierto
+        function playSuccessLute() {
+            initAudio();
+            const now = audioCtx.currentTime;
+            // Acorde de Do mayor medieval (Arpegiado más espaciado y definido)
+            pluckLuteString(261.63, now, 1.8);       // Do4 (C4)
+            pluckLuteString(329.63, now + 0.04, 1.7); // Mi4 (E4)
+            pluckLuteString(392.00, now + 0.08, 1.6); // Sol4 (G4)
+            pluckLuteString(523.25, now + 0.12, 2.0); // Do5 (C5)
+        }
+
+        // Tocar un tenso acorde disminuido (tritono del diablo medieval) en caso de fallo
+        function playFailureLute() {
+            initAudio();
+            const now = audioCtx.currentTime;
+            // Tritono clásico (disonancia natural medieval más cristalina)
+            pluckLuteString(220.00, now, 1.4);       // La3 (A3)
+            pluckLuteString(311.13, now + 0.05, 1.3); // Mib4 (Eb4)
+            pluckLuteString(440.00, now + 0.10, 1.2); // La4 (A4)
+        }
+
+        // Tocar nota individual al interactuar libremente con Sir Valerius
+        function playSingleLuteNote() {
+            initAudio();
+            const notes = [196.00, 220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 392.00];
+            const randomNote = notes[Math.floor(Math.random() * notes.length)];
+            pluckLuteString(randomNote, audioCtx.currentTime, 1.4);
+        }
+
+        const staffTopY = 40; 
+        const lineHeight = 10; 
+        const halfStepY = 5; 
+        const noteRadius = 7; 
+        const stemLength = 35; 
+        const noteX = 85; 
+        const lineStrokeWidth = 1.5; 
+        const ledgerLineLength = 30;
+        const CLEF_SYMBOL = '\u{1D11E}'; 
+        const NUM_PAIRS_PER_GAME = 4;
+        const TIME_LIMIT_SECONDS = 60; 
+
+        // Definición de las posiciones en el pentagrama de cada nota
+        const Y_pos = {
+            'do_central': staffTopY + 10 * halfStepY, 
+            're': staffTopY + 9 * halfStepY, 
+            'mi': staffTopY + 8 * halfStepY, 
+            'fa': staffTopY + 7 * halfStepY, 
+            'sol': staffTopY + 6 * halfStepY, 
+            'la': staffTopY + 5 * halfStepY, 
+            'si': staffTopY + 4 * halfStepY, 
+            'do_agudo': staffTopY + 3 * halfStepY, 
+            're_agudo': staffTopY + 2 * halfStepY, 
+            'mi_agudo': staffTopY + 1 * halfStepY, 
+            'fa_agudo': staffTopY + 0 * halfStepY, 
+            'sol_agudo': staffTopY - 1 * halfStepY, 
+        };
+
+        // Generador de gráficos de notas en pentagrama mediante SVG puro
+        function createStaffSVG(noteYPosition, ledgerLines = 0) {
+            const svgWidth = 120; const svgHeight = 120; 
+            let svgContent = `<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" xmlns="http://www.w3.org/2000/svg">`;
+            
+            // Dibujar las 5 líneas del pentagrama sagrado
+            for (let i = 0; i < 5; i++) {
+                const y = staffTopY + i * lineHeight;
+                svgContent += `<line x1="10" y1="${y}" x2="${svgWidth - 10}" y2="${y}" stroke="black" stroke-width="${lineStrokeWidth}"/>`;
+            }
+            
+            const stemDirection = -1; 
+            const stemXPosition = noteX + noteRadius; 
+            const stemStartY = noteYPosition; 
+            const stemEndY = noteYPosition + (stemLength * stemDirection); 
+            
+            // Dibujar plica y cabeza de la nota musical
+            svgContent += `<line x1="${stemXPosition}" y1="${stemStartY}" x2="${stemXPosition}" y2="${stemEndY}" stroke="black" stroke-width="2"/>`;
+            svgContent += `<ellipse cx="${noteX}" cy="${noteYPosition}" rx="${noteRadius}" ry="5" fill="black"/>`;
+
+            // Líneas adicionales necesarias
+            if (ledgerLines !== 0) {
+                const ledgerWidth = ledgerLineLength / 2;
+                if (ledgerLines > 0) { 
+                    for (let i = 0; i < ledgerLines; i++) { 
+                        const currentY = staffTopY + 4 * lineHeight + (i + 1) * lineHeight; 
+                        svgContent += `<line x1="${noteX - ledgerWidth}" y1="${currentY}" x2="${noteX + ledgerWidth}" y2="${currentY}" stroke="black" stroke-width="${lineStrokeWidth}"/>`; 
+                    }
+                } else { 
+                    for (let i = 0; i < Math.abs(ledgerLines); i++) { 
+                        const currentY = staffTopY - (i + 1) * lineHeight; 
+                        svgContent += `<line x1="${noteX - ledgerWidth}" y1="${currentY}" x2="${noteX + ledgerWidth}" y2="${currentY}" stroke="black" stroke-width="${lineStrokeWidth}"/>`; 
+                    }
+                }
+            }
+            svgContent += `</svg>`;
+            return svgContent;
+        }
+
+        // Catálogo principal de notas medievales
+        const baseCardsPool = [
+            { id: 'do_central', name: 'DO', ledger: 1 }, { id: 're', name: 'RE', ledger: 0 },
+            { id: 'mi', name: 'MI', ledger: 0 }, { id: 'fa', name: 'FA', ledger: 0 },
+            { id: 'sol', name: 'SOL', ledger: 0 }, { id: 'la', name: 'LA', ledger: 0 },
+            { id: 'si', name: 'SI', ledger: 0 }, { id: 'do_agudo', name: 'DO\'', ledger: 0 },
+            { id: 're_agudo', name: 'RE\'', ledger: 0 }, { id: 'mi_agudo', name: 'MI\'', ledger: 0 },
+            { id: 'fa_agudo', name: 'FA\'', ledger: 0 }, { id: 'sol_agudo', name: 'SOL\'', ledger: -1 }, 
+        ].map(card => ({
+            ...card,
+            svg: createStaffSVG(Y_pos[card.id], card.ledger)
+        }));
+
+        let allCardsData = []; 
+        let selectedCards = [];
+        let matchedPairs = 0;
+        let lockBoard = false; // Permitimos clic directo para que sea responsivo de inmediato
+        let lastMatchFailed = false; 
+        let timerInterval = null;
+        let timeRemaining = TIME_LIMIT_SECONDS; 
+        let startTime = 0; 
+
+        // Lore dinámico de Sir Valerius
+        const loreQuotes = [
+            "¡Las notas sagradas guían a los guardianes a través de la tormenta de disonancias!",
+            "Un error musical debilita nuestras defensas. ¡Afina el oído, compañero!",
+            "¿Sabías que un acorde desafinado se consideraba 'el diablo en la música' en tiempos antiguos?",
+            "¡El pentagrama sagrado del Claro del Bardo es inquebrantable! Sigue adelante.",
+            "Cada combinación correcta es un golpe certero para restablecer la armonía real."
+        ];
+
+        const gameTimerDisplay = document.getElementById('game-timer');
+        const fuseBurnElement = document.getElementById('fuse-burn');
+        const gameBoard = document.getElementById('game-board');
+        const startButton = document.getElementById('start-button');
+        const resetButton = document.getElementById('reset-button');
+        const bardoQuote = document.getElementById('bardo-quote');
+        const bardoBubble = document.getElementById('bardo-bubble');
+        
+        const gameOverlay = document.getElementById('game-overlay');
+        const overlayMainText = document.getElementById('overlay-main-text');
+        const overlayDuration = document.getElementById('overlay-duration');
+
+        // Hacer clic en Sir Valerius reproduce una nota libre y cambia su texto
+        bardoBubble.addEventListener('click', () => {
+            playSingleLuteNote();
+            bardoQuote.textContent = loreQuotes[Math.floor(Math.random() * loreQuotes.length)];
+        });
+
+        // Iniciar el temporizador de la ronda
+        function startTimer() {
+            if (timerInterval) return; 
+            initAudio();
+            if (timeRemaining <= 0) timeRemaining = TIME_LIMIT_SECONDS; 
+            
+            gameOverlay.classList.remove('visible');
+            
+            if (matchedPairs === 0 && timeRemaining === TIME_LIMIT_SECONDS) {
+                startTime = Date.now(); 
+            }
+
+            startButton.innerHTML = '<i class="fa-solid fa-pause"></i> Pausar Guardia';
+            
+            timerInterval = setInterval(updateTimer, 1000);
+            lockBoard = false; 
+            bardoQuote.textContent = "¡La ronda ha comenzado! El tiempo apremia, busca las notas correspondientes.";
+        }
+
+        function formatDuration(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${minutes} min y ${seconds} seg`;
+        }
+        
+        // Pantalla de victoria o derrota con lore de Sir Valerius
+        function displayEndScreen(isWin, durationMs) {
+            const mainText = isWin ? '¡VICTORIA REAL!' : '¡GUARDIA AGOTADA!';
+            const durationText = isWin && durationMs > 0 ? `Completaste tu patrulla en: ${formatDuration(durationMs)}` : 'El tiempo venció a tus tropas.';
+            
+            overlayMainText.textContent = mainText;
+            overlayDuration.textContent = durationText;
+
+            gameOverlay.classList.add('visible');
+
+            if (isWin) {
+                bardoQuote.textContent = "¡Soberbio! Has sincronizado todas las notas y defendido el Claro con tu talento.";
+            } else {
+                bardoQuote.textContent = "La disonancia nos ha superado esta vez, cadete... ¡Volvamos a marchar!";
+            }
+
+            setupGame(false); 
+            startButton.innerHTML = '<i class="fa-solid fa-play"></i> Iniciar Guardia';
+        }
+
+        function stopTimer(isWin = false, reason = 'manual') {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            lockBoard = true; 
+            
+            let duration = 0;
+            if (startTime > 0 && (isWin || reason === 'timeout')) {
+                duration = Date.now() - startTime;
+            }
+
+            const delay = (isWin || reason === 'timeout') ? 200 : 0; 
+
+            setTimeout(() => {
+                if (isWin) {
+                    displayEndScreen(true, duration);
+                } else if (reason === 'timeout') {
+                    displayEndScreen(false, duration);
+                } else {
+                     startButton.innerHTML = '<i class="fa-solid fa-play"></i> Reanudar';
+                     bardoQuote.textContent = "La guardia está en pausa. Las notas permanecen suspendidas en el aire.";
+                }
+                startTime = 0; 
+            }, delay); 
+        }
+        
+        function updateTimer() {
+            timeRemaining--;
+
+            if (timeRemaining < 0) {
+                stopTimer(false, 'timeout'); 
+                gameTimerDisplay.textContent = '00:00';
+                return;
+            }
+
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            gameTimerDisplay.textContent = 
+                `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            
+            const burnPercentage = (timeRemaining / TIME_LIMIT_SECONDS) * 100;
+            fuseBurnElement.style.width = `${burnPercentage}%`; 
+
+            if (timeRemaining <= 10 && timeRemaining > 0) {
+                gameTimerDisplay.style.color = 'var(--error-red)';
+            } else if (timeRemaining > 10) {
+                gameTimerDisplay.style.color = 'var(--forest-deep)';
+            }
+        }
+
+        // Renderizado limpio de las tarjetas de juego (sin duplicación de wrappers)
+        function renderBoard(cards) {
+            gameBoard.innerHTML = '';
+            cards.forEach((cardData, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.id = cardData.id; 
+                cardElement.dataset.index = index; 
+                
+                const frontFace = document.createElement('div'); 
+                frontFace.classList.add('card-face');
+                
+                const contentWrapper = document.createElement('div');
+                contentWrapper.classList.add('card-content-wrapper');
+
+                const noteTitle = document.createElement('div'); 
+                noteTitle.classList.add('note-title'); 
+                noteTitle.textContent = cardData.name; 
+                contentWrapper.appendChild(noteTitle);
+                
+                const staffContainer = document.createElement('div'); 
+                staffContainer.classList.add('staff-container'); 
+                staffContainer.innerHTML = cardData.svg;
+                
+                const clefSymbol = document.createElement('span'); 
+                clefSymbol.classList.add('clef-symbol'); 
+                clefSymbol.textContent = CLEF_SYMBOL; 
+                staffContainer.appendChild(clefSymbol);
+                
+                contentWrapper.appendChild(staffContainer);
+                frontFace.appendChild(contentWrapper);
+
+                const backFace = document.createElement('div'); 
+                backFace.classList.add('card-back'); 
+                
+                cardElement.appendChild(frontFace);
+                cardElement.appendChild(backFace);
+                
+                cardElement.addEventListener('click', () => flipCard(cardElement, cardData));
+                gameBoard.appendChild(cardElement);
+            });
+        }
+
+        // Preparar el tablero, barajar las cartas mágicas y reiniciar parámetros
+        function setupGame(fullReset = true) {
+            selectedCards = [];
+            matchedPairs = 0;
+            lockBoard = false; // Permitimos interactuar desde el segundo cero
+            lastMatchFailed = false; 
+
+            if (fullReset) {
+                timeRemaining = TIME_LIMIT_SECONDS;
+                gameTimerDisplay.style.color = 'var(--forest-deep)';
+                gameTimerDisplay.textContent = '01:00';
+                fuseBurnElement.style.width = '100%';
+                gameOverlay.classList.remove('visible');
+            }
+
+            const shuffledPool = [...baseCardsPool].sort(() => 0.5 - Math.random());
+            const randomUniqueCards = shuffledPool.slice(0, NUM_PAIRS_PER_GAME);
+            const doubled = randomUniqueCards.flatMap(card => [
+                { id: card.id, name: card.name, svg: card.svg },
+                { id: card.id, name: card.name, svg: card.svg }
+            ]).sort(() => 0.5 - Math.random());
+            
+            allCardsData = doubled;
+            renderBoard(allCardsData);
+        }
+
+        function punitiveResetMemory() {
+            const allCards = document.querySelectorAll('.card');
+            allCards.forEach(card => {
+                if (!card.classList.contains('matched')) {
+                    card.classList.remove('flipped'); 
+                    card.style.pointerEvents = 'auto';
+                }
+            });
+            lockBoard = true; 
+            setTimeout(() => { lockBoard = false; }, 300); 
+        }
+
+        function resetAllMatches() {
+            const allMatchedCards = document.querySelectorAll('.card.matched');
+            allMatchedCards.forEach(card => {
+                card.classList.remove('flipped', 'matched');
+                card.style.pointerEvents = 'auto'; 
+            });
+            matchedPairs = 0; 
+        }
+
+        function flipCard(cardElement, cardData) {
+            if (lockBoard || cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) return; 
+
+            // Si el temporizador no está corriendo, lo iniciamos automáticamente para evitar frustración
+            if (!timerInterval) {
+                startTimer();
+            }
+
+            if (lastMatchFailed && selectedCards.length === 0) {
+                punitiveResetMemory(); 
+                lastMatchFailed = false;  
+                
+                setTimeout(() => {
+                    if (timerInterval && !lockBoard) { 
+                         cardElement.classList.add('flipped');
+                         selectedCards.push({ element: cardElement, data: cardData });
+                    }
+                }, 100); 
+                return; 
+            }
+
+            cardElement.classList.add('flipped');
+            selectedCards.push({ element: cardElement, data: cardData });
+
+            if (selectedCards.length === 2) {
+                lockBoard = true; 
+                checkForMatch(); 
+            }
+        }
+        
+        function checkForMatch() {
+            const [card1, card2] = selectedCards;
+            const isMatch = card1.data.id === card2.data.id;
+
+            if (isMatch) {
+                card1.element.classList.add('matched'); 
+                card2.element.classList.add('matched');
+                
+                matchedPairs++;
+                lastMatchFailed = false;
+                
+                selectedCards = []; 
+                playSuccessLute();
+                
+                bardoQuote.textContent = `¡Excelente! Has emparejado la nota ${card1.data.name}. La afinación del Claro progresa.`;
+                
+                if (matchedPairs === NUM_PAIRS_PER_GAME) { 
+                    lockBoard = true; 
+                    stopTimer(true); 
+                } else {
+                    lockBoard = false;
+                }
+            } else {
+                playFailureLute();
+                bardoQuote.textContent = "¡Ah, qué rudo sonido! Esas notas no pertenecen al mismo coro armónico.";
+                
+                setTimeout(() => {
+                    unflipCards(card1.element, card2.element);
+                    resetAllMatches(); 
+                    
+                    lastMatchFailed = true; 
+                    selectedCards = []; 
+                    lockBoard = false; 
+                }, 1000); 
+            }
+        }
+
+        function unflipCards(card1, card2) {
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+        }
+
+        function closeOverlayAndReset() {
+            gameOverlay.classList.remove('visible');
+            setupGame(true);
+        }
+        
+        startButton.addEventListener('click', () => {
+            if (timerInterval) {
+                stopTimer(false, 'manual'); 
+            } else {
+                startTimer(); 
+            }
+        });
+        
+        resetButton.addEventListener('click', () => setupGame(true)); 
+        
+        // Carga inicial
+        window.onload = function() {
+            setupGame(true);
+        };
+    </script>
+</body>
+</html>

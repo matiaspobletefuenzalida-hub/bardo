@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Solfeo - ¡Aventura Musical en el Claro!</title>
+    
+    <!-- Google Fonts & FontAwesome (Copiados de El Claro del Bardo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Motor VexFlow -->
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+    
+    <style>
+        :root {
+            --forest-deep: #070D09;
+            --forest-moss: #121F16;
+            --forest-leaf: #1A3321;
+            --forest-sage: #8BA897;
+            --parchment-light: #F9F6F0;
+            --parchment-base: #F4ECD8;
+            --elven-gold: #D4AF37;
+            --elven-amber: #C98A28;
+            --elven-bronze: #7A5435;
+            --border-radius: 0px; /* Estilo medieval recto */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'EB Garamond', 'Georgia', serif;
+            color: var(--forest-deep);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+            overflow-x: hidden;
+            background-color: var(--forest-deep);
+        }
+
+        /* --- FONDOS MÍSTICOS (EL CLARO DEL BARDO) --- */
+        .bg-layer {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -2;
+            background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?ixlib=rb-4.0.3&auto=format&fit=crop&w=2500&q=80');
+            background-size: cover;
+            background-position: center 30%;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            background: linear-gradient(to bottom, rgba(30, 20, 10, 0.45) 0%, rgba(10, 5, 0, 0.8) 100%);
+            backdrop-filter: saturate(1.2);
+        }
+
+        .komorebi {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.15) 0%, transparent 60%);
+            pointer-events: none; z-index: -1; mix-blend-mode: screen;
+        }
+
+        /* --- PERGAMINO CONTENEDOR CENTRAL --- */
+        .scroll-container {
+            position: relative;
+            padding: 24px 0;
+            filter: drop-shadow(0 15px 20px rgba(0,0,0,0.6));
+            width: 100%;
+            max-width: 950px;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .scroll-paper {
+            background-color: var(--parchment-base);
+            background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
+            padding: 3.5rem 2.5rem;
+            margin: 0 10px;
+            border-left: 2px solid rgba(122, 84, 53, 0.5);
+            border-right: 2px solid rgba(122, 84, 53, 0.5);
+            box-shadow: inset 0 0 40px rgba(122, 84, 53, 0.2);
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .scroll-roller-top, .scroll-roller-bottom {
+            position: absolute;
+            left: 0; right: 0;
+            height: 20px;
+            background: linear-gradient(to bottom, #5c3a21, #2e1a0d 40%, #5c3a21);
+            border: 1px solid #1a0f07;
+            border-radius: 10px;
+            z-index: 3;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.1), 0 4px 10px rgba(0,0,0,0.6);
+        }
+        
+        .scroll-roller-top::before, .scroll-roller-bottom::before,
+        .scroll-roller-top::after, .scroll-roller-bottom::after {
+            content: ''; position: absolute; width: 14px; height: 26px;
+            background: radial-gradient(circle, #D4AF37, #8a6d1c);
+            border: 1px solid #4a3809; top: -4px; border-radius: 4px;
+        }
+        .scroll-roller-top::before, .scroll-roller-bottom::before { left: -4px; }
+        .scroll-roller-top::after, .scroll-roller-bottom::after { right: -4px; }
+        .scroll-roller-top { top: 12px; }
+        .scroll-roller-bottom { bottom: 12px; }
+
+        /* --- TÍTULOS --- */
+        h1.bardo-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 4px;
+            line-height: 1.1;
+            color: #fff;
+            text-shadow: 0px 4px 10px rgba(0,0,0,0.9), 0px 0px 20px rgba(212, 175, 55, 0.4);
+        }
+        .title-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(0, 0, 0, 0.6);
+            color: var(--elven-gold);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        p.subtitle {
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            font-size: 1.5rem;
+            color: #4a3b2c;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        /* --- FORMULARIOS E INPUTS --- */
+        #registro-estudiante { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        
+        .input-bardo {
+            padding: 15px 25px;
+            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid var(--elven-bronze);
+            font-family: 'EB Garamond', serif;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .input-bardo:focus {
+            border-color: var(--elven-gold);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+        
+        .select-bardo {
+            padding: 15px;
+            font-size: 1.1rem;
+            border: 1px solid var(--elven-bronze);
+            font-family: 'Cinzel', serif;
+            cursor: pointer;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            width: 80%;
+            max-width: 400px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .select-bardo:focus { border-color: var(--elven-gold); background: rgba(255, 255, 255, 0.9); }
+
+        /* --- BOTONES ESTILO ESTANDARTE (FANTASÍA) --- */
+        .btn-fantasy {
+            background: linear-gradient(135deg, #1A3321 0%, #0F1E13 100%);
+            border: 1px solid #D4AF37;
+            color: var(--parchment-light);
+            font-family: 'Uncial Antiqua', cursive !important;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            padding: 14px 32px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-fantasy::before {
+            content: ''; position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px;
+            border: 1px solid rgba(212, 175, 55, 0.3); clip-path: inherit; pointer-events: none;
+        }
+        .btn-fantasy:hover {
+            background: linear-gradient(135deg, #2A4D33 0%, #162D1D 100%);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+            transform: translateY(-2px);
+        }
+        .btn-fantasy:active { transform: translateY(1px); }
+
+        /* Selector de dificultad */
+        .difficulty-selector { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 2rem; }
+        
+        .diff-btn {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 1rem;
+            color: var(--parchment-light);
+            background: linear-gradient(135deg, #2c1e15 0%, #1a100a 100%);
+            border: 1px solid var(--elven-bronze);
+            padding: 10px 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+        }
+        .diff-btn:hover {
+            border-color: var(--elven-gold);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+        }
+        .diff-btn.active {
+            background: linear-gradient(135deg, #1A3321 0%, #0F1E13 100%);
+            border-color: var(--elven-gold);
+            color: var(--elven-gold);
+            box-shadow: inset 0 0 8px rgba(212, 175, 55, 0.4), 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+
+        #game-content { display: none; }
+        #game-area { display: none; width: 100%; flex-direction: column; align-items: center; animation: fadeInManuscript 1s ease-out; }
+
+        @keyframes fadeInManuscript { 0% { opacity: 0; transform: translateY(15px); } 100% { opacity: 1; transform: translateY(0); } }
+
+        /* --- CONTENEDOR DEL PENTAGRAMA (MANUSCRITO SAGRADO) --- */
+        #score-container {
+            width: 100%;
+            background: var(--parchment-light);
+            padding: 30px 10px;
+            margin: 2rem 0;
+            border: 4px double var(--elven-bronze);
+            box-shadow: inset 0 0 25px rgba(122, 84, 53, 0.15), 0 10px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+        }
+        
+        .action-buttons { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; min-height: 60px; }
+        
+        /* Desaparición mágica de la pista */
+        .btn-fantasy.poof { animation: vanishMagic 0.6s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards; pointer-events: none; }
+        @keyframes vanishMagic { 
+            0% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); } 
+            50% { filter: brightness(2) drop-shadow(0 0 15px var(--elven-gold)); }
+            100% { transform: scale(0) rotate(90deg); opacity: 0; } 
+        }
+
+        .credito-profesor {
+            margin-top: 2.5rem;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: var(--elven-bronze);
+            font-weight: bold;
+            border-top: 1px dashed rgba(122, 84, 53, 0.3);
+            padding-top: 1.5rem;
+        }
+
+        /* --- ALTAR ARCANO (MODAL DE MINIJUEGOS) --- */
+        #pausa-activa-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(7, 13, 9, 0.9); display: none; justify-content: center; align-items: center;
+            z-index: 1000; padding: 10px; backdrop-filter: blur(6px);
+        }
+        .arcade-cabinet {
+            background: var(--forest-deep);
+            padding: 24px;
+            border: 4px solid var(--elven-gold);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3), inset 0 0 25px rgba(0,0,0,0.9);
+            max-width: 400px; width: 100%; display: flex; flex-direction: column; align-items: center;
+            animation: fadeInManuscript 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .arcade-title {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 1.2rem;
+            color: var(--elven-gold);
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        .arcade-screen {
+            background: #000; width: 100%; max-width: 300px; height: 300px;
+            border: 4px solid var(--elven-bronze);
+            position: relative; overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            image-rendering: pixelated;
+        }
+        #gameCanvas { display: block; width: 100%; height: 100%; }
+        
+        .arcade-controls {
+            display: flex; justify-content: space-between; width: 100%; max-width: 300px; margin-top: 20px;
+        }
+        .d-pad { display: grid; grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); gap: 5px; }
+        .d-btn {
+            background: var(--forest-leaf);
+            border: 2px solid var(--elven-gold);
+            border-radius: 4px;
+            font-size: 1rem; cursor: pointer; color: var(--elven-gold);
+            display: flex; justify-content: center; align-items: center;
+            transition: all 0.1s;
+        }
+        .d-btn:active { background: var(--elven-gold); color: var(--forest-deep); }
+        .d-up { grid-column: 2; grid-row: 1; } .d-left { grid-column: 1; grid-row: 2; } .d-right { grid-column: 3; grid-row: 2; } .d-down { grid-column: 2; grid-row: 3; }
+        
+        .action-pad { display: flex; align-items: center; justify-content: center; }
+        .a-btn {
+            background: var(--elven-gold);
+            border: 2px solid var(--forest-deep);
+            width: 75px; height: 45px;
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 0.75rem; font-weight: bold; cursor: pointer;
+            color: var(--forest-deep); display: flex; align-items: center; justify-content: center;
+            clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+            transition: all 0.1s;
+        }
+        .a-btn:active { background: var(--parchment-light); }
+
+        #btn-cerrar-pausa { margin-top: 20px; width: 100%; }
+
+        /* --- HOJAS CAYENDO (AMBIENTACIÓN) --- */
+        .leaf-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; overflow: hidden; }
+        .leaf { position: absolute; top: -10%; animation: fall linear infinite; opacity: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        .leaf-inner { display: inline-block; animation: sway ease-in-out infinite; width: 100%; height: 100%; }
+        @keyframes fall { 0% { transform: translate3d(0, -10vh, 0); opacity: 0; } 10% { opacity: 0.3; } 90% { opacity: 0.3; } 100% { transform: translate3d(0, 110vh, 0); opacity: 0; } }
+        @keyframes sway { 0%, 100% { transform: translate3d(-20px, 0, 0) rotate(-15deg); } 50% { transform: translate3d(20px, 0, 0) rotate(15deg); } }
+    </style>
+</head>
+<body>
+
+<!-- CAPAS DE AMBIENTACIÓN ÉLFICA -->
+<div class="bg-layer"></div>
+<div class="bg-overlay"></div>
+<div class="komorebi"></div>
+<div id="leaf-container" class="leaf-container"></div>
+
+<h1 class="bardo-title">SUPER SOLFEO</h1>
+<div class="title-badge">
+    <i class="fa-solid fa-sparkles animate-spin" style="color: var(--elven-amber)"></i> LUDOLOGÍA Y PEDAGOGÍA MUSICAL
+</div>
+
+<div class="scroll-container">
+    <div class="scroll-roller-top"></div>
+    
+    <div class="scroll-paper">
+        
+        <!-- REGISTRO DEL ESTUDIANTE -->
+        <div id="registro-estudiante">
+            <p class="subtitle">Salud, viajero. Elige tu sendero y revela tu nombre antes de partir:</p>
+            <form id="form-inicio" style="width: 100%;">
+                <select id="curso-estudiante" class="select-bardo" required>
+                    <option value="" disabled selected>Selecciona tu curso...</option>
+                    <option value="4to Básico">4° Básico (Normal)</option>
+                    <option value="5to Básico">5° Básico (Con Ligaduras y Repetición)</option>
+                </select>
+                <br>
+                <input type="text" id="nombre-niño" name="Nombre" class="input-bardo" placeholder="Escribe tu nombre aquí..." required>
+                <br><br>
+                <button type="submit" id="btn-comenzar" class="btn-fantasy">
+                    Comenzar Misión <i class="fa-solid fa-compass"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- CONTENIDO DEL JUEGO -->
+        <div id="game-content">
+            <p class="subtitle" id="level-description">¡Elige un nivel para tu misión musical!</p>
+
+            <div class="difficulty-selector">
+                <button class="diff-btn" onclick="startGame(1)">ᚠ Nivel 1</button>
+                <button class="diff-btn" onclick="startGame(2)">ᚨ Nivel 2</button>
+                <button class="diff-btn" onclick="startGame(3)">ᛟ Nivel 3</button>
+                <button class="diff-btn" onclick="startGame(4)">ᚲ Nivel 4</button>
+            </div>
+
+            <div id="game-area">
+                <div id="score-container"></div>
+                <div class="action-buttons">
+                    <button class="btn-fantasy" onclick="renderNewExercise()">
+                        <i class="fa-solid fa-scroll"></i> Nueva Canción
+                    </button>
+                    <button class="btn-fantasy" id="wildcard-btn" onclick="applyWildcard()">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Pista Mágica
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="credito-profesor">
+            Forjado por el Profesor Matías Poblete &copy; 2026
+        </div>
+    </div>
+    
+    <div class="scroll-roller-bottom"></div>
+</div>
+
+<!-- ALTAR ARCANO DE MINIJUEGOS -->
+<div id="pausa-activa-modal">
+    <div class="arcade-cabinet">
+        <h2 class="arcade-title" id="arcade-title">CARGANDO ALTAR...</h2>
+        <div class="arcade-screen">
+            <canvas id="gameCanvas" width="300" height="300"></canvas>
+        </div>
+        <div class="arcade-controls" id="arcade-controls">
+            <div class="d-pad">
+                <button class="d-btn d-up" onmousedown="pressKey('ArrowUp')" onmouseup="releaseKey('ArrowUp')" ontouchstart="pressKey('ArrowUp')" ontouchend="releaseKey('ArrowUp')">▲</button>
+                <button class="d-btn d-left" onmousedown="pressKey('ArrowLeft')" onmouseup="releaseKey('ArrowLeft')" ontouchstart="pressKey('ArrowLeft')" ontouchend="releaseKey('ArrowLeft')">◀</button>
+                <button class="d-btn d-right" onmousedown="pressKey('ArrowRight')" onmouseup="releaseKey('ArrowRight')" ontouchstart="pressKey('ArrowRight')" ontouchend="releaseKey('ArrowRight')">▶</button>
+                <button class="d-btn d-down" onmousedown="pressKey('ArrowDown')" onmouseup="releaseKey('ArrowDown')" ontouchstart="pressKey('ArrowDown')" ontouchend="releaseKey('ArrowDown')">▼</button>
+            </div>
+            <div class="action-pad">
+                <button class="a-btn" onmousedown="pressKey(' ')" onmouseup="releaseKey(' ')" ontouchstart="pressKey(' ')" ontouchend="releaseKey(' ')">SALTO</button>
+            </div>
+        </div>
+        <button id="btn-cerrar-pausa" class="btn-fantasy" onclick="cerrarArcade()">Regresar al Claro</button>
+    </div>
+</div>
+
+<script>
+    // ==============================================================================
+    // LÓGICA COPIADA E INTACTA DE SUPER SOLFEO (Mecánicas, Vexflow y Motores Arcade)
+    // ==============================================================================
+
+    // --- SISTEMA DE HOJAS CAYENDO (ESTÉTICA) ---
+    function createAmbientLeaves() {
+        const container = document.getElementById('leaf-container');
+        const leafSVGs = [
+            `<svg viewBox="0 0 384 512" fill="currentColor"><path d="M378.3 46.33c-3-6.54-9.67-10.82-16.94-10.82C355.8 35.51 349.8 37.64 345 42l-18.7 17.06C302.3 42.06 268.1 32 232.8 32c-68.52 0-136.2 33.62-184.2 91.89C13.23 166.8 0 216 0 268.3C0 361.3 64.91 443.2 153.2 473.4c5.152 1.762 10.9 .8242 15.28-2.484c4.375-3.328 6.586-8.734 5.867-14.28L166.7 377.9L220.8 450c3.547 4.719 9.141 7.219 14.88 7.047c5.781-.1719 11.16-3.031 14.41-7.656C289.4 394 384 275.8 384 153.1c0-37.38-7.969-73.41-23.03-106.8H378.3z"/></svg>`,
+            `<svg viewBox="0 0 512 512" fill="currentColor"><path d="M272 96c-78.6 0-145.1 81.5-164.6 112.4c-2.9 4.6-9.1 5.9-14 2.8C58.5 190.2 0 240.3 0 312c0 66.3 53.7 120 120 120h128l16 48c2.1 6.3 8.2 10.4 14.9 10.1c6.7-.2 12.6-4.7 14.3-11.2l23.5-88.5c46.7-27.4 99.3-88.6 99.3-174.4C416 149.7 351.5 96 272 96z"/></svg>`
+        ];
+        const colors = ['#D4AF37', '#C98A28', '#8a6d1c', '#7A5435'];
+        for (let i = 0; i < 10; i++) {
+            const leaf = document.createElement('div');
+            leaf.className = 'leaf';
+            const leafInner = document.createElement('div');
+            leafInner.className = 'leaf-inner';
+            leafInner.innerHTML = leafSVGs[Math.floor(Math.random() * leafSVGs.length)];
+            leafInner.style.color = colors[Math.floor(Math.random() * colors.length)];
+            
+            leaf.style.left = `${Math.random() * 100}vw`;
+            leaf.style.animationDuration = `${20 + Math.random() * 20}s`;
+            leaf.style.animationDelay = `${Math.random() * 20}s`;
+            const size = 15 + Math.random() * 12;
+            leaf.style.width = `${size}px`; leaf.style.height = `${size}px`;
+            leafInner.style.animationDuration = `${4 + Math.random() * 4}s`;
+            
+            leaf.appendChild(leafInner);
+            container.appendChild(leaf);
+        }
+    }
+    window.addEventListener('load', createAmbientLeaves);
+
+    // --- VARIABLES GLOBALES ---
+    let nombreEstudianteActual = "";
+    let cursoEstudianteActual = "";
+
+    // --- LÓGICA DE FORMSUBMIT CENTRALIZADA ---
+    function enviarReporteFormSubmit(accion, asuntoPersonalizado) {
+        if (!nombreEstudianteActual) return; 
+
+        fetch("https://formsubmit.co/ajax/matiaspobletefuenzalida@gmail.com", {
+            method: "POST", 
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Accept': 'application/json' 
+            },
+            body: JSON.stringify({ 
+                Estudiante: nombreEstudianteActual, 
+                Curso: cursoEstudianteActual,
+                Accion: accion,
+                Nivel_Dificultad: currentDifficulty,
+                Canciones_Generadas: cancionesGeneradas,
+                _subject: asuntoPersonalizado 
+            })
+        })
+        .then(response => console.log("Reporte enviado a FormSubmit: " + accion))
+        .catch(err => console.error("Error al enviar a FormSubmit:", err));
+    }
+
+    const formInicio = document.getElementById('form-inicio');
+    const registroDiv = document.getElementById('registro-estudiante');
+    const juegoDiv = document.getElementById('game-content');
+
+    formInicio.addEventListener('submit', function(e) {
+        e.preventDefault();
+        nombreEstudianteActual = document.getElementById('nombre-niño').value;
+        cursoEstudianteActual = document.getElementById('curso-estudiante').value;
+        
+        const btn = document.getElementById('btn-comenzar');
+        btn.innerText = "Abriendo portal..."; btn.disabled = true;
+
+        enviarReporteFormSubmit("Inició el juego de Solfeo", "🚀 Nuevo Estudiante Ingresó: " + nombreEstudianteActual + " (" + cursoEstudianteActual + ")");
+
+        setTimeout(() => {
+            registroDiv.style.display = 'none'; 
+            juegoDiv.style.display = 'block';
+        }, 500);
+    });
+
+    // --- MOTOR DE MINIJUEGOS ARCADE 8-BIT ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false; 
+    let animationId;
+    let currentGame = null;
+    let keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, ' ': false };
+    
+    window.addEventListener('keydown', e => { if (keys.hasOwnProperty(e.key)) keys[e.key] = true; });
+    window.addEventListener('keyup', e => { if (keys.hasOwnProperty(e.key)) keys[e.key] = false; });
+    function pressKey(k) { keys[k] = true; event.preventDefault(); }
+    function releaseKey(k) { keys[k] = false; event.preventDefault(); }
+
+    function drawPixelNote(x, y) {
+        ctx.fillStyle = "#D4AF37"; // Adaptado a color dorado místico en pixeles
+        ctx.fillRect(x+8, y+2, 4, 16); 
+        ctx.fillRect(x+2, y+12, 10, 8); 
+        ctx.fillRect(x, y+14, 2, 4); 
+        ctx.fillRect(x+12, y+14, 2, 4); 
+    }
+
+    const games = {
+        snake: {
+            title: "🐍 Escuerzo Musical",
+            init: function() {
+                this.grid = 15; this.snake = [{x: 10, y: 10}]; this.dx = 0; this.dy = 0;
+                this.food = {x: 5, y: 5}; this.score = 0; this.target = 5; this.frameCount = 0;
+            },
+            update: function() {
+                if (keys.ArrowLeft && this.dx === 0) { this.dx = -1; this.dy = 0; }
+                if (keys.ArrowRight && this.dx === 0) { this.dx = 1; this.dy = 0; }
+                if (keys.ArrowUp && this.dy === 0) { this.dx = 0; this.dy = -1; }
+                if (keys.ArrowDown && this.dy === 0) { this.dx = 0; this.dy = 1; }
+
+                if (++this.frameCount < 8) return; 
+                this.frameCount = 0;
+
+                const head = { x: this.snake[0].x + this.dx, y: this.snake[0].y + this.dy };
+                if(head.x < 0) head.x = 19; if(head.x >= 20) head.x = 0;
+                if(head.y < 0) head.y = 19; if(head.y >= 20) head.y = 0;
+                
+                this.snake.unshift(head);
+                if (head.x === this.food.x && head.y === this.food.y) {
+                    this.score++; this.food = { x: Math.floor(Math.random()*20), y: Math.floor(Math.random()*20) };
+                    if (this.score >= this.target) gameWon();
+                } else { this.snake.pop(); }
+            },
+            draw: function() {
+                ctx.fillStyle = "#121F16"; ctx.fillRect(0,0, 300, 300);
+                ctx.fillStyle = "#8BA897"; 
+                this.snake.forEach((p, i) => {
+                    ctx.fillRect(p.x * this.grid, p.y * this.grid, this.grid-1, this.grid-1);
+                    if (i === 0) { ctx.fillStyle = "#000"; ctx.fillRect(p.x * this.grid + 4, p.y * this.grid + 4, 3, 3); ctx.fillStyle = "#8BA897"; }
+                });
+                drawPixelNote(this.food.x * this.grid - 2, this.food.y * this.grid);
+                ctx.fillStyle = "#F4ECD8"; ctx.font = "10px 'Press Start 2P'"; ctx.textAlign = "left";
+                ctx.fillText(`Notas:${this.score}/${this.target}`, 10, 20);
+            }
+        },
+        catcher: {
+            title: "🦅 Halcón Caza-Notas",
+            init: function() { this.p = { x: 130, y: 260, w: 40, h: 40 }; this.notes = []; this.score = 0; this.target = 10; this.timer = 0; },
+            update: function() {
+                if (keys.ArrowLeft) this.p.x -= 5; if (keys.ArrowRight) this.p.x += 5;
+                if (this.p.x < 0) this.p.x = 0; if (this.p.x > 260) this.p.x = 260;
+
+                this.timer++;
+                if (this.timer % 30 === 0) this.notes.push({ x: Math.random() * 260, y: -20, speed: 2 + Math.random() * 2 });
+
+                for (let i = this.notes.length - 1; i >= 0; i--) {
+                    let n = this.notes[i]; n.y += n.speed;
+                    if (n.y > 240 && n.x > this.p.x - 20 && n.x < this.p.x + this.p.w) {
+                        this.score++; this.notes.splice(i, 1); if (this.score >= this.target) gameWon();
+                    } else if (n.y > 300) { this.notes.splice(i, 1); }
+                }
+            },
+            draw: function() {
+                ctx.fillStyle = "#121F16"; ctx.fillRect(0,0, 300, 300);
+                ctx.fillStyle = "#7A5435"; ctx.fillRect(this.p.x+10, this.p.y+10, 20, 20); 
+                ctx.fillStyle = "#D4AF37"; ctx.fillRect(this.p.x, this.p.y+20, 40, 10); 
+                ctx.fillStyle = "#000"; ctx.fillRect(this.p.x+15, this.p.y+15, 10, 10); 
+
+                this.notes.forEach(n => drawPixelNote(n.x, n.y));
+                ctx.fillStyle = "#F4ECD8"; ctx.font = "10px 'Press Start 2P'"; ctx.textAlign = "left";
+                ctx.fillText(`Notas:${this.score}/${this.target}`, 10, 20);
+            }
+        },
+        jumper: {
+            title: "🧝 Salto Élfico",
+            init: function() { this.p = { x: 30, y: 230, vy: 0, ground: 230, jump: -12 }; this.obs = []; this.score = 0; this.target = 5; this.timer = 0; this.gravity = 0.6; },
+            update: function() {
+                if ((keys.ArrowUp || keys[' ']) && this.p.y === this.p.ground) this.p.vy = this.p.jump;
+                this.p.vy += this.gravity; this.p.y += this.p.vy;
+                if (this.p.y > this.p.ground) { this.p.y = this.p.ground; this.p.vy = 0; }
+
+                this.timer++;
+                if (this.timer > 80 && Math.random() < 0.02) { this.obs.push({ x: 300, y: 235, passed: false }); this.timer = 0; }
+
+                for (let i = this.obs.length - 1; i >= 0; i--) {
+                    let o = this.obs[i]; o.x -= 4;
+                    if (Math.abs(this.p.x - o.x) < 20 && Math.abs(this.p.y - o.y) < 20) { this.score = 0; this.obs = []; break; }
+                    if (!o.passed && o.x < this.p.x) { o.passed = true; this.score++; if (this.score >= this.target) gameWon(); }
+                    if (o.x < -20) this.obs.splice(i, 1);
+                }
+            },
+            draw: function() {
+                ctx.fillStyle = "#121F16"; ctx.fillRect(0,0, 300, 300);
+                ctx.fillStyle = "#2e1a0d"; ctx.fillRect(0, 260, 300, 40);
+                ctx.fillStyle = "#1A3321"; ctx.fillRect(0, 260, 300, 10);
+                
+                ctx.fillStyle = "#D4AF37"; ctx.fillRect(this.p.x+5, this.p.y+5, 20, 20); 
+                ctx.fillStyle = "#FFF"; ctx.fillRect(this.p.x+10, this.p.y+10, 10, 10); 
+                ctx.fillStyle = "#F4ECD8"; ctx.fillRect(this.p.x+10, this.p.y+25, 10, 10); 
+
+                this.obs.forEach(o => {
+                    ctx.fillStyle = "#7A5435"; ctx.fillRect(o.x+5, o.y+5, 20, 20); 
+                    ctx.fillStyle = "#FFF"; ctx.fillRect(o.x+10, o.y+10, 3, 10); 
+                });
+                
+                ctx.fillStyle = "#F4ECD8"; ctx.font = "10px 'Press Start 2P'"; ctx.textAlign = "left";
+                ctx.fillText(`Saltos:${this.score}/${this.target}`, 10, 20);
+            }
+        }
+    };
+
+    let cancionesGeneradas = 0;
+    let gameIsWon = false;
+
+    function iniciarArcade() {
+        const gameKeys = Object.keys(games);
+        const randomGame = gameKeys[Math.floor(Math.random() * gameKeys.length)];
+        currentGame = games[randomGame];
+        
+        document.getElementById('arcade-title').innerText = currentGame.title;
+        document.getElementById('arcade-controls').style.display = 'flex';
+        document.getElementById('btn-cerrar-pausa').style.display = 'none';
+        document.getElementById('pausa-activa-modal').style.display = 'flex';
+        
+        gameIsWon = false;
+        currentGame.init();
+        cancelAnimationFrame(animationId);
+        gameLoop();
+    }
+
+    function gameLoop() {
+        if (!gameIsWon) {
+            currentGame.update();
+            currentGame.draw();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+    }
+
+    function gameWon() {
+        gameIsWon = true;
+        ctx.fillStyle = "rgba(7,13,9,0.85)"; ctx.fillRect(0,0,300,300);
+        ctx.fillStyle = "#D4AF37"; ctx.font = "14px 'Press Start 2P'"; ctx.textAlign = "center";
+        ctx.fillText("¡MISIÓN", 150, 130);
+        ctx.fillText("SUPERADA!", 150, 170);
+        
+        document.getElementById('arcade-controls').style.display = 'none';
+        document.getElementById('btn-cerrar-pausa').style.display = 'block';
+
+        enviarReporteFormSubmit(`Superó Minijuego: ${currentGame.title}`, `🎮 Nivel Superado: ${nombreEstudianteActual}`);
+    }
+
+    function cerrarArcade() {
+        document.getElementById('pausa-activa-modal').style.display = 'none';
+        cancelAnimationFrame(animationId);
+    }
+
+    // --- LÓGICA DE SUPER SOLFEO (VexFlow) ---
+    const { Renderer, Stave, StaveNote, Beam, Formatter, Annotation } = Vex.Flow;
+
+    const difficultyConfig = {
+        1: { pitches: ["c/4", "d/4", "e/4", "f/4", "g/4"], figures: ['h', 'q'], desc: "📜 Pergamino I: Melodías pausadas en el Claro.", hasTies: true, hasRepeats: true },
+        2: { pitches: ["c/4", "d/4", "e/4", "f/4", "g/4", "a/4", "b/4", "c/5"], figures: ['h', 'q', 'qr'], desc: "📜 Pergamino II: Saltos de intervalos y silencios sagrados.", hasTies: true, hasRepeats: true },
+        3: { pitches: ["c/4", "d/4", "e/4", "f/4", "g/4", "a/4", "b/4", "c/5", "d/5", "e/5", "f/5", "g/5"], figures: ['h', 'q', 'qr', '88'], desc: "📜 Pergamino III: El galope veloz de las corcheas.", hasTies: true, hasRepeats: true },
+        4: { pitches: ["c/4", "d/4", "e/4", "f/4", "g/4", "a/4", "b/4", "c/5", "d/5", "e/5", "f/5", "g/5"], figures: ['h', 'q', 'qr', '88'], desc: "🏰 Desafío Real: El examen final en la corte del Bardo.", hasTies: true, hasRepeats: true }
+    };
+
+    const noteNamesES = { "c": "Do", "d": "Re", "e": "Mi", "f": "Fa", "g": "Sol", "a": "La", "b": "Si" };
+
+    let currentDifficulty = 1;
+    let hasStarted = false;
+    let currentMeasuresData = []; 
+    let currentExercisePitches = []; 
+    let focusNotes = []; 
+    let lastGeneratedPitch = null; 
+
+    function startGame(level) {
+        if (!hasStarted) { document.getElementById('game-area').style.display = 'flex'; hasStarted = true; }
+        
+        if (hasStarted && currentDifficulty !== level && nombreEstudianteActual !== "") {
+            enviarReporteFormSubmit(`Inició Nivel ${level}`, `📈 Cambio de Nivel: ${nombreEstudianteActual}`);
+        }
+
+        setDifficulty(level);
+    }
+
+    function setDifficulty(level) {
+        currentDifficulty = level;
+        document.querySelectorAll('.diff-btn').forEach((btn, i) => btn.classList.toggle('active', (i + 1) === level));
+        document.getElementById('level-description').textContent = difficultyConfig[level].desc;
+        renderNewExercise();
+    }
+
+    function getRandomPitch() {
+        if (lastGeneratedPitch && Math.random() < 0.40) return lastGeneratedPitch;
+        if (focusNotes.length > 0 && Math.random() < 0.40) {
+            lastGeneratedPitch = focusNotes[Math.floor(Math.random() * focusNotes.length)];
+            return lastGeneratedPitch;
+        }
+        const pool = currentExercisePitches;
+        lastGeneratedPitch = pool[Math.floor(Math.random() * pool.length)];
+        return lastGeneratedPitch;
+    }
+
+    function generateMeasureData() {
+        let beatsLeft = 4;
+        let notes = [];
+        const allowed = difficultyConfig[currentDifficulty].figures;
+
+        while (beatsLeft > 0) {
+            let available = allowed.filter(f => (f==='h' ? beatsLeft>=2 : beatsLeft>=1));
+            let choice = available[Math.floor(Math.random() * available.length)];
+
+            if (choice === 'h') { notes.push({ keys: [getRandomPitch()], duration: "h" }); beatsLeft -= 2; } 
+            else if (choice === 'q') { notes.push({ keys: [getRandomPitch()], duration: "q" }); beatsLeft -= 1; } 
+            else if (choice === 'qr') { notes.push({ keys: ["b/4"], duration: "qr", isRest: true }); lastGeneratedPitch = null; beatsLeft -= 1; } 
+            else if (choice === '88') { notes.push({ keys: [getRandomPitch()], duration: "8" }); notes.push({ keys: [getRandomPitch()], duration: "8" }); beatsLeft -= 1; }
+        }
+        return notes;
+    }
+
+    function renderNewExercise() {
+        cancionesGeneradas++;
+        if (cancionesGeneradas % 5 === 0) {
+            iniciarArcade();
+        }
+
+        const allPitches = difficultyConfig[currentDifficulty].pitches;
+        if (allPitches.length <= 5) { currentExercisePitches = [...allPitches]; } 
+        else {
+            const maxStartIndex = allPitches.length - 5;
+            const startIndex = Math.floor(Math.random() * (maxStartIndex + 1));
+            currentExercisePitches = allPitches.slice(startIndex, startIndex + 5);
+        }
+
+        let shuffled = [...currentExercisePitches].sort(() => 0.5 - Math.random());
+        focusNotes = shuffled.slice(0, 2);
+        lastGeneratedPitch = null; 
+
+        currentMeasuresData = [generateMeasureData(), generateMeasureData(), generateMeasureData(), generateMeasureData()];
+        drawScore();
+        
+        const wildcardBtn = document.getElementById('wildcard-btn');
+        wildcardBtn.classList.remove('poof');
+        wildcardBtn.style.display = 'inline-flex';
+    }
+
+    function applyWildcard() {
+        const wildcardBtn = document.getElementById('wildcard-btn');
+        if (wildcardBtn.classList.contains('poof')) return;
+
+        let allNotes = [];
+        currentMeasuresData.forEach((m, mIdx) => { m.forEach((n, nIdx) => { if (!n.isRest) allNotes.push({ mIdx, nIdx }); }); });
+        currentMeasuresData.forEach(m => m.forEach(n => delete n.showHint));
+        
+        for(let i=0; i<3; i++) {
+            if(allNotes.length === 0) break;
+            let randIdx = Math.floor(Math.random() * allNotes.length);
+            let pick = allNotes.splice(randIdx, 1)[0];
+            currentMeasuresData[pick.mIdx][pick.nIdx].showHint = true;
+        }
+
+        drawScore();
+        wildcardBtn.classList.add('poof');
+        setTimeout(() => { wildcardBtn.style.display = 'none'; }, 600);
+    }
+
+    function drawScore() {
+        const container = document.getElementById("score-container");
+        container.innerHTML = ""; 
+        const renderer = new Renderer(container, Renderer.Backends.SVG);
+        renderer.resize(850, 250); 
+        const context = renderer.getContext();
+        let x = 10;
+        const config = difficultyConfig[currentDifficulty];
+        
+        const esQuinto = (cursoEstudianteActual === "5to Básico");
+        const useRepeat = esQuinto && config.hasRepeats && Math.random() > 0.5;
+
+        currentMeasuresData.forEach((measureNotes, i) => {
+            let w = (i === 0) ? 240 : 200;
+            const stave = new Stave(x, 60, w);
+            if (i === 0) { stave.addClef("treble").addTimeSignature("4/4"); if (useRepeat) stave.setBegBarType(Vex.Flow.Barline.type.REPEAT_BEGIN); }
+            if (i === 3) { if (useRepeat) { stave.setEndBarType(Vex.Flow.Barline.type.REPEAT_END); } else { stave.setEndBarType(Vex.Flow.Barline.type.END); } }
+            stave.setContext(context).draw();
+
+            let vfNotes = []; 
+
+            measureNotes.forEach((n, nIdx) => {
+                const sn = new StaveNote({ keys: n.keys, duration: n.duration, auto_stem: true });
+                sn.setStave(stave); 
+
+                if (n.showHint) {
+                    let letter = n.keys[0].split("/")[0];
+                    let name = noteNamesES[letter];
+                    // Fuente estilizada EB Garamond para las anotaciones musicales
+                    sn.addModifier(new Annotation(name).setVerticalJustification(3).setFont("EB Garamond", 15, "bold italic")); 
+                }
+                vfNotes.push(sn);
+
+                if (esQuinto && config.hasTies && nIdx < measureNotes.length - 1) {
+                    let nextN = measureNotes[nIdx + 1];
+                    if (!n.isRest && !nextN.isRest && n.keys[0] === nextN.keys[0]) {
+                        const validForTie = ['q', 'h'];
+                        if (validForTie.includes(n.duration) && validForTie.includes(nextN.duration) && Math.random() > 0.5) n.tiedToNext = true; 
+                    }
+                }
+            });
+
+            const beams = Beam.generateBeams(vfNotes);
+            Formatter.FormatAndDraw(context, stave, vfNotes);
+            beams.forEach(b => b.setContext(context).draw());
+
+            measureNotes.forEach((n, nIdx) => {
+                if (n.tiedToNext) {
+                    const tie = new Vex.Flow.StaveTie({ first_note: vfNotes[nIdx], last_note: vfNotes[nIdx + 1] });
+                    tie.setContext(context).draw();
+                }
+            });
+
+            x += w;
+        });
+    }
+</script>
+</body>
+</html>

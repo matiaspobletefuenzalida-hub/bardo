@@ -1,0 +1,639 @@
+:Super Pentagrama Elfo:index.html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Pentagrama - Misión Clave de Sol</title>
+    
+    <!-- Fuentes del Claro del Bardo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Music&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Paleta de El Claro del Bardo */
+            --bg-forest: #070D09;
+            --surface-parchment: #F4ECD8;
+            --text-main: #2e1a0d;
+            --text-light: #F9F6F0;
+            --elven-gold: #D4AF37;
+            --elven-amber: #C98A28;
+            --elven-bronze: #7A5435;
+            --forest-leaf: #1A3321;
+            --forest-moss: #121F16;
+            --staff-lines: #4a3809;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'EB Garamond', serif;
+            background-color: var(--bg-forest);
+            background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?ixlib=rb-4.0.3&auto=format&fit=crop&w=2500&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Capa oscura sobre el fondo */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(10, 5, 0, 0.7) 0%, rgba(5, 10, 7, 0.9) 100%);
+            z-index: 0;
+        }
+
+        /* Estilo Pergamino */
+        .app-container {
+            background-color: var(--surface-parchment);
+            background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
+            padding: 3rem;
+            border-radius: 4px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 40px rgba(122, 84, 53, 0.15);
+            border-left: 4px solid rgba(122, 84, 53, 0.5);
+            border-right: 4px solid rgba(122, 84, 53, 0.5);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Varas del pergamino */
+        .app-container::before, .app-container::after {
+            content: '';
+            position: absolute;
+            left: -10px; right: -10px;
+            height: 20px;
+            background: linear-gradient(to bottom, #5c3a21, #2e1a0d 40%, #5c3a21);
+            border: 1px solid #1a0f07;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+        }
+        .app-container::before { top: -10px; }
+        .app-container::after { bottom: -10px; }
+
+        h1.mario-title { 
+            font-family: 'Cinzel', serif; 
+            font-weight: 900; 
+            font-size: 3.5rem; 
+            margin-bottom: 0.5rem; 
+            color: var(--elven-bronze);
+            text-shadow: 2px 2px 0px rgba(212, 175, 55, 0.3);
+            letter-spacing: 2px;
+        }
+
+        p.subtitle { 
+            font-family: 'Uncial Antiqua', cursive; 
+            color: var(--elven-amber); 
+            margin-bottom: 2rem; 
+            font-size: 1.2rem; 
+            letter-spacing: 1px;
+        }
+
+        /* Bloque del Bardo Interactivo */
+        .bardo-hub {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(122, 84, 53, 0.08);
+            border: 1.5px solid var(--elven-gold);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 15px rgba(122, 84, 53, 0.1);
+        }
+
+        /* Contenedor del Avatar SVG */
+        .bardo-character {
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
+            background: radial-gradient(circle, var(--forest-leaf) 0%, var(--forest-moss) 100%);
+            border-radius: 50%;
+            border: 3px solid var(--elven-gold);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bardo-speech {
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            font-size: 1.3rem;
+            line-height: 1.4;
+            color: var(--text-main);
+            position: relative;
+        }
+
+        .bardo-name {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 0.95rem;
+            color: var(--elven-amber);
+            display: block;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Animaciones SVG de Faelenor */
+        @keyframes bardo-breathe {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-3px) scale(1.02); }
+        }
+        @keyframes eyes-blink {
+            0%, 48%, 52%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.1); }
+        }
+        @keyframes hat-sway {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(3deg); }
+        }
+
+        .animated-bardo {
+            width: 100%;
+            height: 100%;
+            transform-origin: bottom center;
+            animation: bardo-breathe 4s ease-in-out infinite;
+        }
+        .bardo-eyes {
+            transform-origin: 50px 48px;
+            animation: eyes-blink 5s infinite;
+        }
+        .bardo-hat {
+            transform-origin: 50px 25px;
+            animation: hat-sway 6s ease-in-out infinite;
+        }
+
+        /* Pantalla de inicio */
+        .start-screen input { 
+            font-family: 'EB Garamond', serif;
+            font-size: 1.3rem; 
+            padding: 12px; 
+            width: 80%; 
+            border-radius: 0; 
+            background: rgba(255,255,255,0.6);
+            border: 2px solid var(--elven-bronze); 
+            margin-bottom: 20px; 
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .start-screen input:focus {
+            border-color: var(--elven-gold);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Botones estilo Fantasía */
+        .btn-fantasy {
+            font-family: 'Uncial Antiqua', cursive;
+            background: linear-gradient(135deg, var(--forest-leaf) 0%, #0F1E13 100%);
+            border: 1px solid var(--elven-gold);
+            color: var(--text-light);
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            position: relative;
+            clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .btn-fantasy:hover {
+            background: linear-gradient(135deg, #2A4D33 0%, var(--forest-moss) 100%);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-start { font-size: 1.5rem; padding: 15px 40px; }
+
+        /* Estilos del Pentagrama */
+        .staff-container { position: relative; width: 100%; height: 200px; margin-bottom: 2rem; display: flex; justify-content: center; align-items: center; }
+        .staff-lines { position: relative; width: 80%; height: 120px; display: flex; flex-direction: column; justify-content: space-between; }
+        .line { width: 100%; height: 2px; background-color: var(--staff-lines); opacity: 0.7; }
+
+        .clef { position: absolute; font-family: 'Noto Music'; font-size: 110px; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-main); }
+
+        .note {
+            position: absolute; left: 220px; width: 28px; height: 22px;
+            background-color: var(--text-main); border-radius: 50%; transform: translate(-50%, -50%) rotate(-15deg);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            transition: top 0.3s ease-out;
+        }
+
+        .ledger-line { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 44px; height: 3px; background-color: var(--text-main); }
+
+        /* Controles de Notas */
+        .controls { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+        .btn-note { 
+            font-family: 'Cinzel', serif; 
+            font-weight: 700;
+            padding: 15px 5px; 
+            font-size: 1.2rem; 
+        }
+        
+        /* Retroalimentación Visual */
+        .btn-note.correct { 
+            background: linear-gradient(135deg, var(--elven-gold) 0%, var(--elven-amber) 100%); 
+            color: var(--bg-forest);
+            border-color: var(--bg-forest);
+        }
+        .btn-note.incorrect { 
+            background: linear-gradient(135deg, var(--elven-bronze) 0%, #4a2f1d 100%); 
+            color: rgba(255,255,255,0.5);
+            border-color: #2e1a0d;
+        }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { 
+            background-color: var(--surface-parchment);
+            background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
+            padding: 2.5rem; 
+            border: 3px solid var(--elven-gold);
+            border-radius: 5px; 
+            max-width: 650px; 
+            width: 95%; 
+            text-align: center; 
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.2);
+        }
+
+        .feedback-msg { height: 40px; font-family: 'Uncial Antiqua', cursive; font-size: 1.5rem; margin-bottom: 10px; opacity: 0; transition: opacity 0.3s; }
+        .msg-success { color: #1a5229; text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); } 
+        .msg-error { color: var(--elven-bronze); }
+
+        .stats { font-family: 'Cinzel', serif; font-weight: bold; font-size: 1.2rem; color: var(--text-main); }
+        .stats span { color: var(--elven-amber); font-size: 1.4rem; }
+
+        .mg-btn {
+            font-size: 3rem; background: none; border: none; cursor: pointer; transition: transform 0.2s;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+        }
+        .mg-btn:hover { transform: scale(1.1) translateY(-10px); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <h1 class="mario-title">Super Pentagrama</h1>
+    <p class="subtitle"><i class="fa-solid fa-scroll"></i> El Pergamino de la Clave de Sol <i class="fa-solid fa-leaf"></i></p>
+
+    <!-- Faelenor el Bardo - Hub de Diálogos Integrado -->
+    <div class="bardo-hub">
+        <div class="bardo-character">
+            <!-- SVG dinámico de Faelenor -->
+            <svg class="animated-bardo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Capa/Ropa -->
+                <path d="M25,100 C25,75 35,65 50,65 C65,65 75,75 75,100 Z" fill="#1A3321" stroke="#0F1E13" stroke-width="2" />
+                <path d="M40,65 L50,100 L60,65 Z" fill="#7A5435" />
+                <!-- Cuello -->
+                <rect x="45" y="58" width="10" height="10" rx="3" fill="#FFDBAC" />
+                <!-- Cara -->
+                <circle cx="50" cy="48" r="16" fill="#FFDBAC" />
+                <!-- Orejas Elfas -->
+                <polygon points="32,48 24,42 34,44" fill="#FFDBAC" />
+                <polygon points="68,48 76,42 66,44" fill="#FFDBAC" />
+                <!-- Ojos (Grupables para parpadeo) -->
+                <g class="bardo-eyes" id="bardo-eyes">
+                    <circle cx="44" cy="45" r="2.5" fill="#2e1a0d" />
+                    <circle cx="56" cy="45" r="2.5" fill="#2e1a0d" />
+                    <!-- Cejas -->
+                    <path d="M40,40 Q44,38 48,41" stroke="#D4AF37" stroke-width="1.5" fill="none" id="eyebrow-l" />
+                    <path d="M60,40 Q56,38 52,41" stroke="#D4AF37" stroke-width="1.5" fill="none" id="eyebrow-r" />
+                </g>
+                <!-- Boca Expresiva -->
+                <path d="M44,53 Q50,57 56,53" stroke="#2e1a0d" stroke-width="2" fill="none" id="bardo-mouth" />
+                <!-- Cabello Élfico -->
+                <path d="M34,44 Q45,35 50,42 Q55,35 66,44 Q60,32 50,32 Q40,32 34,44" fill="#E6E6FA" />
+                <!-- Sombrero de Bardo con pluma -->
+                <g class="bardo-hat">
+                    <path d="M30,35 C35,22 65,22 70,35 C60,30 40,30 30,35 Z" fill="#7A5435" />
+                    <path d="M60,26 C65,15 75,12 80,10 C75,18 70,22 65,26 Z" fill="#D4AF37" /> <!-- Pluma de oro -->
+                </g>
+            </svg>
+        </div>
+        <div class="bardo-speech">
+            <span class="bardo-name">Faelenor, el Bardo</span>
+            <span id="bardo-text">"¡Saludos, joven aprendiz! Soy Faelenor, custodio del Claro del Bardo. Registra tu linaje para dar comienzo al antiguo ritual de las notas afinadas."</span>
+        </div>
+    </div>
+
+    <div id="start-screen" class="start-screen">
+        <input type="text" id="player-name" placeholder="Tu nombre y linaje (Apellido)..." required>
+        <br>
+        <button id="btn-start" class="btn-fantasy btn-start"><i class="fa-solid fa-feather-pointed"></i> Iniciar la Prueba</button>
+    </div>
+
+    <div id="game-area" style="display: none;">
+        <button class="btn-fantasy" style="font-size: 0.9rem; padding: 8px 16px; margin-bottom: 15px;" onclick="showGuide()"><i class="fa-solid fa-book-journal-whills"></i> Consultar Grimorio Visual</button>
+        
+        <div class="staff-container">
+            <div class="staff-lines">
+                <div class="clef">𝄞</div>
+                <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+                <div class="note" id="active-note">
+                    <div class="ledger-line" id="ledger-line"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="feedback-msg" id="feedback"></div>
+        <div class="controls" id="btn-container"></div>
+        
+        <div class="stats">
+            <div><i class="fa-solid fa-coins text-elven-gold"></i> Puntos de Sabiduría: <span id="score">0</span> | <i class="fa-solid fa-fire text-elven-amber"></i> Racha: <span id="streak">0</span></div>
+            <div style="font-size: 0.9rem; color: #5c3a21; margin-top: 10px; font-family: 'Inter', sans-serif;">Aciertos para el cofre rúnico: <span id="correct-count">0</span>/20</div>
+        </div>
+    </div>
+    <div style="margin-top: 30px; font-size: 0.8rem; font-family: 'Cinzel', serif; color: var(--elven-bronze);">Forjado por el Luthier Digital Matías Poblete</div>
+</div>
+
+<div id="minigame-modal" class="modal-overlay">
+    <div class="modal-content" id="mg-container"></div>
+</div>
+
+<script>
+    const GMAIL_URL = "https://formsubmit.co/ajax/matiaspobletefuenzalida@gmail.com";
+    const startScreen = document.getElementById('start-screen');
+    const gameArea = document.getElementById('game-area');
+    const btnStart = document.getElementById('btn-start');
+    const playerNameInput = document.getElementById('player-name');
+
+    // Inicialización del motor de audio (Sintetizador físico de Laúd)
+    let audioCtx = null;
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    /* Sintetizador de cuerda pulsada (Laúd medieval):
+       Se utiliza una combinación de oscilador de onda triangular (calidez de madera) 
+       y sierra (brillo metálico de cuerdas de tripa/metal), aplicando un envolvente
+       exponencial de caída rápida y un filtro pasabajos dinámico para imitar el ataque de púa.
+    */
+    function playLutePluck(freq, delay = 0) {
+        if (!audioCtx) return;
+        
+        const oscTri = audioCtx.createOscillator();
+        const oscSaw = audioCtx.createOscillator();
+        const gainTri = audioCtx.createGain();
+        const gainSaw = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+
+        oscTri.type = 'triangle';
+        oscTri.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+
+        oscSaw.type = 'sawtooth';
+        oscSaw.frequency.setValueAtTime(freq * 2, audioCtx.currentTime + delay); // Armónico brillante
+
+        // Envolvente para el cuerpo de madera de la nota (Triangular)
+        gainTri.gain.setValueAtTime(0, audioCtx.currentTime + delay);
+        gainTri.gain.linearRampToValueAtTime(0.35, audioCtx.currentTime + delay + 0.003);
+        gainTri.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 1.2);
+
+        // Envolvente para el ataque brillante de la cuerda (Diente de sierra)
+        gainSaw.gain.setValueAtTime(0, audioCtx.currentTime + delay);
+        gainSaw.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + delay + 0.002);
+        gainSaw.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 0.35);
+
+        // Filtro pasa bajos para emular la amortiguación natural de la caja
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1800, audioCtx.currentTime + delay);
+        filter.frequency.exponentialRampToValueAtTime(250, audioCtx.currentTime + delay + 0.6);
+
+        oscTri.connect(gainTri);
+        oscSaw.connect(gainSaw);
+        gainTri.connect(filter);
+        gainSaw.connect(filter);
+        filter.connect(audioCtx.destination);
+
+        oscTri.start(audioCtx.currentTime + delay);
+        oscSaw.start(audioCtx.currentTime + delay);
+
+        oscTri.stop(audioCtx.currentTime + delay + 1.4);
+        oscSaw.stop(audioCtx.currentTime + delay + 1.4);
+    }
+
+    // Toca un arpegio medieval rápido acorde al resultado (Acierto = Mayor alegre / Error = Triste/Oscuro)
+    function playLuteChord(isCorrect) {
+        initAudio();
+        if (isCorrect) {
+            // Acorde Mayor de Do (Do4, Mi4, Sol4, Do5) alegre y resonante
+            const notes = [261.63, 329.63, 392.00, 523.25];
+            notes.forEach((freq, i) => {
+                playLutePluck(freq, i * 0.06); // Arpegiado sutil
+            });
+        } else {
+            // Acorde de Do Disminuido / Quinta disminuida (Triste, misterioso y medieval)
+            const notes = [220.00, 261.63, 311.13, 369.99]; // La3, Do4, Re#4, Fa#4
+            notes.forEach((freq, i) => {
+                playLutePluck(freq, i * 0.08);
+            });
+        }
+    }
+
+    // Control de gestos de Faelenor
+    function setBardoExpression(mood) {
+        const mouth = document.getElementById('bardo-mouth');
+        const eyebrowL = document.getElementById('eyebrow-l');
+        const eyebrowR = document.getElementById('eyebrow-r');
+
+        if (mood === 'happy') {
+            mouth.setAttribute('d', 'M42,51 Q50,61 58,51'); // Sonrisa amplia
+            eyebrowL.setAttribute('d', 'M40,38 Q44,35 48,39'); // Cejas arqueadas de alegría
+            eyebrowR.setAttribute('d', 'M60,38 Q56,35 52,39');
+        } else if (mood === 'sad') {
+            mouth.setAttribute('d', 'M44,56 Q50,49 56,56'); // Boca triste
+            eyebrowL.setAttribute('d', 'M40,42 Q44,40 48,39'); // Cejas caídas
+            eyebrowR.setAttribute('d', 'M60,42 Q56,40 52,39');
+        } else {
+            // Neutral/Hablando
+            mouth.setAttribute('d', 'M44,53 Q50,57 56,53');
+            eyebrowL.setAttribute('d', 'M40,40 Q44,38 48,41');
+            eyebrowR.setAttribute('d', 'M60,40 Q56,38 52,41');
+        }
+    }
+
+    const bardoCorrectQuotes = [
+        "¡Sublime! Tus oídos están afinados con el cantar de las hadas.",
+        "¡Espléndido acierto! Esa cuerda resuena con absoluta pureza.",
+        "¡Excelente! Los espíritus del bosque celebran tu melodía.",
+        "¡Soberbio, joven bardo! Tu aprendizaje avanza a pasos agigantados."
+    ];
+
+    const bardoIncorrectQuotes = [
+        "¡Oh, una discordancia desafortunada! Afina tu oído, el pergamino indica un {nota}.",
+        "¡Ay, tus dedos han resbalado! Esa nota no era más que un {nota}.",
+        "Casi rozas el cielo musical, mas la nota del pergamino es un {nota}.",
+        "No temas equivocarte, pues errar es de mortales. Escucha con atención, era un {nota}."
+    ];
+
+    btnStart.addEventListener('click', () => {
+        const playerName = playerNameInput.value.trim();
+        if (!playerName) { alert("El pergamino requiere tu nombre, viajero."); return; }
+        btnStart.innerHTML = "<i class='fa-solid fa-hourglass-half'></i> Inscribiendo...";
+        btnStart.disabled = true;
+
+        initAudio();
+
+        fetch(GMAIL_URL, {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ Estudiante: playerName, Evento: "Inicio", _subject: `🎮 Nuevo Jugador: ${playerName}` })
+        }).finally(() => {
+            startScreen.style.display = 'none';
+            gameArea.style.display = 'block';
+            initGame();
+        });
+    });
+
+    const MUSIC_DATA = [
+        { name: 'DO', top: 150, needsLedger: true }, { name: 'RE', top: 135, needsLedger: false },
+        { name: 'MI', top: 120, needsLedger: false }, { name: 'FA', top: 105, needsLedger: false },
+        { name: 'SOL', top: 90, needsLedger: false }, { name: 'LA', top: 75, needsLedger: false },
+        { name: 'SI', top: 60, needsLedger: false }, { name: 'DO', top: 45, needsLedger: false },
+        { name: 'RE', top: 30, needsLedger: false }, { name: 'MI', top: 15, needsLedger: false },
+        { name: 'FA', top: 0, needsLedger: false }, { name: 'SOL', top: -15, needsLedger: false }
+    ];
+
+    let state = { score: 0, streak: 0, correctAnswers: 0, currentNote: null, isLocked: false };
+
+    function initGame() {
+        const notas = ['DO', 'RE', 'MI', 'FA', 'SOL', 'LA', 'SI'];
+        const container = document.getElementById('btn-container');
+        container.innerHTML = '';
+        notas.forEach(n => {
+            const b = document.createElement('button');
+            b.className = 'btn-fantasy btn-note'; b.textContent = n;
+            b.onclick = () => handleGuess(n, b);
+            container.appendChild(b);
+        });
+        
+        document.getElementById('bardo-text').textContent = `"¡Comienza la prueba! Observa el pergamino y pulsa la runa de la nota que se presenta."`;
+        generateNextNote();
+    }
+
+    function generateNextNote() {
+        state.currentNote = MUSIC_DATA[Math.floor(Math.random() * MUSIC_DATA.length)];
+        document.getElementById('active-note').style.top = `${state.currentNote.top}px`;
+        document.getElementById('ledger-line').style.display = state.currentNote.needsLedger ? 'block' : 'none';
+        state.isLocked = false;
+        resetBtns();
+    }
+
+    function handleGuess(guess, btn) {
+        if (state.isLocked) return;
+        state.isLocked = true;
+        const correct = guess === state.currentNote.name;
+        
+        if (correct) {
+            state.score += 10; state.streak++; state.correctAnswers++;
+            btn.classList.add('correct'); 
+            showFeedback(true);
+            playLuteChord(true);
+            setBardoExpression('happy');
+
+            // Diálogo aleatorio de victoria
+            const randomQuote = bardoCorrectQuotes[Math.floor(Math.random() * bardoCorrectQuotes.length)];
+            document.getElementById('bardo-text').textContent = `"${randomQuote}"`;
+        } else {
+            state.streak = 0; 
+            btn.classList.add('incorrect'); 
+            showFeedback(false);
+            playLuteChord(false);
+            setBardoExpression('sad');
+
+            // Diálogo de corrección estructurada
+            const randomQuote = bardoIncorrectQuotes[Math.floor(Math.random() * bardoIncorrectQuotes.length)];
+            const correctedText = randomQuote.replace("{nota}", state.currentNote.name);
+            document.getElementById('bardo-text').textContent = `"${correctedText}"`;
+        }
+        
+        document.getElementById('score').textContent = state.score;
+        document.getElementById('streak').textContent = state.streak;
+        document.getElementById('correct-count').textContent = state.correctAnswers % 20;
+        
+        setTimeout(() => { 
+            setBardoExpression('neutral');
+            (correct && state.correctAnswers % 20 === 0) ? launchMiniGame() : generateNextNote(); 
+        }, 2200);
+    }
+
+    function showFeedback(ok) {
+        const f = document.getElementById('feedback');
+        f.innerHTML = ok ? "¡Sabiduría alcanzada! ✨" : `El viento susurra... era ${state.currentNote.name} 🍂`;
+        f.className = `feedback-msg ${ok ? 'msg-success' : 'msg-error'}`;
+        f.style.opacity = 1; setTimeout(() => f.style.opacity = 0, 1800);
+    }
+
+    function resetBtns() { document.querySelectorAll('.btn-note').forEach(b => b.classList.remove('correct', 'incorrect')); }
+
+    function showGuide() {
+        const modal = document.getElementById('minigame-modal');
+        const container = document.getElementById('mg-container');
+        modal.style.display = 'flex';
+        container.innerHTML = `
+            <h2 style="font-family: 'Cinzel', serif; color: var(--elven-bronze); margin-bottom:15px; font-weight: 900;"><i class="fa-solid fa-book-open"></i> Grimorio de Referencia</h2>
+            <div style="background: rgba(255,255,255,0.4); padding: 20px; border-radius: 4px; border: 1px solid var(--elven-bronze);">
+                <svg viewBox="0 -30 500 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%;">
+                    <line x1="10" y1="30" x2="490" y2="30" stroke="#4a3809" stroke-width="2"/>
+                    <line x1="10" y1="50" x2="490" y2="50" stroke="#4a3809" stroke-width="2"/>
+                    <line x1="10" y1="70" x2="490" y2="70" stroke="#4a3809" stroke-width="2"/>
+                    <line x1="10" y1="90" x2="490" y2="90" stroke="#4a3809" stroke-width="2"/>
+                    <line x1="10" y1="110" x2="490" y2="110" stroke="#4a3809" stroke-width="2"/>
+                    <text x="15" y="95" font-size="70" font-family="Noto Music" fill="#2e1a0d">𝄞</text>
+                    <circle cx="80" cy="125" r="8" fill="#2e1a0d"/> <line x1="68" y1="125" x2="92" y2="125" stroke="#2e1a0d" stroke-width="2"/> <text x="70" y="145" font-size="12" font-weight="bold" font-family="Cinzel">DO</text>
+                    <circle cx="115" cy="118" r="8" fill="#2e1a0d"/> <text x="105" y="145" font-size="12" font-weight="bold" font-family="Cinzel">RE</text>
+                    <circle cx="150" cy="110" r="8" fill="#2e1a0d"/> <text x="140" y="145" font-size="12" font-weight="bold" font-family="Cinzel">MI</text>
+                    <circle cx="185" cy="100" r="8" fill="#2e1a0d"/> <text x="175" y="145" font-size="12" font-weight="bold" font-family="Cinzel">FA</text>
+                    <circle cx="220" cy="90" r="8" fill="#2e1a0d"/> <text x="210" y="145" font-size="12" font-weight="bold" font-family="Cinzel">SOL</text>
+                    <circle cx="255" cy="80" r="8" fill="#2e1a0d"/> <text x="245" y="145" font-size="12" font-weight="bold" font-family="Cinzel">LA</text>
+                    <circle cx="290" cy="70" r="8" fill="#2e1a0d"/> <text x="280" y="145" font-size="12" font-weight="bold" font-family="Cinzel">SI</text>
+                    <circle cx="325" cy="60" r="8" fill="#2e1a0d"/> <text x="315" y="145" font-size="12" font-weight="bold" font-family="Cinzel">DO</text>
+                    <circle cx="360" cy="50" r="8" fill="#2e1a0d"/> <text x="350" y="145" font-size="12" font-weight="bold" font-family="Cinzel">RE</text>
+                    <circle cx="395" cy="40" r="8" fill="#2e1a0d"/> <text x="385" y="145" font-size="12" font-weight="bold" font-family="Cinzel">MI</text>
+                    <circle cx="430" cy="30" r="8" fill="#2e1a0d"/> <text x="420" y="145" font-size="12" font-weight="bold" font-family="Cinzel">FA</text>
+                    <circle cx="465" cy="20" r="8" fill="#2e1a0d"/> <text x="455" y="145" font-size="12" font-weight="bold" font-family="Cinzel">SOL</text>
+                </svg>
+            </div>
+            <br><button class="btn-fantasy" style="font-size: 1.1rem;" onclick="document.getElementById('minigame-modal').style.display='none'">CERRAR GRIMORIO</button>
+        `;
+    }
+
+    function launchMiniGame() {
+        const modal = document.getElementById('minigame-modal');
+        const container = document.getElementById('mg-container');
+        modal.style.display = 'flex';
+        container.innerHTML = `<h2 style="font-family: 'Cinzel', serif; color: var(--elven-gold); font-size: 2rem;">✨ ¡UN TESORO OCULTO!</h2>
+            <p style="font-family: 'EB Garamond', serif; font-size: 1.2rem; margin-bottom: 20px;">Faelenor te ofrece elegir un cofre rúnico:</p>
+            <button class="mg-btn" onclick="endMG(50)">🧰</button><button class="mg-btn" onclick="endMG(100)">🧰</button><button class="mg-btn" onclick="endMG(20)">🧰</button>`;
+    }
+
+    window.endMG = (pts) => {
+        state.score += pts; document.getElementById('score').textContent = state.score;
+        document.getElementById('minigame-modal').style.display = 'none'; generateNextNote();
+    };
+</script>
+</body>
+</html>
