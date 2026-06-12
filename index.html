@@ -1195,9 +1195,286 @@
             outline: 2px solid #D4AF37;
             outline-offset: 4px;
         }
+
+        /* =============================================
+           INTRO CINEMÁTICA — SECUENCIA DE ENTRADA
+           Estructura narrativa: pantalla oscura -> luz entre
+           árboles -> niebla -> hoja cruza -> título emerge -> lema.
+           Se ejecuta una vez por sesión (sessionStorage) y respeta
+           prefers-reduced-motion (salto inmediato al contenido).
+        ============================================= */
+        .cine-intro {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: radial-gradient(ellipse 80% 70% at 50% 45%, #0a130c 0%, #030604 70%);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            will-change: opacity;
+        }
+        .cine-intro.cine-hidden {
+            display: none;
+        }
+        /* Crossfade de salida — el overlay completo se disuelve
+           progresivamente sobre el hero ya visible debajo,
+           evitando un corte abrupto entre escenas. */
+        .cine-intro.cine-exit {
+            animation: cineExit 2.2s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+            animation-delay: 6.4s;
+            pointer-events: none;
+        }
+        @keyframes cineExit {
+            0%   { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* --- Luz entre los árboles (1.0s) --- */
+        .cine-light {
+            position: absolute;
+            top: 38%;
+            left: 50%;
+            width: min(120vw, 1400px);
+            height: min(120vw, 1400px);
+            transform: translate(-50%, -50%) scale(0.4);
+            border-radius: 50%;
+            background: radial-gradient(circle,
+                rgba(212,175,55,0.16) 0%,
+                rgba(140,180,90,0.07) 35%,
+                transparent 70%);
+            opacity: 0;
+            will-change: opacity, transform;
+            animation: cineLightIn 3s ease-out forwards;
+            animation-delay: 1s;
+        }
+        @keyframes cineLightIn {
+            0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* --- Viñeta atmosférica (profundidad de foreground) --- */
+        .cine-vignette {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 90% 75% at 50% 50%, transparent 45%, rgba(0,0,0,0.55) 100%);
+            opacity: 0;
+            animation: cineFadeSimple 1.2s ease-out forwards;
+            animation-delay: 0.4s;
+        }
+        @keyframes cineFadeSimple {
+            to { opacity: 1; }
+        }
+
+        /* --- Niebla deslizante (2.0s) --- */
+        .cine-fog {
+            position: absolute;
+            left: -20%;
+            width: 140%;
+            height: 45%;
+            bottom: 0;
+            background: linear-gradient(to top,
+                rgba(180,200,185,0.16) 0%,
+                rgba(180,200,185,0.07) 45%,
+                transparent 100%);
+            filter: blur(18px);
+            opacity: 0;
+            transform: translateX(-6%);
+            will-change: opacity, transform;
+            animation: cineFogIn 4s ease-out forwards;
+            animation-delay: 2s;
+        }
+        @keyframes cineFogIn {
+            0%   { opacity: 0; transform: translateX(-6%); }
+            30%  { opacity: 1; }
+            100% { opacity: 0.85; transform: translateX(4%); }
+        }
+
+        /* --- Hoja arrastrada por el viento (movimiento orgánico) --- */
+        .cine-leaf {
+            position: absolute;
+            top: 34%;
+            left: -10%;
+            width: clamp(30px, 5vw, 50px);
+            height: clamp(30px, 5vw, 50px);
+            color: #B8902A;
+            opacity: 0;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.55)) drop-shadow(0 0 8px rgba(180,130,30,0.35));
+            will-change: transform, opacity;
+            /* Animación principal: trayectoria horizontal con oscilaciones verticales de viento */
+            animation: cineLeafCross 5.0s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            animation-delay: 3s;
+            transform-origin: 46% 52%;
+        }
+        .cine-leaf svg { width: 100%; height: 100%; display: block; }
+
+        /* Trayectoria natural del viento: sube y baja en ráfagas, gira orgánicamente */
+        @keyframes cineLeafCross {
+            0%   { opacity: 0;    transform: translate3d(0vw,   2vh, 0) rotate(-22deg) scale(0.76); }
+            5%   { opacity: 0.95; transform: translate3d(8vw,  -1vh, 0) rotate( 10deg) scale(1.0); }
+            13%  {                transform: translate3d(18vw, -9vh, 0) rotate(-14deg) scale(1.06); }  /* primera ráfaga sube */
+            21%  {                transform: translate3d(28vw, -5vh, 0) rotate( 28deg) scale(0.97); }  /* breve caída */
+            29%  {                transform: translate3d(40vw,-14vh, 0) rotate(-22deg) scale(1.04); }  /* ráfaga fuerte: asciende */
+            37%  {                transform: translate3d(50vw,-10vh, 0) rotate(  4deg) scale(1.01); }  /* planeo horizontal */
+            44%  {                transform: translate3d(59vw,-17vh, 0) rotate(-40deg) scale(0.97); }  /* trompo + sube */
+            53%  {                transform: translate3d(70vw,-11vh, 0) rotate( 32deg) scale(1.02); }  /* desciende girando */
+            62%  {                transform: translate3d(81vw,-19vh, 0) rotate( 58deg) scale(0.94); }  /* ráfaga final empuja arriba */
+            72%  { opacity: 0.88; transform: translate3d(94vw,-13vh, 0) rotate( 42deg) scale(0.97); }
+            82%  { opacity: 0.42; transform: translate3d(110vw,-21vh,0) rotate( 78deg) scale(0.89); }
+            92%  { opacity: 0.08; transform: translate3d(124vw,-16vh,0) rotate( 95deg) scale(0.84); }
+            100% { opacity: 0;    transform: translate3d(136vw,-11vh,0) rotate(110deg) scale(0.81); }
+        }
+
+        /* =============================================
+           VIENTO VISIBLE — RÁFAGAS ANIMADAS
+        ============================================= */
+        .cine-wind {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .cine-wind-streak {
+            position: absolute;
+            border-radius: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255,255,255,0.09) 20%,
+                rgba(212,175,55,0.07) 50%,
+                rgba(255,255,255,0.06) 78%,
+                transparent 100%
+            );
+            will-change: transform, opacity;
+            animation: windSweep linear both;
+        }
+        @keyframes windSweep {
+            0%   { transform: translateX(-110%) scaleX(0.6); opacity: 0; }
+            8%   { opacity: 1;   transform: translateX(-60%) scaleX(0.85); }
+            80%  { opacity: 0.75; transform: translateX(60%) scaleX(1.1); }
+            100% { transform: translateX(115%) scaleX(0.7); opacity: 0; }
+        }
+        /* Segunda ola: más fina, diferente ritmo */
+        @keyframes windSweep2 {
+            0%   { transform: translateX(-115%) scaleX(0.5); opacity: 0; }
+            12%  { opacity: 0.7; }
+            85%  { opacity: 0.5; }
+            100% { transform: translateX(110%) scaleX(0.8); opacity: 0; }
+        }
+
+        /* --- Título emerge (4.0s) --- */
+        .cine-title {
+            position: relative;
+            z-index: 2;
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            font-size: clamp(2rem, 7vw, 5.5rem);
+            color: #fff;
+            letter-spacing: 0.28em;
+            text-shadow:
+                0 0 30px rgba(212,175,55,0.4),
+                0 4px 24px rgba(0,0,0,0.9);
+            opacity: 0;
+            filter: blur(14px);
+            will-change: opacity, filter, letter-spacing;
+            animation: cineTitleIn 1.8s cubic-bezier(0.16,1,0.3,1) forwards;
+            animation-delay: 4s;
+        }
+        @keyframes cineTitleIn {
+            0%   { opacity: 0; filter: blur(14px); letter-spacing: 0.45em; }
+            100% { opacity: 1; filter: blur(0); letter-spacing: 0.16em; }
+        }
+
+        /* --- Lema final (5.0s) --- */
+        .cine-tagline {
+            position: relative;
+            z-index: 2;
+            margin-top: clamp(1rem, 3vw, 1.75rem);
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            font-size: clamp(0.85rem, 2.2vw, 1.25rem);
+            color: rgba(249,246,240,0.82);
+            text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+            opacity: 0;
+            transform: translateY(14px);
+            will-change: opacity, transform;
+            animation: cineFadeUp 1.4s cubic-bezier(0.16,1,0.3,1) forwards;
+            animation-delay: 5s;
+        }
+        @keyframes cineFadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Indicador "saltar / entrar" --- */
+        .cine-skip {
+            position: absolute;
+            bottom: clamp(20px, 5vw, 40px);
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            color: rgba(212,175,55,0.5);
+            opacity: 0;
+            animation: cineFadeSimple 1.2s ease forwards;
+            animation-delay: 1.5s;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .cine-intro { display: none !important; }
+        }
     </style>
 </head>
 <body class="text-forest-deep font-sans antialiased overflow-x-hidden min-h-screen relative transition-colors duration-1000">
+
+    <!-- ===== INTRO CINEMÁTICA ===== -->
+    <div id="cine-intro" class="cine-intro" role="dialog" aria-label="Secuencia de bienvenida — toca para omitir">
+        <div class="cine-vignette" aria-hidden="true"></div>
+        <div class="cine-light" aria-hidden="true"></div>
+        <div class="cine-fog" aria-hidden="true"></div>
+        <!-- Ráfagas de viento: 10 trazos en distintas posiciones, duraciones y delays -->
+        <div class="cine-wind" aria-hidden="true">
+            <!-- ola 1: gruesas, rápidas, cerca del centro -->
+            <div class="cine-wind-streak" style="top:28%;width:58%;height:2px;animation-name:windSweep;animation-duration:1.8s;animation-delay:3.15s;animation-iteration-count:3;"></div>
+            <div class="cine-wind-streak" style="top:35%;width:72%;height:1px;animation-name:windSweep;animation-duration:2.1s;animation-delay:3.35s;animation-iteration-count:3;"></div>
+            <!-- ola 2: medianas, zona superior -->
+            <div class="cine-wind-streak" style="top:20%;width:44%;height:1.5px;animation-name:windSweep2;animation-duration:2.5s;animation-delay:3.55s;animation-iteration-count:2;"></div>
+            <div class="cine-wind-streak" style="top:24%;width:65%;height:1px;animation-name:windSweep;animation-duration:2.8s;animation-delay:3.80s;animation-iteration-count:2;"></div>
+            <!-- ola 3: largas, zona inferior -->
+            <div class="cine-wind-streak" style="top:42%;width:80%;height:1px;animation-name:windSweep2;animation-duration:2.0s;animation-delay:4.10s;animation-iteration-count:3;"></div>
+            <div class="cine-wind-streak" style="top:47%;width:55%;height:2px;animation-name:windSweep;animation-duration:1.6s;animation-delay:4.30s;animation-iteration-count:3;"></div>
+            <!-- ola 4: finas, acompañan el arco final -->
+            <div class="cine-wind-streak" style="top:18%;width:40%;height:1px;animation-name:windSweep2;animation-duration:3.0s;animation-delay:5.20s;animation-iteration-count:2;"></div>
+            <div class="cine-wind-streak" style="top:31%;width:68%;height:1.5px;animation-name:windSweep;animation-duration:2.3s;animation-delay:5.50s;animation-iteration-count:2;"></div>
+            <div class="cine-wind-streak" style="top:38%;width:50%;height:1px;animation-name:windSweep2;animation-duration:1.9s;animation-delay:5.80s;animation-iteration-count:2;"></div>
+            <div class="cine-wind-streak" style="top:44%;width:76%;height:1px;animation-name:windSweep;animation-duration:2.6s;animation-delay:6.10s;animation-iteration-count:1;"></div>
+        </div>
+
+        <div class="cine-leaf" aria-hidden="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4 C74 18, 88 38, 88 56 C88 76, 70 92, 50 96 C30 92, 12 76, 12 56 C12 38, 26 18, 50 4 Z" fill="currentColor"/>
+                <path d="M50 8 C50 36, 50 66, 50 94" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                <path d="M50 26 C42 32, 36 38, 30 44" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 26 C58 32, 64 38, 70 44" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 48 C43 54, 38 60, 33 66" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 48 C57 54, 62 60, 67 66" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 68 C45 72, 41 76, 37 80" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 68 C55 72, 59 76, 63 80" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <div>
+            <h1 class="cine-title">EL CLARO DEL BARDO</h1>
+            <p class="cine-tagline">"Bienvenido, viajero. Los antiguos conocimientos musicales aguardan."</p>
+        </div>
+
+        <span class="cine-skip">Toca para entrar</span>
+    </div>
 
     <!-- ===== BARRA DE LECTURA ===== -->
     <div id="read-progress"></div>
@@ -1772,6 +2049,86 @@
     'use strict';
 
     /* ============================================================
+       INTRO CINEMÁTICA — SECUENCIA DE ENTRADA
+       Se ejecuta una vez por sesión (sessionStorage). Reproduce
+       una breve ambientación de bosque distante a los 0.5s y
+       libera el overlay con un fade-out tras la secuencia.
+       Permite "saltar" con click/tap o tecla (Enter/Espacio/Escape).
+    ============================================================ */
+    const CineIntro = (() => {
+        const STORAGE_KEY = 'claroDelBardo_introSeen';
+        let el = null;
+        let exited = false;
+        let introAudioCtx = null;
+
+        function playDistantForestCue() {
+            try {
+                introAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const ctx = introAudioCtx;
+                const bufferSize = 2 * ctx.sampleRate;
+                const buf = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buf.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const source = ctx.createBufferSource();
+                source.buffer = buf; source.loop = true;
+                const filter = ctx.createBiquadFilter();
+                filter.type = 'lowpass'; filter.frequency.value = 380;
+                const gain = ctx.createGain();
+                gain.gain.setValueAtTime(0, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 1.5);
+                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 6);
+                source.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+                source.start();
+                setTimeout(() => { try { source.stop(); ctx.close(); } catch(e) {} }, 6500);
+            } catch (e) { /* autoplay puede estar bloqueado; silencioso */ }
+        }
+
+        function exit() {
+            if (exited || !el) return;
+            exited = true;
+            el.classList.remove('cine-exit');
+            el.style.animation = 'cineExit 0.6s ease forwards';
+            sessionStorage.setItem(STORAGE_KEY, '1');
+            setTimeout(() => {
+                el.classList.add('cine-hidden');
+                document.body.style.overflow = '';
+            }, 650);
+        }
+
+        function init() {
+            el = document.getElementById('cine-intro');
+            if (!el) return;
+
+            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const alreadySeen = sessionStorage.getItem(STORAGE_KEY) === '1';
+
+            if (reduced || alreadySeen) {
+                el.classList.add('cine-hidden');
+                return;
+            }
+
+            document.body.style.overflow = 'hidden';
+            el.classList.add('cine-exit'); // dispara fade-out automático tras la secuencia (delay 6.4s)
+
+            // 0.5s — bosque distante
+            setTimeout(playDistantForestCue, 500);
+
+            // Permitir saltar la intro
+            el.addEventListener('click', exit);
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') exit();
+            });
+            el.tabIndex = 0;
+            el.focus();
+
+            // Limpieza de fallback tras la animación de salida
+            setTimeout(exit, 7100);
+        }
+
+        return { init };
+    })();
+
+    /* ============================================================
        TEMA DÍA / NOCHE + TRANSICIÓN MEJORADA
     ============================================================ */
     function initializeTheme() {
@@ -1886,16 +2243,21 @@
     }
 
     function createParticle(w, h) {
+        const isFirefly = Math.random() > 0.72;
         return {
             x: Math.random() * w,
             y: Math.random() * h,
-            r: 0.5 + Math.random() * 1.6,
+            r: isFirefly ? (1 + Math.random() * 1.4) : (0.5 + Math.random() * 1.6),
             alpha: 0.1 + Math.random() * 0.45,
-            vx: -0.08 + Math.random() * 0.16,
-            vy: -0.25 + Math.random() * -0.05,
+            vx: isFirefly ? 0 : (-0.08 + Math.random() * 0.16),
+            vy: isFirefly ? 0 : (-0.25 + Math.random() * -0.05),
             life: Math.random(),
-            lifeSpeed: 0.0018 + Math.random() * 0.0035,
-            type: Math.random() > 0.72 ? 'firefly' : 'dust'
+            lifeSpeed: isFirefly ? (0.0006 + Math.random() * 0.0009) : (0.0018 + Math.random() * 0.0035),
+            type: isFirefly ? 'firefly' : 'dust',
+            // Fase y velocidad angular propias para un "wander" suave (sin ruido brusco)
+            wanderAngle: Math.random() * Math.PI * 2,
+            wanderSpeed: 0.0035 + Math.random() * 0.004,
+            driftSpeed: isFirefly ? (0.10 + Math.random() * 0.16) : (0.3 + Math.random() * 0.4)
         };
     }
 
@@ -1915,26 +2277,40 @@
             if (p.life > 1) p.life = 0;
             const fade = Math.sin(p.life * Math.PI);
 
-            // Subtle cursor repulsion (desktop only)
-            if (!('ontouchstart' in window)) {
-                const dx = p.x - mouseX, dy = p.y - mouseY;
-                const dist2 = dx*dx + dy*dy;
-                if (dist2 < 14400) {
-                    const dist = Math.sqrt(dist2);
-                    const force = (120 - dist) / 120 * 0.22;
-                    p.vx += (dx / dist) * force * 0.04;
-                    p.vy += (dy / dist) * force * 0.04;
-                }
-            }
-            p.vx *= 0.992; p.vy *= 0.992;
-            p.vx += (-0.04 + Math.random() * 0.08) * 0.015;
-            p.vy += -0.015;
-            p.x += p.vx; p.y += p.vy;
+            if (p.type === 'firefly') {
+                // Movimiento orgánico tipo "deambular": ángulo que evoluciona
+                // suavemente, sin ruido aleatorio frame a frame -> trayectoria
+                // curva y pausada, propia de un insecto flotando.
+                p.wanderAngle += (Math.random() - 0.5) * 0.06;
+                p.x += Math.cos(p.wanderAngle) * p.driftSpeed;
+                p.y += Math.sin(p.wanderAngle) * p.driftSpeed * 0.6;
 
-            if (p.x < -10) p.x = w + 10;
-            if (p.x > w + 10) p.x = -10;
-            if (p.y < -10) { p.y = h + 10; p.life = 0; }
-            if (p.y > h + 10) p.y = -10;
+                if (p.x < -10) p.x = w + 10;
+                if (p.x > w + 10) p.x = -10;
+                if (p.y < -10) p.y = h + 10;
+                if (p.y > h + 10) p.y = -10;
+            } else {
+                // Subtle cursor repulsion (desktop only)
+                if (!('ontouchstart' in window)) {
+                    const dx = p.x - mouseX, dy = p.y - mouseY;
+                    const dist2 = dx*dx + dy*dy;
+                    if (dist2 < 14400) {
+                        const dist = Math.sqrt(dist2);
+                        const force = (120 - dist) / 120 * 0.22;
+                        p.vx += (dx / dist) * force * 0.04;
+                        p.vy += (dy / dist) * force * 0.04;
+                    }
+                }
+                p.vx *= 0.992; p.vy *= 0.992;
+                p.vx += (-0.04 + Math.random() * 0.08) * 0.015;
+                p.vy += -0.015;
+                p.x += p.vx; p.y += p.vy;
+
+                if (p.x < -10) p.x = w + 10;
+                if (p.x > w + 10) p.x = -10;
+                if (p.y < -10) { p.y = h + 10; p.life = 0; }
+                if (p.y > h + 10) p.y = -10;
+            }
 
             particleCtx.save();
             if (isDark && p.type === 'firefly') {
@@ -1960,9 +2336,110 @@
         const container = document.getElementById('leaf-container');
         if (!container) return;
         const leafSVGs = [
-            `<svg viewBox="0 0 384 512" fill="currentColor"><path d="M378.3 46.33c-3-6.54-9.67-10.82-16.94-10.82C355.8 35.51 349.8 37.64 345 42l-18.7 17.06C302.3 42.06 268.1 32 232.8 32c-68.52 0-136.2 33.62-184.2 91.89C13.23 166.8 0 216 0 268.3C0 361.3 64.91 443.2 153.2 473.4c5.152 1.762 10.9 .8242 15.28-2.484c4.375-3.328 6.586-8.734 5.867-14.28L166.7 377.9L220.8 450c3.547 4.719 9.141 7.219 14.88 7.047c5.781-.1719 11.16-3.031 14.41-7.656C289.4 394 384 275.8 384 153.1c0-37.38-7.969-73.41-23.03-106.8H378.3z"/></svg>`,
-            `<svg viewBox="0 0 512 512" fill="currentColor"><path d="M272 96c-78.6 0-145.1 81.5-164.6 112.4c-2.9 4.6-9.1 5.9-14 2.8C58.5 190.2 0 240.3 0 312c0 66.3 53.7 120 120 120h128l16 48c2.1 6.3 8.2 10.4 14.9 10.1c6.7-.2 12.6-4.7 14.3-11.2l23.5-88.5c46.7-27.4 99.3-88.6 99.3-174.4C416 149.7 351.5 96 272 96z"/></svg>`,
-            `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C12,2 10.5,5 8,5C5.5,5 4,7 4,7C4,7 5.5,8 6,9C4,9 2,11 2,11C2,11 4,12 5.5,12C4,14 3,16 3,16C3,16 6,15 8,16C9,18 10,20 10,20L11,22H13L14,20C14,20 15,18 16,16C18,15 21,16 21,16C21,16 20,14 18.5,12C20,12 22,11 22,11C22,11 20,9 18,9C18.5,8 20,7 20,7C20,7 18.5,5 16,5C13.5,5 12,2 12,2Z"/></svg>`
+            // Hoja de arce — 5 puntas con lóbulos profundos y vena en abanico
+            `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4
+                    C53 12, 56 18, 62 22
+                    C68 18, 76 16, 84 18
+                    C80 26, 78 32, 80 38
+                    C88 38, 95 42, 98 50
+                    C91 53, 86 56, 84 62
+                    C90 66, 94 72, 95 80
+                    C87 78, 80 78, 74 80
+                    C75 86, 74 92, 70 98
+                    C64 92, 59 88, 50 86
+                    C41 88, 36 92, 30 98
+                    C26 92, 25 86, 26 80
+                    C20 78, 13 78, 5 80
+                    C6 72, 10 66, 16 62
+                    C14 56, 9 53, 2 50
+                    C5 42, 12 38, 20 38
+                    C22 32, 20 26, 16 18
+                    C24 16, 32 18, 38 22
+                    C44 18, 47 12, 50 4 Z" fill="currentColor"/>
+                <path d="M50 6 C50 30, 50 60, 50 96" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                <path d="M50 30 C42 26, 33 24, 24 24" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 30 C58 26, 67 24, 76 24" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 52 C38 50, 26 52, 14 58" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 52 C62 50, 74 52, 86 58" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+            </svg>`,
+            // Hoja de roble — lóbulos redondeados profundos, vena central recta
+            `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4
+                    C56 10, 58 16, 56 22
+                    C64 20, 72 24, 73 32
+                    C81 30, 89 35, 88 44
+                    C96 45, 100 53, 95 60
+                    C100 66, 97 75, 88 76
+                    C90 84, 84 92, 75 90
+                    C73 97, 64 100, 58 95
+                    C55 99, 50 99, 47 95
+                    C41 100, 32 97, 30 90
+                    C21 92, 15 84, 17 76
+                    C8 75, 5 66, 10 60
+                    C5 53, 9 45, 17 44
+                    C16 35, 24 30, 32 32
+                    C33 24, 41 20, 49 22
+                    C47 16, 49 10, 50 4 Z" fill="currentColor"/>
+                <path d="M50 8 C50 32, 50 64, 50 97" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                <path d="M50 28 C42 28, 35 30, 28 34" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 28 C58 28, 65 30, 72 34" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 50 C40 50, 30 53, 20 58" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 50 C60 50, 70 53, 80 58" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 72 C44 74, 39 78, 34 84" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 72 C56 74, 61 78, 66 84" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+            </svg>`,
+            // Hoja serrada (tipo abedul/olmo) — óvalo con borde dentado y vena en espina
+            `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4
+                    C56 9 53 12 58 14 C63 14 61 19 66 20 C70 22 67 26 72 28
+                    C76 30 73 35 78 37 C82 40 79 45 83 48
+                    C86 52 82 56 85 60 C87 65 83 68 84 73
+                    C85 78 80 80 79 85 C77 90 72 90 69 94
+                    C65 97 62 93 58 96 C54 99 51 96 50 98
+                    C49 96 46 99 42 96 C38 93 35 97 31 94
+                    C28 90 23 90 21 85 C20 80 15 78 16 73
+                    C17 68 13 65 15 60 C18 56 14 52 17 48
+                    C21 45 18 40 22 37 C27 35 24 30 28 28
+                    C33 26 30 22 34 20 C39 19 37 14 42 14
+                    C47 12 44 9 50 4 Z" fill="currentColor"/>
+                <path d="M50 6 C50 32, 50 64, 50 98" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                <path d="M50 18 C44 22, 38 26, 33 30" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 18 C56 22, 62 26, 67 30" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 34 C43 38, 37 43, 31 48" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 34 C57 38, 63 43, 69 48" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 50 C43 54, 37 59, 31 64" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 50 C57 54, 63 59, 69 64" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 66 C45 70, 41 74, 37 79" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 66 C55 70, 59 74, 63 79" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+            </svg>`,
+            // Hoja de sicómoro — 3 puntas amplias con bordes dentados
+            `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4
+                    C54 12, 58 18, 64 22
+                    C72 18, 82 18, 90 24
+                    C84 30, 80 34, 80 40
+                    C90 42, 97 50, 96 58
+                    C88 56, 81 57, 76 60
+                    C82 66, 86 74, 84 84
+                    C76 78, 69 75, 62 76
+                    C64 84, 62 92, 56 98
+                    C53 92, 51 88, 50 84
+                    C49 88, 47 92, 44 98
+                    C38 92, 36 84, 38 76
+                    C31 75, 24 78, 16 84
+                    C14 74, 18 66, 24 60
+                    C19 57, 12 56, 4 58
+                    C3 50, 10 42, 20 40
+                    C20 34, 16 30, 10 24
+                    C18 18, 28 18, 36 22
+                    C42 18, 46 12, 50 4 Z" fill="currentColor"/>
+                <path d="M50 8 C50 34, 50 66, 50 96" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                <path d="M50 30 C42 26, 33 24, 24 26" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 30 C58 26, 67 24, 76 26" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 56 C40 56, 30 60, 20 66" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 56 C60 56, 70 60, 80 66" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+            </svg>`
         ];
         const colors = ['#D4AF37','#C98A28','#8a6d1c','#A67B27','#b8960c'];
         const isMobile = window.innerWidth < 768;
@@ -2408,6 +2885,7 @@
        INIT
     ============================================================ */
     window.addEventListener('DOMContentLoaded', () => {
+        CineIntro.init();
         initializeTheme();
         syncForestImage();
         createStars();
