@@ -1495,6 +1495,56 @@
         @media (prefers-reduced-motion: reduce) {
             .cine-intro { display: none !important; }
         }
+
+        /* =============================================
+           MÓVIL — OPTIMIZACIÓN RENDIMIENTO
+           Desactiva efectos secundarios (canvas RAF,
+           backdrop-filter, animaciones infinitas no esenciales,
+           capas de partículas/estrellas/hojas/luces)
+        ============================================= */
+        @media (max-width: 767px) {
+            /* Canvas partículas (luciérnagas/polvo) — RAF continuo */
+            #particle-canvas { display: none !important; }
+
+            /* Hojas cayendo — RAF + drop-shadow */
+            .leaf-container { display: none !important; }
+
+            /* Estrellas — muchos nodos DOM con animación starTwinkle */
+            .starfield { display: none !important; }
+
+            /* Niebla completa — blur + mistDrift */
+            .bg-mist { display: none !important; }
+
+            /* Luces: komorebi (lightShift) y dusk-glow (opacity calc) */
+            .komorebi { display: none !important; }
+            .dusk-glow { display: none !important; }
+
+            /* backdrop-filter costoso en GPU móvil */
+            .header-artifact {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                background: rgba(8,18,12,0.97) !important;
+            }
+            .mobile-menu-panel {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                background: rgba(8,18,12,0.99) !important;
+            }
+
+            /* Animaciones infinitas no esenciales */
+            .mc-ring-1,
+            .mc-ring-2,
+            .mc-ring-3,
+            .mc-glow,
+            .hero-title::after { animation: none !important; }
+
+            /* Brillos: medalla logo y marco retrato */
+            .logo-medallion::after { animation: none !important; }
+            .portrait-frame::before { animation: none !important; }
+
+            /* Halo de luna (moonPulse) */
+            .night-moon::after { animation: none !important; }
+        }
     </style>
 </head>
 <body class="text-forest-deep font-sans antialiased overflow-x-hidden min-h-screen relative transition-colors duration-1000">
@@ -2955,10 +3005,12 @@
         CineIntro.init();
         initializeTheme();
         syncForestImage();
-        createStars();
-        createLeaves();
-        initParticles();
-        initParallax();
+        if (!window.__isMobile) {
+            createStars();
+            createLeaves();
+            initParticles();
+            initParallax();
+        }
         revealSections();
         initReadProgress();
         updateParticleMode();
