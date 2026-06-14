@@ -133,6 +133,33 @@
         }
 
         /* =============================================
+           MÓVIL — FIX 1: Filtro de bosque sin GPU +
+           Desactivar animación forestBreath en móvil
+           (scale/translate continuo = alto consumo de GPU)
+        ============================================= */
+        @media (max-width: 768px) {
+            /* Detener la animación de respiración del bosque */
+            .bg-forest-layer {
+                animation: none !important;
+                will-change: auto !important;
+            }
+            .bg-forest-filter-layer {
+                /* Desactivar filtro GPU costoso */
+                filter: none !important;
+                will-change: auto !important;
+                /* Reemplazar con overlay de color:
+                   día → transparente, noche → azul oscuro semiopaco */
+                background-image: none !important;
+                background-color: rgba(0, 8, 20, 0);
+                transition: background-color var(--transition-night) ease;
+            }
+            .dark .bg-forest-filter-layer {
+                /* Simula el oscurecimiento + tinte azulado nocturno */
+                background-color: rgba(0, 5, 18, 0.72);
+            }
+        }
+
+        /* =============================================
            CAPA 2 — OVERLAY DE COLOR
         ============================================= */
         .bg-color-overlay {
@@ -1168,6 +1195,37 @@
         @media (max-width: 479px) {
             .games-grid { grid-template-columns: 1fr !important; }
             .filter-wrap { gap: 8px !important; }
+        }
+
+        /* =============================================
+           MÓVIL — FIX 2: Niebla simplificada (1 capa, blur reducido)
+        ============================================= */
+        @media (max-width: 768px) {
+            /* Ocultar capas 2 y 3 — dejar solo la primera */
+            .mist-band:nth-child(2),
+            .mist-band:nth-child(3) {
+                display: none !important;
+            }
+            /* Reducir blur y simplificar la capa única que permanece */
+            .mist-band:nth-child(1) {
+                filter: blur(10px);
+                height: 80px;
+                opacity: 0.38;
+                animation-duration: 55s;
+            }
+        }
+
+        /* =============================================
+           MÓVIL — FIX 3: Viewport estable (sin salto por barra del navegador)
+        ============================================= */
+        @media (max-width: 768px) {
+            .leaf-container {
+                /* Sustituir 100vh por 100dvh: respeta la barra
+                   dinámica del navegador y evita recalcular layout */
+                height: 100dvh;
+                /* Fallback para navegadores sin soporte dvh */
+                height: 100svh;
+            }
         }
         @media (min-width: 480px) and (max-width: 767px) {
             .games-grid { grid-template-columns: 1fr !important; }
