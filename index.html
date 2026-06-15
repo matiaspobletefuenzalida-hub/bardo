@@ -1082,7 +1082,7 @@
            ARTEFACTO DE SONIDO
         ============================================= */
         .sound-orb {
-            position: fixed; bottom: clamp(16px,4vw,24px); right: clamp(16px,4vw,24px);
+            position: fixed; bottom: clamp(16px,4vw,24px); right: clamp(14px,3.5vw,24px);
             width: 46px; height: 46px; z-index: 50; border-radius: 50%;
             background: radial-gradient(circle at 40% 35%, rgba(30,55,38,0.95), rgba(5,12,8,0.98));
             border: 1px solid rgba(212,175,55,0.48);
@@ -1090,6 +1090,18 @@
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             color: rgba(212,175,55,0.75); font-size: 15px;
             transition: all 0.32s ease;
+            /* Garantía anti-overflow en móvil */
+            max-right: 0;
+            box-sizing: content-box;
+        }
+        @media (max-width: 480px) {
+            .sound-orb {
+                bottom: 14px;
+                right: 14px;
+                width: 42px;
+                height: 42px;
+                font-size: 14px;
+            }
         }
         .sound-orb:hover {
             border-color: rgba(212,175,55,0.88);
@@ -3077,9 +3089,10 @@
     })();
 
     /* ============================================================
-       SONIDO AMBIENTAL DEL BOSQUE
+       SONIDO AMBIENTAL — LLUVIA + MÚSICA 8-BIT MEDIEVAL
     ============================================================ */
     let audioCtx = null, noiseNode = null, soundActive = false;
+    let rainGainNode = null; // para atenuar lluvia cuando suena melodía
 
     function buildForestSound(ctx) {
         const bufferSize = 3 * ctx.sampleRate;
@@ -3103,8 +3116,135 @@
         const gainOsc = ctx.createGain(); gainOsc.gain.value = 0.012;
         osc.connect(gainOsc); gainOsc.connect(ctx.destination); osc.start();
 
+        rainGainNode = gain;
         return { source, gain, gainOsc, osc };
     }
+
+    /* ============================================================
+       MÚSICA 8-BIT MEDIEVAL — ESCALA DÓRICA EN RE
+       Lanza melodías suaves aleatorias (máx ~18 seg)
+       solo cuando el audio de lluvia está activo.
+       Entre melodías: pausa aleatoria de 25-75 segundos.
+    ============================================================ */
+    const MedievalMusic = (() => {
+        // Escala dórica en Re: D3 E3 F3 G3 A3 B3 C4 D4 E4 F4 G4 A4 B4 C5 D5
+        const SCALE = [
+            146.83, 164.81, 174.61, 196.00, 220.00, 246.94,
+            261.63, 293.66, 329.63, 349.23, 392.00, 440.00,
+            493.88, 523.25, 587.33
+        ];
+
+        // Patrones melódicos (índices en SCALE)
+        const PATTERNS = [
+            [0,2,3,5,7,9,7,5,3,2,0],
+            [7,9,7,5,7,5,3,5,3,2,3,2,0],
+            [14,12,11,9,7,5,3,2,0,2,3,5],
+            [3,5,3,7,5,3,5,7,9,7,5,3],
+            [0,7,3,7,5,7,2,7,0,7,3,5,7],
+            [9,7,5,7,9,11,9,7,5,3,2,0],
+            [5,7,9,7,5,3,5,3,2,0,2,3],
+            [0,3,5,7,9,7,5,9,7,5,3,0],
+        ];
+
+        const BASE_DURS = [0.22, 0.28, 0.33, 0.44];
+
+        let scheduleTimer = null;
+        let playing = false;
+        let activeOscs = [];
+
+        function playNote(ctx, freq, startTime, duration, masterGain) {
+            const osc = ctx.createOscillator();
+            const env = ctx.createGain();
+            const lp  = ctx.createBiquadFilter();
+
+            osc.type = 'square';
+            osc.frequency.value = freq;
+
+            lp.type = 'lowpass';
+            lp.frequency.value = 850;
+            lp.Q.value = 0.4;
+
+            const attack  = Math.min(0.03, duration * 0.12);
+            const release = Math.min(0.07, duration * 0.28);
+            env.gain.setValueAtTime(0, startTime);
+            env.gain.linearRampToValueAtTime(0.20, startTime + attack);
+            env.gain.setValueAtTime(0.20, startTime + duration - release);
+            env.gain.linearRampToValueAtTime(0, startTime + duration);
+
+            osc.connect(lp); lp.connect(env); env.connect(masterGain);
+            osc.start(startTime);
+            osc.stop(startTime + duration + 0.02);
+            activeOscs.push(osc);
+        }
+
+        function scheduleMelody() {
+            if (!playing || !audioCtx || !soundActive) return;
+
+            const pattern = PATTERNS[Math.floor(Math.random() * PATTERNS.length)];
+            let dur = BASE_DURS[Math.floor(Math.random() * BASE_DURS.length)];
+            // Asegurar que la melodía no supere 18 seg
+            if (pattern.length * dur > 18) dur = 18 / pattern.length;
+
+            const melodyBus = audioCtx.createGain();
+            melodyBus.gain.setValueAtTime(0, audioCtx.currentTime);
+            melodyBus.gain.linearRampToValueAtTime(0.50, audioCtx.currentTime + 0.35);
+            melodyBus.connect(audioCtx.destination);
+
+            // Atenuar lluvia durante la melodía
+            if (rainGainNode) {
+                rainGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+                rainGainNode.gain.setValueAtTime(rainGainNode.gain.value, audioCtx.currentTime);
+                rainGainNode.gain.linearRampToValueAtTime(0.016, audioCtx.currentTime + 0.6);
+            }
+
+            let t = audioCtx.currentTime + 0.15;
+            for (let i = 0; i < pattern.length; i++) {
+                const noteDur = dur * (0.88 + Math.random() * 0.22);
+                playNote(audioCtx, SCALE[pattern[i]], t, noteDur, melodyBus);
+                t += dur;
+            }
+
+            const melodyEnd = t + 0.2;
+            melodyBus.gain.setValueAtTime(0.50, t - 0.05);
+            melodyBus.gain.linearRampToValueAtTime(0, melodyEnd);
+
+            const restoreDelay = Math.max(0, (melodyEnd - audioCtx.currentTime)) * 1000;
+            setTimeout(() => {
+                if (rainGainNode && soundActive) {
+                    rainGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+                    rainGainNode.gain.setValueAtTime(rainGainNode.gain.value, audioCtx.currentTime);
+                    rainGainNode.gain.linearRampToValueAtTime(0.055, audioCtx.currentTime + 1.4);
+                }
+                activeOscs = [];
+            }, restoreDelay + 200);
+
+            // Siguiente melodía: 25-75 seg
+            const nextIn = (25 + Math.random() * 50) * 1000;
+            scheduleTimer = setTimeout(scheduleMelody, nextIn);
+        }
+
+        function start() {
+            if (playing) return;
+            playing = true;
+            activeOscs = [];
+            // Primera melodía: 10-22 segundos después de activar
+            const firstIn = (10 + Math.random() * 12) * 1000;
+            scheduleTimer = setTimeout(scheduleMelody, firstIn);
+        }
+
+        function stop() {
+            playing = false;
+            if (scheduleTimer) { clearTimeout(scheduleTimer); scheduleTimer = null; }
+            activeOscs.forEach(n => { try { n.stop(); } catch(e) {} });
+            activeOscs = [];
+            if (rainGainNode && audioCtx && soundActive) {
+                rainGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+                rainGainNode.gain.linearRampToValueAtTime(0.055, audioCtx.currentTime + 0.6);
+            }
+        }
+
+        return { start, stop };
+    })();
 
     function toggleSound() {
         const btn = document.getElementById('sound-orb');
@@ -3117,7 +3257,9 @@
             icon.className = 'fa-solid fa-volume-high';
             btn.setAttribute('aria-label', 'Silenciar sonido ambiental');
             Rain.start();
+            MedievalMusic.start();
         } else {
+            MedievalMusic.stop();
             if (noiseNode) {
                 noiseNode.gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
                 noiseNode.gainOsc.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
@@ -3126,6 +3268,7 @@
                 }, 1100);
             }
             soundActive = false;
+            rainGainNode = null;
             btn.classList.remove('active');
             icon.className = 'fa-solid fa-volume-xmark';
             btn.setAttribute('aria-label', 'Activar sonido ambiental del bosque');
