@@ -367,15 +367,60 @@
             100% { transform: translate3d(0, 110vh, 0); opacity: 0; }
         }
         @keyframes sway {
-            0%   { transform: translate3d(-28px, 0, 0) rotate(-18deg); }
-            50%  { transform: translate3d(28px, 0, 0) rotate(18deg); }
-            100% { transform: translate3d(-28px, 0, 0) rotate(-18deg); }
+            0%   {
+                transform: translate3d(-22px, 0px, 0) rotate(-14deg);
+                animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+            }
+            8%   {
+                transform: translate3d(-8px, 6px, 0) rotate(-4deg);
+                animation-timing-function: ease-in;
+            }
+            19%  {
+                transform: translate3d(18px, 2px, 0) rotate(12deg);
+                animation-timing-function: cubic-bezier(0.33, 0, 0.66, 0);
+            }
+            31%  {
+                transform: translate3d(30px, -4px, 0) rotate(20deg);
+                animation-timing-function: ease-out;
+            }
+            42%  {
+                transform: translate3d(14px, 3px, 0) rotate(8deg);
+                animation-timing-function: cubic-bezier(0.25, 0.8, 0.75, 1);
+            }
+            53%  {
+                transform: translate3d(-5px, 8px, 0) rotate(-2deg);
+                animation-timing-function: ease-in-out;
+            }
+            64%  {
+                transform: translate3d(-26px, 1px, 0) rotate(-17deg);
+                animation-timing-function: cubic-bezier(0.55, 0, 0.45, 1);
+            }
+            73%  {
+                transform: translate3d(-18px, -5px, 0) rotate(-10deg);
+                animation-timing-function: ease-out;
+            }
+            84%  {
+                transform: translate3d(8px, 4px, 0) rotate(5deg);
+                animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+            }
+            93%  {
+                transform: translate3d(-12px, 7px, 0) rotate(-8deg);
+                animation-timing-function: ease-in;
+            }
+            100% {
+                transform: translate3d(-22px, 0px, 0) rotate(-14deg);
+            }
         }
         .leaf-container {
             position: fixed; top: 0; left: 0;
-            width: 100vw; height: 100vh;
+            width: 100vw; height: 100dvh;
             pointer-events: none; z-index: 2;
             overflow: hidden;
+        }
+        @media (max-width: 768px) {
+            .leaf-container {
+                height: 100dvh;
+            }
         }
         .leaf {
             position: absolute; top: -10%;
@@ -2572,11 +2617,16 @@
             inner.style.color = colors[Math.floor(Math.random() * colors.length)];
             const size = isMobile ? (12 + Math.random() * 10) : (16 + Math.random() * 13);
             leaf.style.left = `${Math.random() * 100}vw`;
-            leaf.style.animationDuration = `${30 + Math.random() * 38}s`;
-            leaf.style.animationDelay    = `${Math.random() * 45}s`;
+            const fallDuration  = 28 + Math.random() * 52;
+            const swayDuration  = 6  + Math.random() * 11;
+            const fallDelay     = -(Math.random() * fallDuration);
+            const swayDelay     = -(Math.random() * swayDuration);
+            leaf.style.animationDuration = `${fallDuration}s`;
+            leaf.style.animationDelay    = `${fallDelay}s`;
             leaf.style.width  = `${size}px`;
             leaf.style.height = `${size}px`;
-            inner.style.animationDuration = `${5 + Math.random() * 5}s`;
+            inner.style.animationDuration = `${swayDuration}s`;
+            inner.style.animationDelay    = `${swayDelay}s`;
             leaf.appendChild(inner);
             frag.appendChild(leaf);
         }
