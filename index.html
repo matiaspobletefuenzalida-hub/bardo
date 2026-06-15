@@ -383,80 +383,28 @@
         /* =============================================
            HOJAS CAYENDO
         ============================================= */
-        @keyframes fall {
-            0%   { transform: translate3d(0, -10vh, 0); opacity: 0; }
-            10%  { opacity: 0.32; }
-            90%  { opacity: 0.32; }
-            100% { transform: translate3d(0, 110vh, 0); opacity: 0; }
-        }
-        @keyframes sway {
-            0%   {
-                transform: translate3d(-22px, 0px, 0) rotate(-14deg);
-                animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
-            }
-            8%   {
-                transform: translate3d(-8px, 6px, 0) rotate(-4deg);
-                animation-timing-function: ease-in;
-            }
-            19%  {
-                transform: translate3d(18px, 2px, 0) rotate(12deg);
-                animation-timing-function: cubic-bezier(0.33, 0, 0.66, 0);
-            }
-            31%  {
-                transform: translate3d(30px, -4px, 0) rotate(20deg);
-                animation-timing-function: ease-out;
-            }
-            42%  {
-                transform: translate3d(14px, 3px, 0) rotate(8deg);
-                animation-timing-function: cubic-bezier(0.25, 0.8, 0.75, 1);
-            }
-            53%  {
-                transform: translate3d(-5px, 8px, 0) rotate(-2deg);
-                animation-timing-function: ease-in-out;
-            }
-            64%  {
-                transform: translate3d(-26px, 1px, 0) rotate(-17deg);
-                animation-timing-function: cubic-bezier(0.55, 0, 0.45, 1);
-            }
-            73%  {
-                transform: translate3d(-18px, -5px, 0) rotate(-10deg);
-                animation-timing-function: ease-out;
-            }
-            84%  {
-                transform: translate3d(8px, 4px, 0) rotate(5deg);
-                animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
-            }
-            93%  {
-                transform: translate3d(-12px, 7px, 0) rotate(-8deg);
-                animation-timing-function: ease-in;
-            }
-            100% {
-                transform: translate3d(-22px, 0px, 0) rotate(-14deg);
-            }
-        }
+        /* =============================================
+           HOJAS CAYENDO — Sistema de ráfaga de viento
+           Una sola animación por hoja, JS controla la
+           trayectoria, sin animaciones infinitas.
+        ============================================= */
         .leaf-container {
             position: fixed; top: 0; left: 0;
             width: 100vw; height: 100dvh;
             pointer-events: none; z-index: 2;
             overflow: hidden;
         }
-        @media (max-width: 768px) {
-            .leaf-container {
-                height: 100dvh;
-            }
-        }
-        .leaf {
-            position: absolute; top: -10%;
-            animation: fall linear infinite;
+        /* .wind-leaf: el JS inyecta un @keyframes único por hoja
+           con translate3d+rotate en cada fotograma clave.
+           No usamos will-change ni filter para mantener bajo
+           el consumo de composición en GPU móvil. */
+        .wind-leaf {
+            position: absolute;
             opacity: 0;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
-            will-change: transform;
+            /* transform-origin centrado para rotación natural */
+            transform-origin: 50% 50%;
         }
-        .leaf-inner {
-            display: inline-block;
-            animation: sway ease-in-out infinite;
-            width: 100%; height: 100%;
-        }
+        .wind-leaf svg { display: block; width: 100%; height: 100%; }
 
         /* =============================================
            HEADER — ARTEFACTO ÉLFICO
@@ -2517,143 +2465,183 @@
     /* ============================================================
        HOJAS CAYENDO
     ============================================================ */
+    /* ============================================================
+       HOJAS — SISTEMA DE RÁFAGA DE VIENTO
+       Una ráfaga inicial (1-2 s de bosque quieto) lanza 3-5 hojas
+       desde los laterales. Cada hoja tiene un @keyframes único
+       generado en JS con trayectoria en 3 fases:
+         1. Impulso: mucho horizontal, poca caída, rotación rápida.
+         2. Turbulencia: curvas irregulares, velocidad variable.
+         3. Caída: pierde fuerza horizontal, desciende y desaparece.
+       Las hojas se eliminan del DOM al terminar (sin bucles infinitos).
+       Sin will-change, sin filter, solo translate3d + rotate.
+    ============================================================ */
     function createLeaves() {
         const container = document.getElementById('leaf-container');
         if (!container) return;
+
+        /* SVGs de hojas (mismas formas, sin cambios) */
         const leafSVGs = [
-            // Hoja de arce — 5 puntas con lóbulos profundos y vena en abanico
             `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 4
-                    C53 12, 56 18, 62 22
-                    C68 18, 76 16, 84 18
-                    C80 26, 78 32, 80 38
-                    C88 38, 95 42, 98 50
-                    C91 53, 86 56, 84 62
-                    C90 66, 94 72, 95 80
-                    C87 78, 80 78, 74 80
-                    C75 86, 74 92, 70 98
-                    C64 92, 59 88, 50 86
-                    C41 88, 36 92, 30 98
-                    C26 92, 25 86, 26 80
-                    C20 78, 13 78, 5 80
-                    C6 72, 10 66, 16 62
-                    C14 56, 9 53, 2 50
-                    C5 42, 12 38, 20 38
-                    C22 32, 20 26, 16 18
-                    C24 16, 32 18, 38 22
-                    C44 18, 47 12, 50 4 Z" fill="currentColor"/>
-                <path d="M50 6 C50 30, 50 60, 50 96" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-                <path d="M50 30 C42 26, 33 24, 24 24" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 30 C58 26, 67 24, 76 24" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 52 C38 50, 26 52, 14 58" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 52 C62 50, 74 52, 86 58" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 4 C53 12,56 18,62 22 C68 18,76 16,84 18 C80 26,78 32,80 38 C88 38,95 42,98 50 C91 53,86 56,84 62 C90 66,94 72,95 80 C87 78,80 78,74 80 C75 86,74 92,70 98 C64 92,59 88,50 86 C41 88,36 92,30 98 C26 92,25 86,26 80 C20 78,13 78,5 80 C6 72,10 66,16 62 C14 56,9 53,2 50 C5 42,12 38,20 38 C22 32,20 26,16 18 C24 16,32 18,38 22 C44 18,47 12,50 4 Z" fill="currentColor"/>
+                <path d="M50 6 C50 30,50 60,50 96" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                <path d="M50 30 C42 26,33 24,24 24" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
+                <path d="M50 30 C58 26,67 24,76 24" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
+                <path d="M50 52 C38 50,26 52,14 58" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none"/>
+                <path d="M50 52 C62 50,74 52,86 58" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none"/>
             </svg>`,
-            // Hoja de roble — lóbulos redondeados profundos, vena central recta
             `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 4
-                    C56 10, 58 16, 56 22
-                    C64 20, 72 24, 73 32
-                    C81 30, 89 35, 88 44
-                    C96 45, 100 53, 95 60
-                    C100 66, 97 75, 88 76
-                    C90 84, 84 92, 75 90
-                    C73 97, 64 100, 58 95
-                    C55 99, 50 99, 47 95
-                    C41 100, 32 97, 30 90
-                    C21 92, 15 84, 17 76
-                    C8 75, 5 66, 10 60
-                    C5 53, 9 45, 17 44
-                    C16 35, 24 30, 32 32
-                    C33 24, 41 20, 49 22
-                    C47 16, 49 10, 50 4 Z" fill="currentColor"/>
-                <path d="M50 8 C50 32, 50 64, 50 97" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-                <path d="M50 28 C42 28, 35 30, 28 34" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 28 C58 28, 65 30, 72 34" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 50 C40 50, 30 53, 20 58" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 50 C60 50, 70 53, 80 58" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 72 C44 74, 39 78, 34 84" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 72 C56 74, 61 78, 66 84" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 4 C56 10,58 16,56 22 C64 20,72 24,73 32 C81 30,89 35,88 44 C96 45,100 53,95 60 C100 66,97 75,88 76 C90 84,84 92,75 90 C73 97,64 100,58 95 C55 99,50 99,47 95 C41 100,32 97,30 90 C21 92,15 84,17 76 C8 75,5 66,10 60 C5 53,9 45,17 44 C16 35,24 30,32 32 C33 24,41 20,49 22 C47 16,49 10,50 4 Z" fill="currentColor"/>
+                <path d="M50 8 C50 32,50 64,50 97" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                <path d="M50 28 C42 28,35 30,28 34" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
+                <path d="M50 28 C58 28,65 30,72 34" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
+                <path d="M50 50 C40 50,30 53,20 58" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
+                <path d="M50 50 C60 50,70 53,80 58" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
             </svg>`,
-            // Hoja serrada (tipo abedul/olmo) — óvalo con borde dentado y vena en espina
             `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 4
-                    C56 9 53 12 58 14 C63 14 61 19 66 20 C70 22 67 26 72 28
-                    C76 30 73 35 78 37 C82 40 79 45 83 48
-                    C86 52 82 56 85 60 C87 65 83 68 84 73
-                    C85 78 80 80 79 85 C77 90 72 90 69 94
-                    C65 97 62 93 58 96 C54 99 51 96 50 98
-                    C49 96 46 99 42 96 C38 93 35 97 31 94
-                    C28 90 23 90 21 85 C20 80 15 78 16 73
-                    C17 68 13 65 15 60 C18 56 14 52 17 48
-                    C21 45 18 40 22 37 C27 35 24 30 28 28
-                    C33 26 30 22 34 20 C39 19 37 14 42 14
-                    C47 12 44 9 50 4 Z" fill="currentColor"/>
-                <path d="M50 6 C50 32, 50 64, 50 98" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-                <path d="M50 18 C44 22, 38 26, 33 30" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 18 C56 22, 62 26, 67 30" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 34 C43 38, 37 43, 31 48" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 34 C57 38, 63 43, 69 48" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 50 C43 54, 37 59, 31 64" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 50 C57 54, 63 59, 69 64" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 66 C45 70, 41 74, 37 79" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 66 C55 70, 59 74, 63 79" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 4 C56 9 53 12 58 14 C63 14 61 19 66 20 C70 22 67 26 72 28 C76 30 73 35 78 37 C82 40 79 45 83 48 C86 52 82 56 85 60 C87 65 83 68 84 73 C85 78 80 80 79 85 C77 90 72 90 69 94 C65 97 62 93 58 96 C54 99 51 96 50 98 C49 96 46 99 42 96 C38 93 35 97 31 94 C28 90 23 90 21 85 C20 80 15 78 16 73 C17 68 13 65 15 60 C18 56 14 52 17 48 C21 45 18 40 22 37 C27 35 24 30 28 28 C33 26 30 22 34 20 C39 19 37 14 42 14 C47 12 44 9 50 4 Z" fill="currentColor"/>
+                <path d="M50 6 C50 32,50 64,50 98" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
             </svg>`,
-            // Hoja de sicómoro — 3 puntas amplias con bordes dentados
             `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 4
-                    C54 12, 58 18, 64 22
-                    C72 18, 82 18, 90 24
-                    C84 30, 80 34, 80 40
-                    C90 42, 97 50, 96 58
-                    C88 56, 81 57, 76 60
-                    C82 66, 86 74, 84 84
-                    C76 78, 69 75, 62 76
-                    C64 84, 62 92, 56 98
-                    C53 92, 51 88, 50 84
-                    C49 88, 47 92, 44 98
-                    C38 92, 36 84, 38 76
-                    C31 75, 24 78, 16 84
-                    C14 74, 18 66, 24 60
-                    C19 57, 12 56, 4 58
-                    C3 50, 10 42, 20 40
-                    C20 34, 16 30, 10 24
-                    C18 18, 28 18, 36 22
-                    C42 18, 46 12, 50 4 Z" fill="currentColor"/>
-                <path d="M50 8 C50 34, 50 66, 50 96" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-                <path d="M50 30 C42 26, 33 24, 24 26" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 30 C58 26, 67 24, 76 26" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 56 C40 56, 30 60, 20 66" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 56 C60 56, 70 60, 80 66" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 4 C54 12,58 18,64 22 C72 18,82 18,90 24 C84 30,80 34,80 40 C90 42,97 50,96 58 C88 56,81 57,76 60 C82 66,86 74,84 84 C76 78,69 75,62 76 C64 84,62 92,56 98 C53 92,51 88,50 84 C49 88,47 92,44 98 C38 92,36 84,38 76 C31 75,24 78,16 84 C14 74,18 66,24 60 C19 57,12 56,4 58 C3 50,10 42,20 40 C20 34,16 30,10 24 C18 18,28 18,36 22 C42 18,46 12,50 4 Z" fill="currentColor"/>
+                <path d="M50 8 C50 34,50 66,50 96" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
             </svg>`
         ];
-        const colors = ['#D4AF37','#C98A28','#8a6d1c','#A67B27','#b8960c'];
-        const isMobile = window.innerWidth < 768;
-        const leafCount = isMobile ? 6 : 12;
-        const frag = document.createDocumentFragment();
 
-        for (let i = 0; i < leafCount; i++) {
-            const leaf = document.createElement('div');
-            leaf.className = 'leaf';
-            const inner = document.createElement('div');
-            inner.className = 'leaf-inner';
-            inner.innerHTML = leafSVGs[Math.floor(Math.random() * leafSVGs.length)];
-            inner.style.color = colors[Math.floor(Math.random() * colors.length)];
-            const size = isMobile ? (12 + Math.random() * 10) : (16 + Math.random() * 13);
-            leaf.style.left = `${Math.random() * 100}vw`;
-            const fallDuration  = 28 + Math.random() * 52;
-            const swayDuration  = 6  + Math.random() * 11;
-            const fallDelay     = -(Math.random() * fallDuration);
-            const swayDelay     = -(Math.random() * swayDuration);
-            leaf.style.animationDuration = `${fallDuration}s`;
-            leaf.style.animationDelay    = `${fallDelay}s`;
-            leaf.style.width  = `${size}px`;
-            leaf.style.height = `${size}px`;
-            inner.style.animationDuration = `${swayDuration}s`;
-            inner.style.animationDelay    = `${swayDelay}s`;
-            leaf.appendChild(inner);
-            frag.appendChild(leaf);
-        }
-        container.appendChild(frag);
+        const colors = ['#D4AF37','#C98A28','#8a6d1c','#A67B27','#b8960c','#9e7d1a'];
+        const isMobile = window.__isMobile;
+
+        /* ── Plantilla de perfil por profundidad ──────────────────
+           Crea sensación cinematográfica sin capas adicionales.
+           "near"  → grande, rápida, opaca  (paralaje cercano)
+           "mid"   → normal
+           "far"   → pequeña, lenta, tenue  (paralaje lejano)
+        ─────────────────────────────────────────────────────────── */
+        const depthProfiles = [
+            { label:'near', sizeMin:28, sizeMax:38, speedFactor:0.78, opacityMax:0.82 },
+            { label:'mid',  sizeMin:18, sizeMax:26, speedFactor:1.00, opacityMax:0.62 },
+            { label:'mid',  sizeMin:18, sizeMax:26, speedFactor:1.00, opacityMax:0.58 },
+            { label:'far',  sizeMin:11, sizeMax:17, speedFactor:1.30, opacityMax:0.38 },
+            { label:'far',  sizeMin:10, sizeMax:15, speedFactor:1.40, opacityMax:0.32 },
+        ];
+
+        /* Ajuste móvil: menos hojas, tamaños menores */
+        const count = isMobile ? 3 : 5;
+        /* Barajar perfiles y tomar los primeros `count` */
+        const shuffled = depthProfiles.sort(() => Math.random() - 0.5).slice(0, count);
+
+        /* ── Contador de keyframes únicos para evitar colisiones ── */
+        let kfIndex = (window.__windLeafKfIndex || 0);
+
+        /* ── Ráfaga inicial: 1-2 s de quietud antes de lanzar ──── */
+        const gust = 1000 + Math.random() * 1000; // 1000–2000 ms
+
+        shuffled.forEach((profile, i) => {
+            /* Retraso escalonado: la ráfaga lanza hojas en cascada */
+            const launchDelay = gust + i * (200 + Math.random() * 300);
+
+            setTimeout(() => {
+                const kfName = `wl${kfIndex++}`;
+                window.__windLeafKfIndex = kfIndex;
+
+                /* ── Tamaño según profundidad ─────────────────────── */
+                const size = profile.sizeMin + Math.random() * (profile.sizeMax - profile.sizeMin);
+                const szPx = Math.round(size);
+
+                /* ── Posición de entrada: siempre desde borde natural ─
+                   Alterna entre lateral izquierdo (árbol) y zona alta
+                   con algo de variación vertical.                      */
+                const fromLeft = Math.random() < 0.65; // 65% entra por la izq
+                const startX = fromLeft
+                    ? -(szPx + 10)                          // justo fuera del borde izq
+                    : window.innerWidth + szPx + 10;        // justo fuera del borde der
+                /* Altura de entrada: zona superior del bosque (15–55%) */
+                const startY = window.innerHeight * (0.15 + Math.random() * 0.40);
+
+                /* ── Dirección del viento ─────────────────────────── */
+                const windDir = fromLeft ? 1 : -1; // positivo = derecha
+
+                /* ── Duración según profundidad ───────────────────── */
+                const baseDuration = isMobile ? 5500 : 7000;
+                const duration = Math.round(baseDuration * profile.speedFactor + Math.random() * 1500);
+
+                /* ── Opacidad máxima según profundidad ────────────── */
+                const opMax = profile.opacityMax;
+
+                /* ── Construir keyframes: 3 fases ─────────────────── */
+                /* Valores base de desplazamiento */
+                const vw = window.innerWidth;
+                const vh = window.innerHeight;
+
+                /* Fase 1 — Impulso (0–35%): mucho X, poco Y, rot rápida */
+                const imp1x = windDir * (vw * (0.18 + Math.random() * 0.12));
+                const imp1y = vh *  (0.04 + Math.random() * 0.06);
+                const imp1r = windDir * (20 + Math.random() * 35);
+
+                const imp2x = windDir * (vw * (0.30 + Math.random() * 0.15));
+                const imp2y = vh *  (0.10 + Math.random() * 0.08);
+                const imp2r = windDir * (45 + Math.random() * 40);
+
+                /* Fase 2 — Turbulencia (35–70%): curvas irregulares */
+                const tur1x = windDir * (vw * (0.44 + Math.random() * 0.12));
+                const tur1y = vh *  (0.22 + Math.random() * 0.12);
+                const tur1r = windDir * (30 + Math.random() * 50) * (Math.random() < 0.5 ? 1 : -1);
+
+                const tur2x = windDir * (vw * (0.58 + Math.random() * 0.12));
+                const tur2y = vh *  (0.38 + Math.random() * 0.15);
+                const tur2r = windDir * (60 + Math.random() * 55);
+
+                /* Fase 3 — Caída (70–100%): más Y, menos X, giros finales */
+                const fal1x = windDir * (vw * (0.70 + Math.random() * 0.10));
+                const fal1y = vh *  (0.58 + Math.random() * 0.18);
+                const fal1r = windDir * (80 + Math.random() * 60);
+
+                const fal2x = windDir * (vw * (0.80 + Math.random() * 0.10));
+                const fal2y = vh *  (0.80 + Math.random() * 0.15);
+                const fal2r = windDir * (110 + Math.random() * 70);
+
+                /* ── Generar @keyframes en una hoja de estilo temporal ── */
+                const kfCSS = `
+@keyframes ${kfName} {
+  0%   { transform: translate3d(0px, 0px, 0) rotate(${windDir * -8}deg); opacity: 0; }
+  4%   { opacity: ${opMax}; }
+  15%  { transform: translate3d(${Math.round(imp1x)}px, ${Math.round(imp1y)}px, 0) rotate(${Math.round(imp1r)}deg); opacity: ${opMax}; }
+  35%  { transform: translate3d(${Math.round(imp2x)}px, ${Math.round(imp2y)}px, 0) rotate(${Math.round(imp2r)}deg); opacity: ${opMax}; }
+  50%  { transform: translate3d(${Math.round(tur1x)}px, ${Math.round(tur1y)}px, 0) rotate(${Math.round(tur1r)}deg); opacity: ${opMax * 0.9}; }
+  65%  { transform: translate3d(${Math.round(tur2x)}px, ${Math.round(tur2y)}px, 0) rotate(${Math.round(tur2r)}deg); opacity: ${opMax * 0.8}; }
+  80%  { transform: translate3d(${Math.round(fal1x)}px, ${Math.round(fal1y)}px, 0) rotate(${Math.round(fal1r)}deg); opacity: ${(opMax * 0.4).toFixed(2)}; }
+  100% { transform: translate3d(${Math.round(fal2x)}px, ${Math.round(fal2y)}px, 0) rotate(${Math.round(fal2r)}deg); opacity: 0; }
+}`;
+
+                const styleTag = document.createElement('style');
+                styleTag.textContent = kfCSS;
+                document.head.appendChild(styleTag);
+
+                /* ── Crear el elemento hoja ─────────────────────────── */
+                const leaf = document.createElement('div');
+                leaf.className = 'wind-leaf';
+                leaf.style.cssText = `
+                    left:${Math.round(startX)}px;
+                    top:${Math.round(startY)}px;
+                    width:${szPx}px;
+                    height:${szPx}px;
+                    color:${colors[Math.floor(Math.random() * colors.length)]};
+                    animation:${kfName} ${duration}ms cubic-bezier(0.22,0.61,0.36,1) forwards;
+                `;
+                leaf.innerHTML = leafSVGs[Math.floor(Math.random() * leafSVGs.length)];
+                container.appendChild(leaf);
+
+                /* ── Destruir hoja y limpiar keyframes al terminar ──── */
+                const cleanup = () => {
+                    leaf.remove();
+                    styleTag.remove();
+                };
+                leaf.addEventListener('animationend', cleanup, { once: true });
+                /* Fallback por si animationend no dispara */
+                setTimeout(cleanup, duration + 500);
+
+            }, launchDelay);
+        });
     }
 
     /* ============================================================
