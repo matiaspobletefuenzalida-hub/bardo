@@ -304,6 +304,29 @@
         }
 
         /* =============================================
+           MÓVIL — NIEBLA: una sola capa, blur ligero,
+           animación simplificada sin will-change
+        ============================================= */
+        @media (max-width: 768px) {
+            .mist-band:nth-child(2),
+            .mist-band:nth-child(3) {
+                display: none;
+            }
+            .mist-band:nth-child(1) {
+                filter: blur(10px);
+                opacity: 0.28;
+                will-change: auto;
+                animation-name: mistDriftMobile;
+                animation-duration: 55s;
+            }
+        }
+        @keyframes mistDriftMobile {
+            0%   { transform: translateX(-10%); }
+            50%  { transform: translateX(6%); }
+            100% { transform: translateX(-10%); }
+        }
+
+        /* =============================================
            CAPA 5 — RAYOS KOMOREBI / LUZ NOCTURNA
         ============================================= */
         .komorebi {
