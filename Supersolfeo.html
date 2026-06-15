@@ -133,11 +133,16 @@
         }
 
         /* =============================================
-           MÓVIL — FIX 1: Filtro de bosque sin GPU
-           Desactiva filter/will-change en .bg-forest-filter-layer
-           y lo sustituye por una capa de color semitransparente.
+           MÓVIL — FIX 1: Filtro de bosque sin GPU +
+           Desactivar animación forestBreath en móvil
+           (scale/translate continuo = alto consumo de GPU)
         ============================================= */
         @media (max-width: 768px) {
+            /* Detener la animación de respiración del bosque */
+            .bg-forest-layer {
+                animation: none !important;
+                will-change: auto !important;
+            }
             .bg-forest-filter-layer {
                 /* Desactivar filtro GPU costoso */
                 filter: none !important;
@@ -299,6 +304,29 @@
         }
 
         /* =============================================
+           MÓVIL — NIEBLA: una sola capa, blur ligero,
+           animación simplificada sin will-change
+        ============================================= */
+        @media (max-width: 768px) {
+            .mist-band:nth-child(2),
+            .mist-band:nth-child(3) {
+                display: none;
+            }
+            .mist-band:nth-child(1) {
+                filter: blur(10px);
+                opacity: 0.28;
+                will-change: auto;
+                animation-name: mistDriftMobile;
+                animation-duration: 55s;
+            }
+        }
+        @keyframes mistDriftMobile {
+            0%   { transform: translateX(-10%); }
+            50%  { transform: translateX(6%); }
+            100% { transform: translateX(-10%); }
+        }
+
+        /* =============================================
            CAPA 5 — RAYOS KOMOREBI / LUZ NOCTURNA
         ============================================= */
         .komorebi {
@@ -355,41 +383,28 @@
         /* =============================================
            HOJAS CAYENDO
         ============================================= */
-        @keyframes fall {
-            0%   { transform: translate3d(0, -10vh, 0); opacity: 0; }
-            10%  { opacity: 0.32; }
-            90%  { opacity: 0.32; }
-            100% { transform: translate3d(0, 110vh, 0); opacity: 0; }
-        }
-        @keyframes sway {
-            0%   { transform: translate3d(-14px,  0px, 0) rotate(-12deg); }
-            12%  { transform: translate3d(-22px, -3px, 0) rotate(-18deg); }
-            28%  { transform: translate3d( 18px,  2px, 0) rotate( 14deg); }
-            38%  { transform: translate3d( 10px, -4px, 0) rotate(  8deg); }
-            52%  { transform: translate3d( 24px,  1px, 0) rotate( 20deg); }
-            65%  { transform: translate3d(  6px, -2px, 0) rotate(  4deg); }
-            78%  { transform: translate3d(-20px,  3px, 0) rotate(-15deg); }
-            90%  { transform: translate3d(-10px, -1px, 0) rotate( -8deg); }
-            100% { transform: translate3d(-14px,  0px, 0) rotate(-12deg); }
-        }
+        /* =============================================
+           HOJAS CAYENDO — Sistema de ráfaga de viento
+           Una sola animación por hoja, JS controla la
+           trayectoria, sin animaciones infinitas.
+        ============================================= */
         .leaf-container {
             position: fixed; top: 0; left: 0;
-            width: 100vw; height: 100vh;
+            width: 100vw; height: 100dvh;
             pointer-events: none; z-index: 2;
             overflow: hidden;
         }
-        .leaf {
-            position: absolute; top: -10%;
-            animation: fall linear infinite;
+        /* .wind-leaf: el JS inyecta un @keyframes único por hoja
+           con translate3d+rotate en cada fotograma clave.
+           No usamos will-change ni filter para mantener bajo
+           el consumo de composición en GPU móvil. */
+        .wind-leaf {
+            position: absolute;
             opacity: 0;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
-            will-change: transform;
+            /* transform-origin centrado para rotación natural */
+            transform-origin: 50% 50%;
         }
-        .leaf-inner {
-            display: inline-block;
-            animation: sway ease-in-out infinite;
-            width: 100%; height: 100%;
-        }
+        .wind-leaf svg { display: block; width: 100%; height: 100%; }
 
         /* =============================================
            HEADER — ARTEFACTO ÉLFICO
@@ -1362,77 +1377,142 @@
             100% { opacity: 0.85; transform: translateX(4%); }
         }
 
-        /* --- Hoja arrastrada por el viento (movimiento orgánico) --- */
+        /* --- Hoja protagonista ----------------------------------------- */
         .cine-leaf {
             position: absolute;
-            top: 34%;
-            left: -10%;
-            width: clamp(30px, 5vw, 50px);
-            height: clamp(30px, 5vw, 50px);
-            color: #B8902A;
+            top: 32%;
+            left: -8%;
+            width: clamp(28px, 4.5vw, 46px);
+            height: clamp(28px, 4.5vw, 46px);
+            color: #C8901E;
             opacity: 0;
-            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.55)) drop-shadow(0 0 8px rgba(180,130,30,0.35));
+            filter: drop-shadow(0 3px 8px rgba(0,0,0,0.5));
             will-change: transform, opacity;
-            /* Animación principal: trayectoria horizontal con oscilaciones verticales de viento */
-            animation: cineLeafCross 5.0s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-            animation-delay: 3s;
-            transform-origin: 46% 52%;
+            /* linear: sin aceleración/freno CSS — la física está en los keyframes */
+            animation: cineLeafCross 4.6s linear forwards;
+            animation-delay: 2.6s;
+            transform-origin: 50% 50%;
         }
         .cine-leaf svg { width: 100%; height: 100%; display: block; }
 
-        /* Trayectoria natural del viento: sube y baja en ráfagas, gira orgánicamente */
+        /* Trayectoria calculada punto a punto para velocidad constante-decreciente.
+           X siempre crece. Y siempre crece (nunca sube).
+           La desaceleración X y aceleración Y están embebidas en las distancias
+           entre keyframes — sin cubic-bezier que cree pausas. */
         @keyframes cineLeafCross {
-            0%   { opacity: 0;    transform: translate3d(0vw,   2vh, 0) rotate(-22deg) scale(0.76); }
-            5%   { opacity: 0.95; transform: translate3d(8vw,  -1vh, 0) rotate( 10deg) scale(1.0); }
-            13%  {                transform: translate3d(18vw, -9vh, 0) rotate(-14deg) scale(1.06); }  /* primera ráfaga sube */
-            21%  {                transform: translate3d(28vw, -5vh, 0) rotate( 28deg) scale(0.97); }  /* breve caída */
-            29%  {                transform: translate3d(40vw,-14vh, 0) rotate(-22deg) scale(1.04); }  /* ráfaga fuerte: asciende */
-            37%  {                transform: translate3d(50vw,-10vh, 0) rotate(  4deg) scale(1.01); }  /* planeo horizontal */
-            44%  {                transform: translate3d(59vw,-17vh, 0) rotate(-40deg) scale(0.97); }  /* trompo + sube */
-            53%  {                transform: translate3d(70vw,-11vh, 0) rotate( 32deg) scale(1.02); }  /* desciende girando */
-            62%  {                transform: translate3d(81vw,-19vh, 0) rotate( 58deg) scale(0.94); }  /* ráfaga final empuja arriba */
-            72%  { opacity: 0.88; transform: translate3d(94vw,-13vh, 0) rotate( 42deg) scale(0.97); }
-            82%  { opacity: 0.42; transform: translate3d(110vw,-21vh,0) rotate( 78deg) scale(0.89); }
-            92%  { opacity: 0.08; transform: translate3d(124vw,-16vh,0) rotate( 95deg) scale(0.84); }
-            100% { opacity: 0;    transform: translate3d(136vw,-11vh,0) rotate(110deg) scale(0.81); }
+          /*  %      X        Y        rot   */
+            0%   { opacity:0;   transform: translate3d(  0vw,  0vh,0) rotate(  -8deg); }
+            5%   { opacity:0.9; transform: translate3d(  6vw,  0vh,0) rotate(  12deg); }
+            15%  {              transform: translate3d( 20vw,  1vh,0) rotate(  55deg); }
+            27%  {              transform: translate3d( 36vw,  2vh,0) rotate( 100deg); }
+            40%  {              transform: translate3d( 52vw,  5vh,0) rotate( 145deg); }
+            54%  {              transform: translate3d( 66vw, 11vh,0) rotate( 188deg); }
+            67%  { opacity:0.8; transform: translate3d( 78vw, 20vh,0) rotate( 225deg); }
+            80%  { opacity:0.4; transform: translate3d( 88vw, 32vh,0) rotate( 256deg); }
+            92%  { opacity:0.1; transform: translate3d( 97vw, 46vh,0) rotate( 278deg); }
+           100%  { opacity:0;   transform: translate3d(104vw, 56vh,0) rotate( 290deg); }
         }
 
-        /* =============================================
-           VIENTO VISIBLE — RÁFAGAS ANIMADAS
-        ============================================= */
-        .cine-wind {
+        /* --- Hojas pequeñas en perspectiva (otoño) -------------------- */
+        .cine-leaf-small {
+            position: absolute;
+            opacity: 0;
+            will-change: transform, opacity;
+            transform-origin: 50% 50%;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+        }
+        .cine-leaf-small svg { width: 100%; height: 100%; display: block; }
+
+        /* s1 — pequeña, alta, rápida (lejos) */
+        .cls1 {
+            top: 18%; left: -5%;
+            width: clamp(12px, 1.8vw, 20px); height: clamp(12px, 1.8vw, 20px);
+            color: #8B4513;
+            animation: clsCross1 3.8s linear forwards;
+            animation-delay: 2.4s;
+        }
+        @keyframes clsCross1 {
+            0%   { opacity:0;    transform: translate3d(  0vw, 0vh,0) rotate( 20deg); }
+            8%   { opacity:0.55; transform: translate3d(  8vw,-0.5vh,0) rotate( 65deg); }
+            30%  {               transform: translate3d( 30vw, 1vh,0) rotate(130deg); }
+            60%  {               transform: translate3d( 62vw, 5vh,0) rotate(200deg); }
+            85%  { opacity:0.3;  transform: translate3d( 88vw,14vh,0) rotate(250deg); }
+           100%  { opacity:0;    transform: translate3d(108vw,24vh,0) rotate(280deg); }
+        }
+
+        /* s2 — mediana, zona baja, más lenta (cerca) */
+        .cls2 {
+            top: 52%; left: -6%;
+            width: clamp(18px, 2.8vw, 32px); height: clamp(18px, 2.8vw, 32px);
+            color: #A0522D;
+            animation: clsCross2 5.2s linear forwards;
+            animation-delay: 3.1s;
+        }
+        @keyframes clsCross2 {
+            0%   { opacity:0;    transform: translate3d(  0vw, 0vh,0) rotate(-10deg); }
+            6%   { opacity:0.5;  transform: translate3d(  5vw, 0.5vh,0) rotate( 30deg); }
+            28%  {               transform: translate3d( 25vw, 3vh,0) rotate( 95deg); }
+            55%  {               transform: translate3d( 55vw,12vh,0) rotate(160deg); }
+            80%  { opacity:0.25; transform: translate3d( 80vw,28vh,0) rotate(210deg); }
+           100%  { opacity:0;    transform: translate3d(100vw,44vh,0) rotate(245deg); }
+        }
+
+        /* s3 — diminuta, zona alta, muy rápida (muy lejos) */
+        .cls3 {
+            top: 8%; left: -4%;
+            width: clamp(8px, 1.2vw, 14px); height: clamp(8px, 1.2vw, 14px);
+            color: #6B3A2A;
+            animation: clsCross3 3.2s linear forwards;
+            animation-delay: 2.9s;
+        }
+        @keyframes clsCross3 {
+            0%   { opacity:0;    transform: translate3d(  0vw, 0vh,0) rotate( 15deg); }
+            7%   { opacity:0.45; transform: translate3d(  7vw, 0vh,0) rotate( 50deg); }
+            35%  {               transform: translate3d( 38vw, 1vh,0) rotate(120deg); }
+            70%  {               transform: translate3d( 74vw, 4vh,0) rotate(190deg); }
+            90%  { opacity:0.2;  transform: translate3d( 96vw, 9vh,0) rotate(230deg); }
+           100%  { opacity:0;    transform: translate3d(108vw,14vh,0) rotate(250deg); }
+        }
+
+        /* s4 — mediana-chica, zona media-baja */
+        .cls4 {
+            top: 44%; left: -5%;
+            width: clamp(14px, 2.2vw, 26px); height: clamp(14px, 2.2vw, 26px);
+            color: #7A3B1E;
+            animation: clsCross4 4.4s linear forwards;
+            animation-delay: 3.4s;
+        }
+        @keyframes clsCross4 {
+            0%   { opacity:0;    transform: translate3d(  0vw, 0vh,0) rotate(-5deg); }
+            7%   { opacity:0.48; transform: translate3d(  6vw, 1vh,0) rotate( 40deg); }
+            30%  {               transform: translate3d( 28vw, 4vh,0) rotate(105deg); }
+            60%  {               transform: translate3d( 58vw,14vh,0) rotate(175deg); }
+            85%  { opacity:0.22; transform: translate3d( 84vw,30vh,0) rotate(220deg); }
+           100%  { opacity:0;    transform: translate3d(102vw,46vh,0) rotate(252deg); }
+        }
+
+        /* --- SVG ráfaga de viento -------------------------------------- */
+        .cine-wind-svg {
             position: absolute;
             inset: 0;
+            width: 100%; height: 100%;
             pointer-events: none;
-            overflow: hidden;
+            overflow: visible;
         }
-        .cine-wind-streak {
-            position: absolute;
-            border-radius: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(255,255,255,0.09) 20%,
-                rgba(212,175,55,0.07) 50%,
-                rgba(255,255,255,0.06) 78%,
-                transparent 100%
-            );
-            will-change: transform, opacity;
-            animation: windSweep linear both;
+        /* Cada trazo se mueve de izquierda a derecha con un dash offset */
+        .cine-ws {
+            fill: none;
+            stroke-linecap: round;
+            animation: windDash linear forwards;
         }
-        @keyframes windSweep {
-            0%   { transform: translateX(-110%) scaleX(0.6); opacity: 0; }
-            8%   { opacity: 1;   transform: translateX(-60%) scaleX(0.85); }
-            80%  { opacity: 0.75; transform: translateX(60%) scaleX(1.1); }
-            100% { transform: translateX(115%) scaleX(0.7); opacity: 0; }
+        @keyframes windDash {
+            0%   { stroke-dashoffset: 1200; opacity: 0; }
+            8%   { opacity: 1; }
+            88%  { opacity: 0.6; }
+            100% { stroke-dashoffset: 0; opacity: 0; }
         }
-        /* Segunda ola: más fina, diferente ritmo */
-        @keyframes windSweep2 {
-            0%   { transform: translateX(-115%) scaleX(0.5); opacity: 0; }
-            12%  { opacity: 0.7; }
-            85%  { opacity: 0.5; }
-            100% { transform: translateX(110%) scaleX(0.8); opacity: 0; }
-        }
+
+
 
         /* --- Título emerge (4.0s) --- */
         .cine-title {
@@ -1496,6 +1576,56 @@
         @media (prefers-reduced-motion: reduce) {
             .cine-intro { display: none !important; }
         }
+
+        /* =============================================
+           MÓVIL — OPTIMIZACIÓN RENDIMIENTO
+           Desactiva efectos secundarios (canvas RAF,
+           backdrop-filter, animaciones infinitas no esenciales,
+           capas de partículas/estrellas/hojas/luces)
+        ============================================= */
+        @media (max-width: 767px) {
+            /* Canvas partículas (luciérnagas/polvo) — RAF continuo */
+            #particle-canvas { display: none !important; }
+
+            /* Hojas cayendo — RAF + drop-shadow */
+            .leaf-container { display: none !important; }
+
+            /* Estrellas — muchos nodos DOM con animación starTwinkle */
+            .starfield { display: none !important; }
+
+            /* Niebla completa — blur + mistDrift */
+            .bg-mist { display: none !important; }
+
+            /* Luces: komorebi (lightShift) y dusk-glow (opacity calc) */
+            .komorebi { display: none !important; }
+            .dusk-glow { display: none !important; }
+
+            /* backdrop-filter costoso en GPU móvil */
+            .header-artifact {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                background: rgba(8,18,12,0.97) !important;
+            }
+            .mobile-menu-panel {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                background: rgba(8,18,12,0.99) !important;
+            }
+
+            /* Animaciones infinitas no esenciales */
+            .mc-ring-1,
+            .mc-ring-2,
+            .mc-ring-3,
+            .mc-glow,
+            .hero-title::after { animation: none !important; }
+
+            /* Brillos: medalla logo y marco retrato */
+            .logo-medallion::after { animation: none !important; }
+            .portrait-frame::before { animation: none !important; }
+
+            /* Halo de luna (moonPulse) */
+            .night-moon::after { animation: none !important; }
+        }
     </style>
 </head>
 <body class="text-forest-deep font-sans antialiased overflow-x-hidden min-h-screen relative transition-colors duration-1000">
@@ -1505,24 +1635,33 @@
         <div class="cine-vignette" aria-hidden="true"></div>
         <div class="cine-light" aria-hidden="true"></div>
         <div class="cine-fog" aria-hidden="true"></div>
-        <!-- Ráfagas de viento: 10 trazos en distintas posiciones, duraciones y delays -->
-        <div class="cine-wind" aria-hidden="true">
-            <!-- ola 1: gruesas, rápidas, cerca del centro -->
-            <div class="cine-wind-streak" style="top:28%;width:58%;height:2px;animation-name:windSweep;animation-duration:1.8s;animation-delay:3.15s;animation-iteration-count:3;"></div>
-            <div class="cine-wind-streak" style="top:35%;width:72%;height:1px;animation-name:windSweep;animation-duration:2.1s;animation-delay:3.35s;animation-iteration-count:3;"></div>
-            <!-- ola 2: medianas, zona superior -->
-            <div class="cine-wind-streak" style="top:20%;width:44%;height:1.5px;animation-name:windSweep2;animation-duration:2.5s;animation-delay:3.55s;animation-iteration-count:2;"></div>
-            <div class="cine-wind-streak" style="top:24%;width:65%;height:1px;animation-name:windSweep;animation-duration:2.8s;animation-delay:3.80s;animation-iteration-count:2;"></div>
-            <!-- ola 3: largas, zona inferior -->
-            <div class="cine-wind-streak" style="top:42%;width:80%;height:1px;animation-name:windSweep2;animation-duration:2.0s;animation-delay:4.10s;animation-iteration-count:3;"></div>
-            <div class="cine-wind-streak" style="top:47%;width:55%;height:2px;animation-name:windSweep;animation-duration:1.6s;animation-delay:4.30s;animation-iteration-count:3;"></div>
-            <!-- ola 4: finas, acompañan el arco final -->
-            <div class="cine-wind-streak" style="top:18%;width:40%;height:1px;animation-name:windSweep2;animation-duration:3.0s;animation-delay:5.20s;animation-iteration-count:2;"></div>
-            <div class="cine-wind-streak" style="top:31%;width:68%;height:1.5px;animation-name:windSweep;animation-duration:2.3s;animation-delay:5.50s;animation-iteration-count:2;"></div>
-            <div class="cine-wind-streak" style="top:38%;width:50%;height:1px;animation-name:windSweep2;animation-duration:1.9s;animation-delay:5.80s;animation-iteration-count:2;"></div>
-            <div class="cine-wind-streak" style="top:44%;width:76%;height:1px;animation-name:windSweep;animation-duration:2.6s;animation-delay:6.10s;animation-iteration-count:1;"></div>
-        </div>
 
+        <!-- Ráfagas de viento: trazos SVG con dash-offset animation -->
+        <svg class="cine-wind-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <!-- Trazos curvos del viento — dash-offset crea la ilusión de flujo continuo -->
+            <!-- Líneas gruesas / zona central -->
+            <path class="cine-ws" d="M-60,195 C120,190 280,185 440,192 C600,199 750,194 920,188"
+                stroke="rgba(255,255,255,0.10)" stroke-width="2.2" stroke-dasharray="1200" style="animation-duration:2.0s;animation-delay:2.7s;"/>
+            <path class="cine-ws" d="M-60,230 C150,224 320,218 500,226 C660,232 820,225 960,220"
+                stroke="rgba(212,175,55,0.08)" stroke-width="1.8" stroke-dasharray="1200" style="animation-duration:2.3s;animation-delay:2.85s;"/>
+            <!-- Líneas finas / zona alta -->
+            <path class="cine-ws" d="M-60,130 C100,126 240,122 400,128 C560,134 720,130 940,124"
+                stroke="rgba(255,255,255,0.07)" stroke-width="1.2" stroke-dasharray="1200" style="animation-duration:1.9s;animation-delay:3.0s;"/>
+            <path class="cine-ws" d="M-60,158 C200,152 380,148 560,154 C720,160 870,154 1020,148"
+                stroke="rgba(255,255,255,0.06)" stroke-width="1.0" stroke-dasharray="1200" style="animation-duration:2.6s;animation-delay:3.2s;"/>
+            <!-- Líneas medianas / zona media-baja -->
+            <path class="cine-ws" d="M-60,280 C130,275 300,270 480,277 C640,284 800,278 980,272"
+                stroke="rgba(255,255,255,0.07)" stroke-width="1.5" stroke-dasharray="1200" style="animation-duration:2.1s;animation-delay:3.4s;"/>
+            <path class="cine-ws" d="M-60,310 C170,304 350,298 530,305 C700,312 860,306 1020,300"
+                stroke="rgba(180,140,50,0.06)" stroke-width="1.2" stroke-dasharray="1200" style="animation-duration:2.8s;animation-delay:3.6s;"/>
+            <!-- Segunda ola — acompañan la caída de la hoja -->
+            <path class="cine-ws" d="M-60,175 C140,170 310,165 490,172 C660,178 820,173 980,167"
+                stroke="rgba(255,255,255,0.08)" stroke-width="1.6" stroke-dasharray="1200" style="animation-duration:2.2s;animation-delay:4.2s;"/>
+            <path class="cine-ws" d="M-60,250 C120,244 290,239 470,246 C640,253 810,247 1000,241"
+                stroke="rgba(255,255,255,0.06)" stroke-width="1.0" stroke-dasharray="1200" style="animation-duration:2.5s;animation-delay:4.5s;"/>
+        </svg>
+
+        <!-- Hoja protagonista -->
         <div class="cine-leaf" aria-hidden="true">
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <path d="M50 4 C74 18, 88 38, 88 56 C88 76, 70 92, 50 96 C30 92, 12 76, 12 56 C12 38, 26 18, 50 4 Z" fill="currentColor"/>
@@ -1531,8 +1670,32 @@
                 <path d="M50 26 C58 32, 64 38, 70 44" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
                 <path d="M50 48 C43 54, 38 60, 33 66" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
                 <path d="M50 48 C57 54, 62 60, 67 66" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 68 C45 72, 41 76, 37 80" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 68 C55 72, 59 76, 63 80" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <!-- Hojas pequeñas en perspectiva (otoño) -->
+        <div class="cine-leaf-small cls1" aria-hidden="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4 C53 12,56 18,62 22 C68 18,76 16,84 18 C80 26,78 32,80 38 C88 38,95 42,98 50 C91 53,86 56,84 62 C90 66,94 72,95 80 C87 78,80 78,74 80 C75 86,74 92,70 98 C64 92,59 88,50 86 C41 88,36 92,30 98 C26 92,25 86,26 80 C20 78,13 78,5 80 C6 72,10 66,16 62 C14 56,9 53,2 50 C5 42,12 38,20 38 C22 32,20 26,16 18 C24 16,32 18,38 22 C44 18,47 12,50 4 Z" fill="currentColor"/>
+                <path d="M50 8 C50 32,50 64,50 94" stroke="rgba(0,0,0,0.15)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="cine-leaf-small cls2" aria-hidden="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4 C56 10,58 16,56 22 C64 20,72 24,73 32 C81 30,89 35,88 44 C96 45,100 53,95 60 C100 66,97 75,88 76 C90 84,84 92,75 90 C73 97,64 100,58 95 C55 99,50 99,47 95 C41 100,32 97,30 90 C21 92,15 84,17 76 C8 75,5 66,10 60 C5 53,9 45,17 44 C16 35,24 30,32 32 C33 24,41 20,49 22 C47 16,49 10,50 4 Z" fill="currentColor"/>
+                <path d="M50 8 C50 32,50 64,50 97" stroke="rgba(0,0,0,0.15)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="cine-leaf-small cls3" aria-hidden="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4 C54 12,58 18,64 22 C72 18,82 18,90 24 C84 30,80 34,80 40 C90 42,97 50,96 58 C88 56,81 57,76 60 C82 66,86 74,84 84 C76 78,69 75,62 76 C64 84,62 92,56 98 C53 92,51 88,50 84 C49 88,47 92,44 98 C38 92,36 84,38 76 C31 75,24 78,16 84 C14 74,18 66,24 60 C19 57,12 56,4 58 C3 50,10 42,20 40 C20 34,16 30,10 24 C18 18,28 18,36 22 C42 18,46 12,50 4 Z" fill="currentColor"/>
+                <path d="M50 6 C50 30,50 62,50 96" stroke="rgba(0,0,0,0.15)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="cine-leaf-small cls4" aria-hidden="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4 C56 9 53 12 58 14 C63 14 61 19 66 20 C70 22 67 26 72 28 C76 30 73 35 78 37 C82 40 79 45 83 48 C86 52 82 56 85 60 C87 65 83 68 84 73 C85 78 80 80 79 85 C77 90 72 90 69 94 C65 97 62 93 58 96 C54 99 51 96 50 98 C49 96 46 99 42 96 C38 93 35 97 31 94 C28 90 23 90 21 85 C20 80 15 78 16 73 C17 68 13 65 15 60 C18 56 14 52 17 48 C21 45 18 40 22 37 C27 35 24 30 28 28 C33 26 30 22 34 20 C39 19 37 14 42 14 C47 12 44 9 50 4 Z" fill="currentColor"/>
+                <path d="M50 6 C50 32,50 64,50 98" stroke="rgba(0,0,0,0.15)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
             </svg>
         </div>
 
@@ -2398,142 +2561,147 @@
     }
 
     /* ============================================================
-       HOJAS CAYENDO
+       HOJA PROTAGONISTA — física de viento real
+       
+       DIAGNÓSTICO DEL ZIG-ZAG ANTERIOR:
+         El wrapper interior con rotación propia desfasaba el centro
+         visual respecto al centro geométrico del translate, creando
+         oscilaciones perceptuales aunque la trayectoria fuera suave.
+         
+       SOLUCIÓN:
+         Un solo elemento. Un solo @keyframes. translate3d + rotate
+         calculados juntos para que cada punto sea coherente.
+         La trayectoria de posición usa SOLO 4 puntos de control
+         (0%, 28%, 68%, 100%) para que el interpolador CSS no pueda
+         crear inflexiones no deseadas entre keyframes.
+         La X siempre aumenta. La Y siempre aumenta.
+         Sin wobbles, sin offsets, sin wrappers anidados.
     ============================================================ */
     function createLeaves() {
         const container = document.getElementById('leaf-container');
         if (!container) return;
+
         const leafSVGs = [
-            // Hoja de arce — 5 puntas con lóbulos profundos y vena en abanico
             `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 4
-                    C53 12, 56 18, 62 22
-                    C68 18, 76 16, 84 18
-                    C80 26, 78 32, 80 38
-                    C88 38, 95 42, 98 50
-                    C91 53, 86 56, 84 62
-                    C90 66, 94 72, 95 80
-                    C87 78, 80 78, 74 80
-                    C75 86, 74 92, 70 98
-                    C64 92, 59 88, 50 86
-                    C41 88, 36 92, 30 98
-                    C26 92, 25 86, 26 80
-                    C20 78, 13 78, 5 80
-                    C6 72, 10 66, 16 62
-                    C14 56, 9 53, 2 50
-                    C5 42, 12 38, 20 38
-                    C22 32, 20 26, 16 18
-                    C24 16, 32 18, 38 22
-                    C44 18, 47 12, 50 4 Z" fill="currentColor"/>
-                <path d="M50 6 C50 30, 50 60, 50 96" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-                <path d="M50 30 C42 26, 33 24, 24 24" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 30 C58 26, 67 24, 76 24" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 52 C38 50, 26 52, 14 58" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 52 C62 50, 74 52, 86 58" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 4 C53 12,56 18,62 22 C68 18,76 16,84 18 C80 26,78 32,80 38 C88 38,95 42,98 50 C91 53,86 56,84 62 C90 66,94 72,95 80 C87 78,80 78,74 80 C75 86,74 92,70 98 C64 92,59 88,50 86 C41 88,36 92,30 98 C26 92,25 86,26 80 C20 78,13 78,5 80 C6 72,10 66,16 62 C14 56,9 53,2 50 C5 42,12 38,20 38 C22 32,20 26,16 18 C24 16,32 18,38 22 C44 18,47 12,50 4 Z" fill="currentColor"/>
+                <path d="M50 6 C50 30,50 60,50 96" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                <path d="M50 30 C42 26,33 24,24 24" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
+                <path d="M50 30 C58 26,67 24,76 24" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
             </svg>`,
-            // Hoja de roble — lóbulos redondeados profundos, vena central recta
             `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 4
-                    C56 10, 58 16, 56 22
-                    C64 20, 72 24, 73 32
-                    C81 30, 89 35, 88 44
-                    C96 45, 100 53, 95 60
-                    C100 66, 97 75, 88 76
-                    C90 84, 84 92, 75 90
-                    C73 97, 64 100, 58 95
-                    C55 99, 50 99, 47 95
-                    C41 100, 32 97, 30 90
-                    C21 92, 15 84, 17 76
-                    C8 75, 5 66, 10 60
-                    C5 53, 9 45, 17 44
-                    C16 35, 24 30, 32 32
-                    C33 24, 41 20, 49 22
-                    C47 16, 49 10, 50 4 Z" fill="currentColor"/>
-                <path d="M50 8 C50 32, 50 64, 50 97" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-                <path d="M50 28 C42 28, 35 30, 28 34" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 28 C58 28, 65 30, 72 34" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 50 C40 50, 30 53, 20 58" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 50 C60 50, 70 53, 80 58" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 72 C44 74, 39 78, 34 84" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 72 C56 74, 61 78, 66 84" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 4 C56 10,58 16,56 22 C64 20,72 24,73 32 C81 30,89 35,88 44 C96 45,100 53,95 60 C100 66,97 75,88 76 C90 84,84 92,75 90 C73 97,64 100,58 95 C55 99,50 99,47 95 C41 100,32 97,30 90 C21 92,15 84,17 76 C8 75,5 66,10 60 C5 53,9 45,17 44 C16 35,24 30,32 32 C33 24,41 20,49 22 C47 16,49 10,50 4 Z" fill="currentColor"/>
+                <path d="M50 8 C50 32,50 64,50 97" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
             </svg>`,
-            // Hoja serrada (tipo abedul/olmo) — óvalo con borde dentado y vena en espina
             `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 4
-                    C56 9 53 12 58 14 C63 14 61 19 66 20 C70 22 67 26 72 28
-                    C76 30 73 35 78 37 C82 40 79 45 83 48
-                    C86 52 82 56 85 60 C87 65 83 68 84 73
-                    C85 78 80 80 79 85 C77 90 72 90 69 94
-                    C65 97 62 93 58 96 C54 99 51 96 50 98
-                    C49 96 46 99 42 96 C38 93 35 97 31 94
-                    C28 90 23 90 21 85 C20 80 15 78 16 73
-                    C17 68 13 65 15 60 C18 56 14 52 17 48
-                    C21 45 18 40 22 37 C27 35 24 30 28 28
-                    C33 26 30 22 34 20 C39 19 37 14 42 14
-                    C47 12 44 9 50 4 Z" fill="currentColor"/>
-                <path d="M50 6 C50 32, 50 64, 50 98" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-                <path d="M50 18 C44 22, 38 26, 33 30" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 18 C56 22, 62 26, 67 30" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 34 C43 38, 37 43, 31 48" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 34 C57 38, 63 43, 69 48" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 50 C43 54, 37 59, 31 64" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 50 C57 54, 63 59, 69 64" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 66 C45 70, 41 74, 37 79" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 66 C55 70, 59 74, 63 79" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-            </svg>`,
-            // Hoja de sicómoro — 3 puntas amplias con bordes dentados
-            `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 4
-                    C54 12, 58 18, 64 22
-                    C72 18, 82 18, 90 24
-                    C84 30, 80 34, 80 40
-                    C90 42, 97 50, 96 58
-                    C88 56, 81 57, 76 60
-                    C82 66, 86 74, 84 84
-                    C76 78, 69 75, 62 76
-                    C64 84, 62 92, 56 98
-                    C53 92, 51 88, 50 84
-                    C49 88, 47 92, 44 98
-                    C38 92, 36 84, 38 76
-                    C31 75, 24 78, 16 84
-                    C14 74, 18 66, 24 60
-                    C19 57, 12 56, 4 58
-                    C3 50, 10 42, 20 40
-                    C20 34, 16 30, 10 24
-                    C18 18, 28 18, 36 22
-                    C42 18, 46 12, 50 4 Z" fill="currentColor"/>
-                <path d="M50 8 C50 34, 50 66, 50 96" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-                <path d="M50 30 C42 26, 33 24, 24 26" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 30 C58 26, 67 24, 76 26" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 56 C40 56, 30 60, 20 66" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 56 C60 56, 70 60, 80 66" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+                <path d="M50 4 C54 12,58 18,64 22 C72 18,82 18,90 24 C84 30,80 34,80 40 C90 42,97 50,96 58 C88 56,81 57,76 60 C82 66,86 74,84 84 C76 78,69 75,62 76 C64 84,62 92,56 98 C53 92,51 88,50 84 C49 88,47 92,44 98 C38 92,36 84,38 76 C31 75,24 78,16 84 C14 74,18 66,24 60 C19 57,12 56,4 58 C3 50,10 42,20 40 C20 34,16 30,10 24 C18 18,28 18,36 22 C42 18,46 12,50 4 Z" fill="currentColor"/>
+                <path d="M50 8 C50 34,50 66,50 96" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
             </svg>`
         ];
+
         const colors = ['#D4AF37','#C98A28','#8a6d1c','#A67B27','#b8960c'];
-        const isMobile = window.innerWidth < 768;
-        const leafCount = isMobile ? 6 : 12;
-        const frag = document.createDocumentFragment();
+        const isMobile = window.__isMobile;
 
-        for (let i = 0; i < leafCount; i++) {
-            const leaf = document.createElement('div');
-            leaf.className = 'leaf';
-            const inner = document.createElement('div');
-            inner.className = 'leaf-inner';
-            inner.innerHTML = leafSVGs[Math.floor(Math.random() * leafSVGs.length)];
-            inner.style.color = colors[Math.floor(Math.random() * colors.length)];
-            const size = isMobile ? (12 + Math.random() * 10) : (16 + Math.random() * 13);
-            leaf.style.left = `${Math.random() * 100}vw`;
-            leaf.style.animationDuration = `${30 + Math.random() * 38}s`;
-            leaf.style.animationDelay    = `${Math.random() * 45}s`;
-            leaf.style.width  = `${size}px`;
-            leaf.style.height = `${size}px`;
-            inner.style.animationDuration = `${5 + Math.random() * 5}s`;
-            leaf.appendChild(inner);
-            frag.appendChild(leaf);
-        }
-        container.appendChild(frag);
+        const kfIdx = (window.__windLeafKfIndex || 0);
+        window.__windLeafKfIndex = kfIdx + 1;
+        const kfName = 'wl' + kfIdx;
+
+        const szPx = isMobile
+            ? Math.round(22 + Math.random() * 10)
+            : Math.round(30 + Math.random() * 14);
+
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        /* Posición de entrada: borde izquierdo, zona alta */
+        const startX = -(szPx + 20);
+        const startY = Math.round(vh * (0.08 + Math.random() * 0.20));
+
+        /* ── TRAYECTORIA: 3 puntos intermedios + fin ──────────────
+           Regla estricta: Xn > Xn-1 siempre. Yn >= Yn-1 siempre.
+           Solo 3 waypoints para minimizar inflexiones del interpolador.
+           
+           A: fin de ráfaga   (~30% del tiempo, ~40% del ancho)
+           B: transición       (~65% del tiempo, ~70% del ancho)  
+           C: caída final      (100% del tiempo, ~85% del ancho)
+           
+           La curva ease de CSS entre cada par de keyframes es lineal
+           en este contexto (se controla con el cubic-bezier global),
+           así que 3 waypoints = 3 segmentos curvos bien definidos.
+        ─────────────────────────────────────────────────────────── */
+        const ax = Math.round(vw * (0.38 + Math.random() * 0.06));  // 38–44% del ancho
+        const ay = Math.round(vh * (0.03 + Math.random() * 0.03));  // 3–6% de altura: casi plano
+
+        const bx = Math.round(vw * (0.65 + Math.random() * 0.06));  // 65–71%
+        const by = Math.round(vh * (0.22 + Math.random() * 0.10));  // 22–32%: curva notable
+
+        const cx = Math.round(vw * (0.80 + Math.random() * 0.06));  // 80–86%
+        const cy = Math.round(vh * (0.72 + Math.random() * 0.12));  // 72–84%: caída profunda
+
+        /* ── ROTACIÓN: acumulativa en un solo sentido ─────────────
+           Siempre suma ángulo (o siempre resta). Nunca invierte.
+           El CSS interpola directamente entre valores acumulados,
+           por lo que no puede crear reversiones de dirección.
+           
+           Velocidad angular decrece con el tiempo (como fricción del aire).
+        ─────────────────────────────────────────────────────────── */
+        const spin = Math.random() < 0.55 ? 1 : -1;
+        // Ángulo inicial: hoja entra inclinada por el viento
+        const rStart = spin * (5 + Math.random() * 10);
+        // En A (ráfaga): giro rápido — acumula 160–260°
+        const rA = rStart + spin * (160 + Math.random() * 100);
+        // En B (transición): giro moderado — acumula 80–130° más
+        const rB = rA + spin * (80 + Math.random() * 50);
+        // En C (caída): giro lento — acumula 25–50° más
+        const rC = rB + spin * (25 + Math.random() * 25);
+
+        /* ── Duración: 3.8–5.2 s ──────────────────────────────── */
+        const duration = Math.round(3800 + Math.random() * 1400);
+        const opMax = (0.72 + Math.random() * 0.18).toFixed(2);
+
+        /* ── @keyframes: translate3d y rotate en el MISMO elemento
+           Esto elimina el desfase visual del wrapper anidado.
+           La interpolación CSS combina ambos en cada frame sin
+           generar trayectorias parasitarias.
+        ─────────────────────────────────────────────────────────── */
+        const css = [
+            '@keyframes ' + kfName + ' {',
+            '  0%   { transform: translate3d(0px, 0px, 0) rotate(' + rStart.toFixed(1) + 'deg); opacity: 0; }',
+            '  6%   { opacity: ' + opMax + '; }',
+            '  30%  { transform: translate3d(' + ax + 'px, ' + ay + 'px, 0) rotate(' + rA.toFixed(1) + 'deg); opacity: ' + opMax + '; }',
+            '  65%  { transform: translate3d(' + bx + 'px, ' + by + 'px, 0) rotate(' + rB.toFixed(1) + 'deg); opacity: ' + (opMax * 0.88).toFixed(2) + '; }',
+            '  100% { transform: translate3d(' + cx + 'px, ' + cy + 'px, 0) rotate(' + rC.toFixed(1) + 'deg); opacity: 0; }',
+            '}'
+        ].join('\n');
+
+        const styleTag = document.createElement('style');
+        styleTag.textContent = css;
+        document.head.appendChild(styleTag);
+
+        const leaf = document.createElement('div');
+        leaf.className = 'wind-leaf';
+        leaf.style.cssText =
+            'left:' + startX + 'px;' +
+            'top:' + startY + 'px;' +
+            'width:' + szPx + 'px;' +
+            'height:' + szPx + 'px;' +
+            'color:' + colors[Math.floor(Math.random() * colors.length)] + ';' +
+            'transform-origin: 50% 50%;' +
+            /* cubic-bezier: arranque explosivo, desaceleración orgánica */
+            'animation:' + kfName + ' ' + duration + 'ms cubic-bezier(0.12, 0.8, 0.4, 1) forwards;';
+
+        leaf.innerHTML = leafSVGs[Math.floor(Math.random() * leafSVGs.length)];
+
+        /* Pausa de calma inicial */
+        const pause = Math.round(400 + Math.random() * 600);
+        leaf.style.animationDelay = pause + 'ms';
+
+        container.appendChild(leaf);
+
+        const totalTime = pause + duration + 300;
+        const cleanup = () => { leaf.remove(); styleTag.remove(); };
+        leaf.addEventListener('animationend', cleanup, { once: true });
+        setTimeout(cleanup, totalTime);
     }
-
     /* ============================================================
        PARALLAX HERO — throttled
     ============================================================ */
@@ -2956,10 +3124,12 @@
         CineIntro.init();
         initializeTheme();
         syncForestImage();
-        createStars();
-        createLeaves();
-        initParticles();
-        initParallax();
+        if (!window.__isMobile) {
+            createStars();
+            createLeaves();
+            initParticles();
+            initParallax();
+        }
         revealSections();
         initReadProgress();
         updateParticleMode();
