@@ -1377,77 +1377,142 @@
             100% { opacity: 0.85; transform: translateX(4%); }
         }
 
-        /* --- Hoja arrastrada por el viento (movimiento orgánico) --- */
+        /* --- Hoja protagonista ----------------------------------------- */
         .cine-leaf {
             position: absolute;
-            top: 34%;
-            left: -10%;
-            width: clamp(30px, 5vw, 50px);
-            height: clamp(30px, 5vw, 50px);
-            color: #B8902A;
+            top: 32%;
+            left: -8%;
+            width: clamp(28px, 4.5vw, 46px);
+            height: clamp(28px, 4.5vw, 46px);
+            color: #C8901E;
             opacity: 0;
-            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.55)) drop-shadow(0 0 8px rgba(180,130,30,0.35));
+            filter: drop-shadow(0 3px 8px rgba(0,0,0,0.5));
             will-change: transform, opacity;
-            /* cubic-bezier: arranque explosivo (ráfaga), desaceleración orgánica hacia la caída */
-            animation: cineLeafCross 4.8s cubic-bezier(0.12, 0.85, 0.38, 1) forwards;
-            animation-delay: 2.8s;
-            transform-origin: 46% 52%;
+            /* linear: sin aceleración/freno CSS — la física está en los keyframes */
+            animation: cineLeafCross 4.6s linear forwards;
+            animation-delay: 2.6s;
+            transform-origin: 50% 50%;
         }
         .cine-leaf svg { width: 100%; height: 100%; display: block; }
 
-        /* Física real del viento:
-           — Eje X: avanza siempre (viento constante de izquierda a derecha)
-           — Eje Y: parte casi plano, luego la gravedad va curvando hacia abajo
-             de forma MONOTÓNA. Nunca sube. La hoja no puede recuperar altura.
-           — Rotación: acumulativa en un solo sentido, más rápida al inicio.
-           — Solo 4 waypoints para que el interpolador CSS no genere inflexiones. */
+        /* Trayectoria calculada punto a punto para velocidad constante-decreciente.
+           X siempre crece. Y siempre crece (nunca sube).
+           La desaceleración X y aceleración Y están embebidas en las distancias
+           entre keyframes — sin cubic-bezier que cree pausas. */
         @keyframes cineLeafCross {
-            0%   { opacity: 0;    transform: translate3d(-2vw,  1vh, 0) rotate(-15deg); }
-            6%   { opacity: 0.94;                                                        }
-            /* Ráfaga — vuelo casi horizontal, mínima caída */
-            32%  {                transform: translate3d(38vw,  3vh, 0) rotate( 85deg); }
-            /* Gravedad domina — curva hacia abajo */
-            68%  { opacity: 0.82; transform: translate3d(76vw, 18vh, 0) rotate(195deg); }
-            /* Caída final — sale por el borde derecho descendiendo */
-            100% { opacity: 0;    transform: translate3d(114vw,48vh, 0) rotate(275deg); }
+          /*  %      X        Y        rot   */
+            0%   { opacity:0;   transform: translate3d(  0vw,  0vh,0) rotate(  -8deg); }
+            5%   { opacity:0.9; transform: translate3d(  6vw,  0vh,0) rotate(  12deg); }
+            15%  {              transform: translate3d( 20vw,  1vh,0) rotate(  55deg); }
+            27%  {              transform: translate3d( 36vw,  2vh,0) rotate( 100deg); }
+            40%  {              transform: translate3d( 52vw,  5vh,0) rotate( 145deg); }
+            54%  {              transform: translate3d( 66vw, 11vh,0) rotate( 188deg); }
+            67%  { opacity:0.8; transform: translate3d( 78vw, 20vh,0) rotate( 225deg); }
+            80%  { opacity:0.4; transform: translate3d( 88vw, 32vh,0) rotate( 256deg); }
+            92%  { opacity:0.1; transform: translate3d( 97vw, 46vh,0) rotate( 278deg); }
+           100%  { opacity:0;   transform: translate3d(104vw, 56vh,0) rotate( 290deg); }
         }
 
-        /* =============================================
-           VIENTO VISIBLE — RÁFAGAS ANIMADAS
-        ============================================= */
-        .cine-wind {
+        /* --- Hojas pequeñas en perspectiva (otoño) -------------------- */
+        .cine-leaf-small {
+            position: absolute;
+            opacity: 0;
+            will-change: transform, opacity;
+            transform-origin: 50% 50%;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+        }
+        .cine-leaf-small svg { width: 100%; height: 100%; display: block; }
+
+        /* s1 — pequeña, alta, rápida (lejos) */
+        .cls1 {
+            top: 18%; left: -5%;
+            width: clamp(12px, 1.8vw, 20px); height: clamp(12px, 1.8vw, 20px);
+            color: #8B4513;
+            animation: clsCross1 3.8s linear forwards;
+            animation-delay: 2.4s;
+        }
+        @keyframes clsCross1 {
+            0%   { opacity:0;    transform: translate3d(  0vw, 0vh,0) rotate( 20deg); }
+            8%   { opacity:0.55; transform: translate3d(  8vw,-0.5vh,0) rotate( 65deg); }
+            30%  {               transform: translate3d( 30vw, 1vh,0) rotate(130deg); }
+            60%  {               transform: translate3d( 62vw, 5vh,0) rotate(200deg); }
+            85%  { opacity:0.3;  transform: translate3d( 88vw,14vh,0) rotate(250deg); }
+           100%  { opacity:0;    transform: translate3d(108vw,24vh,0) rotate(280deg); }
+        }
+
+        /* s2 — mediana, zona baja, más lenta (cerca) */
+        .cls2 {
+            top: 52%; left: -6%;
+            width: clamp(18px, 2.8vw, 32px); height: clamp(18px, 2.8vw, 32px);
+            color: #A0522D;
+            animation: clsCross2 5.2s linear forwards;
+            animation-delay: 3.1s;
+        }
+        @keyframes clsCross2 {
+            0%   { opacity:0;    transform: translate3d(  0vw, 0vh,0) rotate(-10deg); }
+            6%   { opacity:0.5;  transform: translate3d(  5vw, 0.5vh,0) rotate( 30deg); }
+            28%  {               transform: translate3d( 25vw, 3vh,0) rotate( 95deg); }
+            55%  {               transform: translate3d( 55vw,12vh,0) rotate(160deg); }
+            80%  { opacity:0.25; transform: translate3d( 80vw,28vh,0) rotate(210deg); }
+           100%  { opacity:0;    transform: translate3d(100vw,44vh,0) rotate(245deg); }
+        }
+
+        /* s3 — diminuta, zona alta, muy rápida (muy lejos) */
+        .cls3 {
+            top: 8%; left: -4%;
+            width: clamp(8px, 1.2vw, 14px); height: clamp(8px, 1.2vw, 14px);
+            color: #6B3A2A;
+            animation: clsCross3 3.2s linear forwards;
+            animation-delay: 2.9s;
+        }
+        @keyframes clsCross3 {
+            0%   { opacity:0;    transform: translate3d(  0vw, 0vh,0) rotate( 15deg); }
+            7%   { opacity:0.45; transform: translate3d(  7vw, 0vh,0) rotate( 50deg); }
+            35%  {               transform: translate3d( 38vw, 1vh,0) rotate(120deg); }
+            70%  {               transform: translate3d( 74vw, 4vh,0) rotate(190deg); }
+            90%  { opacity:0.2;  transform: translate3d( 96vw, 9vh,0) rotate(230deg); }
+           100%  { opacity:0;    transform: translate3d(108vw,14vh,0) rotate(250deg); }
+        }
+
+        /* s4 — mediana-chica, zona media-baja */
+        .cls4 {
+            top: 44%; left: -5%;
+            width: clamp(14px, 2.2vw, 26px); height: clamp(14px, 2.2vw, 26px);
+            color: #7A3B1E;
+            animation: clsCross4 4.4s linear forwards;
+            animation-delay: 3.4s;
+        }
+        @keyframes clsCross4 {
+            0%   { opacity:0;    transform: translate3d(  0vw, 0vh,0) rotate(-5deg); }
+            7%   { opacity:0.48; transform: translate3d(  6vw, 1vh,0) rotate( 40deg); }
+            30%  {               transform: translate3d( 28vw, 4vh,0) rotate(105deg); }
+            60%  {               transform: translate3d( 58vw,14vh,0) rotate(175deg); }
+            85%  { opacity:0.22; transform: translate3d( 84vw,30vh,0) rotate(220deg); }
+           100%  { opacity:0;    transform: translate3d(102vw,46vh,0) rotate(252deg); }
+        }
+
+        /* --- SVG ráfaga de viento -------------------------------------- */
+        .cine-wind-svg {
             position: absolute;
             inset: 0;
+            width: 100%; height: 100%;
             pointer-events: none;
-            overflow: hidden;
+            overflow: visible;
         }
-        .cine-wind-streak {
-            position: absolute;
-            border-radius: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent 0%,
-                rgba(255,255,255,0.09) 20%,
-                rgba(212,175,55,0.07) 50%,
-                rgba(255,255,255,0.06) 78%,
-                transparent 100%
-            );
-            will-change: transform, opacity;
-            animation: windSweep linear both;
+        /* Cada trazo se mueve de izquierda a derecha con un dash offset */
+        .cine-ws {
+            fill: none;
+            stroke-linecap: round;
+            animation: windDash linear forwards;
         }
-        @keyframes windSweep {
-            0%   { transform: translateX(-110%) scaleX(0.6); opacity: 0; }
-            8%   { opacity: 1;   transform: translateX(-60%) scaleX(0.85); }
-            80%  { opacity: 0.75; transform: translateX(60%) scaleX(1.1); }
-            100% { transform: translateX(115%) scaleX(0.7); opacity: 0; }
+        @keyframes windDash {
+            0%   { stroke-dashoffset: 1200; opacity: 0; }
+            8%   { opacity: 1; }
+            88%  { opacity: 0.6; }
+            100% { stroke-dashoffset: 0; opacity: 0; }
         }
-        /* Segunda ola: más fina, diferente ritmo */
-        @keyframes windSweep2 {
-            0%   { transform: translateX(-115%) scaleX(0.5); opacity: 0; }
-            12%  { opacity: 0.7; }
-            85%  { opacity: 0.5; }
-            100% { transform: translateX(110%) scaleX(0.8); opacity: 0; }
-        }
+
+
 
         /* --- Título emerge (4.0s) --- */
         .cine-title {
@@ -1570,24 +1635,33 @@
         <div class="cine-vignette" aria-hidden="true"></div>
         <div class="cine-light" aria-hidden="true"></div>
         <div class="cine-fog" aria-hidden="true"></div>
-        <!-- Ráfagas de viento: 10 trazos en distintas posiciones, duraciones y delays -->
-        <div class="cine-wind" aria-hidden="true">
-            <!-- ola 1: gruesas, rápidas, cerca del centro -->
-            <div class="cine-wind-streak" style="top:28%;width:58%;height:2px;animation-name:windSweep;animation-duration:1.8s;animation-delay:3.15s;animation-iteration-count:3;"></div>
-            <div class="cine-wind-streak" style="top:35%;width:72%;height:1px;animation-name:windSweep;animation-duration:2.1s;animation-delay:3.35s;animation-iteration-count:3;"></div>
-            <!-- ola 2: medianas, zona superior -->
-            <div class="cine-wind-streak" style="top:20%;width:44%;height:1.5px;animation-name:windSweep2;animation-duration:2.5s;animation-delay:3.55s;animation-iteration-count:2;"></div>
-            <div class="cine-wind-streak" style="top:24%;width:65%;height:1px;animation-name:windSweep;animation-duration:2.8s;animation-delay:3.80s;animation-iteration-count:2;"></div>
-            <!-- ola 3: largas, zona inferior -->
-            <div class="cine-wind-streak" style="top:42%;width:80%;height:1px;animation-name:windSweep2;animation-duration:2.0s;animation-delay:4.10s;animation-iteration-count:3;"></div>
-            <div class="cine-wind-streak" style="top:47%;width:55%;height:2px;animation-name:windSweep;animation-duration:1.6s;animation-delay:4.30s;animation-iteration-count:3;"></div>
-            <!-- ola 4: finas, acompañan el arco final -->
-            <div class="cine-wind-streak" style="top:18%;width:40%;height:1px;animation-name:windSweep2;animation-duration:3.0s;animation-delay:5.20s;animation-iteration-count:2;"></div>
-            <div class="cine-wind-streak" style="top:31%;width:68%;height:1.5px;animation-name:windSweep;animation-duration:2.3s;animation-delay:5.50s;animation-iteration-count:2;"></div>
-            <div class="cine-wind-streak" style="top:38%;width:50%;height:1px;animation-name:windSweep2;animation-duration:1.9s;animation-delay:5.80s;animation-iteration-count:2;"></div>
-            <div class="cine-wind-streak" style="top:44%;width:76%;height:1px;animation-name:windSweep;animation-duration:2.6s;animation-delay:6.10s;animation-iteration-count:1;"></div>
-        </div>
 
+        <!-- Ráfagas de viento: trazos SVG con dash-offset animation -->
+        <svg class="cine-wind-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <!-- Trazos curvos del viento — dash-offset crea la ilusión de flujo continuo -->
+            <!-- Líneas gruesas / zona central -->
+            <path class="cine-ws" d="M-60,195 C120,190 280,185 440,192 C600,199 750,194 920,188"
+                stroke="rgba(255,255,255,0.10)" stroke-width="2.2" stroke-dasharray="1200" style="animation-duration:2.0s;animation-delay:2.7s;"/>
+            <path class="cine-ws" d="M-60,230 C150,224 320,218 500,226 C660,232 820,225 960,220"
+                stroke="rgba(212,175,55,0.08)" stroke-width="1.8" stroke-dasharray="1200" style="animation-duration:2.3s;animation-delay:2.85s;"/>
+            <!-- Líneas finas / zona alta -->
+            <path class="cine-ws" d="M-60,130 C100,126 240,122 400,128 C560,134 720,130 940,124"
+                stroke="rgba(255,255,255,0.07)" stroke-width="1.2" stroke-dasharray="1200" style="animation-duration:1.9s;animation-delay:3.0s;"/>
+            <path class="cine-ws" d="M-60,158 C200,152 380,148 560,154 C720,160 870,154 1020,148"
+                stroke="rgba(255,255,255,0.06)" stroke-width="1.0" stroke-dasharray="1200" style="animation-duration:2.6s;animation-delay:3.2s;"/>
+            <!-- Líneas medianas / zona media-baja -->
+            <path class="cine-ws" d="M-60,280 C130,275 300,270 480,277 C640,284 800,278 980,272"
+                stroke="rgba(255,255,255,0.07)" stroke-width="1.5" stroke-dasharray="1200" style="animation-duration:2.1s;animation-delay:3.4s;"/>
+            <path class="cine-ws" d="M-60,310 C170,304 350,298 530,305 C700,312 860,306 1020,300"
+                stroke="rgba(180,140,50,0.06)" stroke-width="1.2" stroke-dasharray="1200" style="animation-duration:2.8s;animation-delay:3.6s;"/>
+            <!-- Segunda ola — acompañan la caída de la hoja -->
+            <path class="cine-ws" d="M-60,175 C140,170 310,165 490,172 C660,178 820,173 980,167"
+                stroke="rgba(255,255,255,0.08)" stroke-width="1.6" stroke-dasharray="1200" style="animation-duration:2.2s;animation-delay:4.2s;"/>
+            <path class="cine-ws" d="M-60,250 C120,244 290,239 470,246 C640,253 810,247 1000,241"
+                stroke="rgba(255,255,255,0.06)" stroke-width="1.0" stroke-dasharray="1200" style="animation-duration:2.5s;animation-delay:4.5s;"/>
+        </svg>
+
+        <!-- Hoja protagonista -->
         <div class="cine-leaf" aria-hidden="true">
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <path d="M50 4 C74 18, 88 38, 88 56 C88 76, 70 92, 50 96 C30 92, 12 76, 12 56 C12 38, 26 18, 50 4 Z" fill="currentColor"/>
@@ -1596,8 +1670,32 @@
                 <path d="M50 26 C58 32, 64 38, 70 44" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
                 <path d="M50 48 C43 54, 38 60, 33 66" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
                 <path d="M50 48 C57 54, 62 60, 67 66" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 68 C45 72, 41 76, 37 80" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
-                <path d="M50 68 C55 72, 59 76, 63 80" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <!-- Hojas pequeñas en perspectiva (otoño) -->
+        <div class="cine-leaf-small cls1" aria-hidden="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4 C53 12,56 18,62 22 C68 18,76 16,84 18 C80 26,78 32,80 38 C88 38,95 42,98 50 C91 53,86 56,84 62 C90 66,94 72,95 80 C87 78,80 78,74 80 C75 86,74 92,70 98 C64 92,59 88,50 86 C41 88,36 92,30 98 C26 92,25 86,26 80 C20 78,13 78,5 80 C6 72,10 66,16 62 C14 56,9 53,2 50 C5 42,12 38,20 38 C22 32,20 26,16 18 C24 16,32 18,38 22 C44 18,47 12,50 4 Z" fill="currentColor"/>
+                <path d="M50 8 C50 32,50 64,50 94" stroke="rgba(0,0,0,0.15)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="cine-leaf-small cls2" aria-hidden="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4 C56 10,58 16,56 22 C64 20,72 24,73 32 C81 30,89 35,88 44 C96 45,100 53,95 60 C100 66,97 75,88 76 C90 84,84 92,75 90 C73 97,64 100,58 95 C55 99,50 99,47 95 C41 100,32 97,30 90 C21 92,15 84,17 76 C8 75,5 66,10 60 C5 53,9 45,17 44 C16 35,24 30,32 32 C33 24,41 20,49 22 C47 16,49 10,50 4 Z" fill="currentColor"/>
+                <path d="M50 8 C50 32,50 64,50 97" stroke="rgba(0,0,0,0.15)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="cine-leaf-small cls3" aria-hidden="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4 C54 12,58 18,64 22 C72 18,82 18,90 24 C84 30,80 34,80 40 C90 42,97 50,96 58 C88 56,81 57,76 60 C82 66,86 74,84 84 C76 78,69 75,62 76 C64 84,62 92,56 98 C53 92,51 88,50 84 C49 88,47 92,44 98 C38 92,36 84,38 76 C31 75,24 78,16 84 C14 74,18 66,24 60 C19 57,12 56,4 58 C3 50,10 42,20 40 C20 34,16 30,10 24 C18 18,28 18,36 22 C42 18,46 12,50 4 Z" fill="currentColor"/>
+                <path d="M50 6 C50 30,50 62,50 96" stroke="rgba(0,0,0,0.15)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="cine-leaf-small cls4" aria-hidden="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 4 C56 9 53 12 58 14 C63 14 61 19 66 20 C70 22 67 26 72 28 C76 30 73 35 78 37 C82 40 79 45 83 48 C86 52 82 56 85 60 C87 65 83 68 84 73 C85 78 80 80 79 85 C77 90 72 90 69 94 C65 97 62 93 58 96 C54 99 51 96 50 98 C49 96 46 99 42 96 C38 93 35 97 31 94 C28 90 23 90 21 85 C20 80 15 78 16 73 C17 68 13 65 15 60 C18 56 14 52 17 48 C21 45 18 40 22 37 C27 35 24 30 28 28 C33 26 30 22 34 20 C39 19 37 14 42 14 C47 12 44 9 50 4 Z" fill="currentColor"/>
+                <path d="M50 6 C50 32,50 64,50 98" stroke="rgba(0,0,0,0.15)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
             </svg>
         </div>
 
