@@ -660,133 +660,347 @@
         .organic-divider svg { display: block; width: 100%; }
 
         /* =============================================
-           PERGAMINOS — RELIQUIAS FÍSICAS
+           PERGAMINOS — RELIQUIAS DEL BOSQUE
+           Principios: materialidad, historia, magia contenida.
+           Sin brillos eléctricos. Sin sombras de videojuego móvil.
+           Solo papel, madera, tinta y tiempo.
         ============================================= */
+
+        /* --- Contenedor con perspectiva para el efecto 3D --- */
         .scroll-wrapper {
-            perspective: 1000px;
-            padding: 26px 0;
-            filter: drop-shadow(0 18px 22px rgba(0,0,0,0.48));
-            transition: filter 0.5s ease;
+            perspective: 1200px;
+            padding: 28px 0 32px;
+            /* drop-shadow natural, como un objeto sobre tierra húmeda */
+            filter: drop-shadow(0 22px 28px rgba(0,0,0,0.52))
+                    drop-shadow(0 4px 8px rgba(0,0,0,0.32));
+            transition: filter 0.55s ease, transform 0.55s ease;
+            /* Viento: la base no se mueve, el scroll-container sí */
         }
         .scroll-wrapper:hover {
-            filter: drop-shadow(0 22px 32px rgba(212,175,55,0.22));
+            filter: drop-shadow(0 28px 36px rgba(0,0,0,0.58))
+                    drop-shadow(0 8px 16px rgba(0,0,0,0.28));
         }
+
+        /* --- El pergamino como objeto físico --- */
         .scroll-container {
             position: relative;
             transform-style: preserve-3d;
-            transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
+            /* Reposo: muy ligera inclinación como si descansara en una superficie irregular */
+            transform: rotate(var(--scroll-rest-tilt, 0deg));
+            transition: transform 0.55s cubic-bezier(0.16,1,0.3,1);
             cursor: pointer;
+            will-change: transform;
         }
+        /* Cada pergamino tiene una inclinación de reposo única — se asigna por nth-child */
+        .scroll-wrapper:nth-child(1) .scroll-container { --scroll-rest-tilt: -0.4deg; }
+        .scroll-wrapper:nth-child(2) .scroll-container { --scroll-rest-tilt:  0.3deg; }
+        .scroll-wrapper:nth-child(3) .scroll-container { --scroll-rest-tilt: -0.6deg; }
+        .scroll-wrapper:nth-child(4) .scroll-container { --scroll-rest-tilt:  0.5deg; }
+
         .scroll-container:hover {
-            transform: translateY(-8px) rotateX(2deg);
+            transform: translateY(-10px) rotateX(1.8deg) rotate(0deg) !important;
         }
         @media (hover: none) {
-            .scroll-container:hover { transform: none; }
-            .scroll-wrapper:hover { filter: none; }
+            .scroll-container { transform: none !important; }
+            .scroll-container:hover { transform: none !important; }
+            .scroll-wrapper:hover { filter: drop-shadow(0 22px 28px rgba(0,0,0,0.52)); }
         }
+
+        /* --- SVG de bordes rasgados: la piel del pergamino --- */
+        .scroll-edge-top,
+        .scroll-edge-bottom {
+            position: relative;
+            z-index: 4;
+            line-height: 0;
+            /* Sincroniza color con el papel */
+            color: #EDE0C4;
+        }
+        .dark .scroll-edge-top,
+        .dark .scroll-edge-bottom { color: #0C1510; }
+        .scroll-edge-top  { margin-bottom: -1px; }
+        .scroll-edge-bottom { margin-top: -1px; }
+        .scroll-edge-top svg,
+        .scroll-edge-bottom svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            overflow: visible;
+        }
+
+        /* --- El papel: textura, profundidad, historia --- */
         .scroll-paper {
-            background-color: #F0E6CE;
+            /* Base: pergamino envejecido — más oscuro en bordes, más claro al centro */
+            background-color: #EDE0C4;
             background-image:
+                /* Textura de fibra de papel */
                 url("https://www.transparenttextures.com/patterns/aged-paper.png"),
-                radial-gradient(ellipse at 30% 20%, rgba(180,140,80,0.07) 0%, transparent 60%),
-                radial-gradient(ellipse at 70% 80%, rgba(140,100,50,0.05) 0%, transparent 50%);
-            padding: clamp(18px,4vw,32px) clamp(14px,3vw,26px) clamp(16px,3.5vw,28px);
-            margin: 0 10px;
-            border-left: 1px solid rgba(122,84,53,0.38);
-            border-right: 1px solid rgba(122,84,53,0.38);
+                /* Mancha de humedad esquina sup-izq */
+                radial-gradient(ellipse 38% 28% at 8% 12%, rgba(140,100,50,0.09) 0%, transparent 100%),
+                /* Zona central más clara — la luz llega aquí */
+                radial-gradient(ellipse 60% 55% at 52% 42%, rgba(255,248,230,0.22) 0%, transparent 70%),
+                /* Desgaste borde derecho */
+                radial-gradient(ellipse 22% 80% at 98% 50%, rgba(100,65,25,0.10) 0%, transparent 100%),
+                /* Desgaste borde inferior */
+                radial-gradient(ellipse 90% 25% at 50% 100%, rgba(90,55,20,0.13) 0%, transparent 100%),
+                /* Tono general cálido de papel viejo */
+                linear-gradient(165deg, #F2E4C4 0%, #E8D5A8 35%, #F0E2C0 65%, #DFC89A 100%);
+
+            padding: clamp(20px,4vw,34px) clamp(18px,3.5vw,30px) clamp(18px,3.5vw,30px);
+            margin: 0 8px;
+
+            /* Sin border recto — los bordes rasgados SVG hacen el límite */
+            border: none;
+            border-left: none;
+            border-right: none;
+
+            /* Profundidad: curvatura sutil del papel con sombras interiores */
             box-shadow:
-                inset 0 0 36px rgba(122,84,53,0.10),
-                inset 4px 0 12px rgba(0,0,0,0.05),
-                inset -4px 0 12px rgba(0,0,0,0.05),
-                inset 0 6px 16px rgba(0,0,0,0.03),
-                inset 0 -6px 16px rgba(0,0,0,0.03);
+                /* Oscurecimiento de bordes laterales — papel enrollado */
+                inset  8px 0 18px rgba(80,45,10,0.09),
+                inset -8px 0 18px rgba(80,45,10,0.09),
+                /* Zona central levemente más alta visualmente */
+                inset 0 12px 28px rgba(255,240,200,0.08),
+                inset 0 -12px 28px rgba(80,45,10,0.06),
+                /* Pliegue central horizontal muy sutil */
+                inset 0 0 0 0 transparent;
+
             position: relative;
             z-index: 2;
             display: flex;
             flex-direction: column;
             min-height: 320px;
+
+            /* Transición suave al modo noche */
+            transition: background-color 2.5s ease, box-shadow 0.4s ease;
         }
+
+        /* Fibra vertical del papel — línea de presión de la pluma */
         .scroll-paper::before {
             content: '';
             position: absolute;
-            top: 20%; left: 8%;
-            width: 2px; height: 60%;
-            background: linear-gradient(to bottom, transparent, rgba(122,84,53,0.07), rgba(100,65,30,0.10), transparent);
-            transform: rotate(-0.5deg);
-            pointer-events: none;
-        }
-        .scroll-paper::after {
-            content: '';
-            position: absolute;
-            top: 10%; right: 12%;
-            width: 18px; height: 18px;
-            background: radial-gradient(circle, rgba(100,65,30,0.06), transparent);
-            border-radius: 50%;
-            transform: rotate(15deg) scaleX(1.5);
+            top: 15%; left: 12%;
+            width: 1px; height: 68%;
+            background: linear-gradient(to bottom,
+                transparent 0%,
+                rgba(100,65,25,0.06) 20%,
+                rgba(85,52,18,0.09) 50%,
+                rgba(100,65,25,0.05) 80%,
+                transparent 100%
+            );
+            transform: rotate(-0.8deg);
             pointer-events: none;
         }
 
-        /* Varas de madera */
+        /* Mancha de tinta antigua — esquina superior derecha */
+        .scroll-paper::after {
+            content: '';
+            position: absolute;
+            top: 8%; right: 9%;
+            width: 22px; height: 14px;
+            background: radial-gradient(ellipse,
+                rgba(80,45,15,0.07) 0%,
+                rgba(60,35,10,0.04) 50%,
+                transparent 100%
+            );
+            border-radius: 50%;
+            transform: rotate(-12deg) scaleX(1.8);
+            pointer-events: none;
+        }
+
+        /* --- Doblez de esquina — pergamino que ha sido abierto muchas veces --- */
+        .scroll-paper .corner-fold {
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 28px; height: 28px;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+        }
+        .scroll-paper .corner-fold::before {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 0 0 28px 28px;
+            border-color: transparent transparent rgba(160,110,50,0.18) transparent;
+        }
+        .scroll-paper .corner-fold::after {
+            content: '';
+            position: absolute;
+            bottom: 1px; right: 1px;
+            width: 22px; height: 22px;
+            background: linear-gradient(135deg, transparent 50%, rgba(120,80,30,0.12) 50%);
+            border-radius: 0 0 2px 0;
+        }
+
+        /* --- Sello de cera — identidad del bosque --- */
+        .scroll-seal {
+            position: absolute;
+            top: -14px; left: 50%;
+            transform: translateX(-50%);
+            width: 36px; height: 36px;
+            z-index: 6;
+            pointer-events: none;
+        }
+        .scroll-seal svg {
+            width: 100%; height: 100%;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.38));
+        }
+
+        /* --- Marca de agua — runa tenue del fondo --- */
+        .scroll-watermark {
+            position: absolute;
+            bottom: 22%; right: 8%;
+            width: 55px; height: 55px;
+            opacity: 0.045;
+            pointer-events: none;
+            color: rgba(80,45,15,1);
+        }
+        .dark .scroll-watermark { opacity: 0.06; color: rgba(212,175,55,1); }
+
+        /* --- Varas de madera — envejecidas, no perfectas --- */
         .scroll-roller-top, .scroll-roller-bottom {
             position: relative;
-            height: 20px;
+            height: 18px;
+            /* Madera oscura con veta */
             background:
+                repeating-linear-gradient(
+                    90deg,
+                    transparent 0px, transparent 18px,
+                    rgba(0,0,0,0.03) 18px, rgba(0,0,0,0.03) 19px
+                ),
                 linear-gradient(180deg,
-                    rgba(255,255,255,0.07) 0%,
-                    #6b4327 10%,
-                    #3d1f0a 35%,
-                    #2b1408 50%,
-                    #3d1f0a 65%,
-                    #6b4327 90%,
-                    rgba(0,0,0,0.09) 100%
+                    rgba(255,255,255,0.06) 0%,
+                    #7a5030 8%,
+                    #4a2810 30%,
+                    #2e1608 50%,
+                    #4a2810 70%,
+                    #7a5030 92%,
+                    rgba(0,0,0,0.10) 100%
                 );
-            border-radius: 10px;
+            border-radius: 9px;
             z-index: 3;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.65), inset 0 1px 3px rgba(255,255,255,0.12);
-            margin: 0 -2px;
+            box-shadow:
+                0 4px 12px rgba(0,0,0,0.68),
+                0 1px 3px rgba(0,0,0,0.45),
+                inset 0 1px 2px rgba(255,255,255,0.10);
+            margin: 0 -1px;
         }
-        .scroll-roller-top  { margin-bottom: -2px; }
-        .scroll-roller-bottom { margin-top: -2px; }
+        .scroll-roller-top  { margin-bottom: -1px; }
+        .scroll-roller-bottom { margin-top: -1px; }
+
+        /* Terminales torneados — bronce envejecido */
         .scroll-roller-top::before, .scroll-roller-bottom::before,
         .scroll-roller-top::after,  .scroll-roller-bottom::after {
             content: '';
             position: absolute;
-            width: 14px; height: 28px;
+            width: 16px; height: 30px;
             background:
-                radial-gradient(circle at 40% 35%,
-                    #f0d060 0%, #D4AF37 30%, #8a6d1c 65%, #4a3809 100%
+                radial-gradient(ellipse at 38% 32%,
+                    #e8c84a 0%, #B8921A 28%, #7a5a12 58%, #3e2c06 85%, #1e1503 100%
                 );
-            border: 1px solid rgba(100,70,10,0.65);
-            top: -5px;
-            border-radius: 4px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.55);
+            border: 1px solid rgba(80,55,5,0.7);
+            top: -6px;
+            border-radius: 3px;
+            box-shadow:
+                2px 3px 6px rgba(0,0,0,0.62),
+                inset 0 1px 2px rgba(255,230,100,0.18);
         }
-        .scroll-roller-top::before, .scroll-roller-bottom::before { left: -4px; }
-        .scroll-roller-top::after,  .scroll-roller-bottom::after  { right: -4px; }
+        .scroll-roller-top::before, .scroll-roller-bottom::before { left: -5px; }
+        .scroll-roller-top::after,  .scroll-roller-bottom::after  { right: -5px; }
 
+        /* --- Modo noche: el pergamino se convierte en vitela oscura --- */
         .dark .scroll-paper {
-            background-color: #080E0A;
+            background-color: #0C1510;
             background-image:
                 url("https://www.transparenttextures.com/patterns/stardust.png"),
-                radial-gradient(ellipse at 30% 20%, rgba(212,175,55,0.04) 0%, transparent 60%);
-            border-left-color: rgba(212,175,55,0.18);
-            border-right-color: rgba(212,175,55,0.18);
+                radial-gradient(ellipse 38% 28% at 8% 12%, rgba(212,175,55,0.04) 0%, transparent 100%),
+                radial-gradient(ellipse 60% 55% at 52% 42%, rgba(212,175,55,0.025) 0%, transparent 70%),
+                radial-gradient(ellipse 22% 80% at 98% 50%, rgba(0,0,0,0.18) 0%, transparent 100%),
+                radial-gradient(ellipse 90% 25% at 50% 100%, rgba(0,0,0,0.22) 0%, transparent 100%),
+                linear-gradient(165deg, #0E1812 0%, #0B1310 35%, #0D1611 65%, #091008 100%);
             box-shadow:
-                inset 0 0 55px rgba(212,175,55,0.04),
-                inset 0 0 18px rgba(0,0,0,0.5);
-            color: #F9F6F0;
+                inset  8px 0 18px rgba(0,0,0,0.28),
+                inset -8px 0 18px rgba(0,0,0,0.28),
+                inset 0 12px 28px rgba(212,175,55,0.02),
+                inset 0 -12px 28px rgba(0,0,0,0.20);
+            color: #D5C4A1;
+        }
+        .dark .scroll-edge-top  { color: #0C1510; }
+        .dark .scroll-edge-bottom { color: #0C1510; }
+        .dark .scroll-paper::before {
+            background: linear-gradient(to bottom,
+                transparent, rgba(212,175,55,0.04), rgba(212,175,55,0.06), transparent);
+        }
+        .dark .scroll-paper::after {
+            background: radial-gradient(ellipse, rgba(212,175,55,0.04), transparent);
         }
         .dark .scroll-roller-top, .dark .scroll-roller-bottom {
             background:
-                linear-gradient(180deg,
-                    rgba(255,255,255,0.04) 0%, #D4AF37 15%, #7a5a0a 40%,
-                    #4a3809 50%, #7a5a0a 60%, #D4AF37 85%, rgba(0,0,0,0.09) 100%
-                );
+                repeating-linear-gradient(90deg, transparent 0px, transparent 18px, rgba(255,255,255,0.015) 18px, rgba(255,255,255,0.015) 19px),
+                linear-gradient(180deg, rgba(255,255,255,0.04) 0%, #C8A830 12%, #6a4808 38%, #3e2806 50%, #6a4808 62%, #C8A830 88%, rgba(0,0,0,0.08) 100%);
         }
         .dark .scroll-roller-top::before, .dark .scroll-roller-bottom::before,
         .dark .scroll-roller-top::after,  .dark .scroll-roller-bottom::after {
-            background: radial-gradient(circle at 40% 35%, #1a2d20, #080e0a);
-            border-color: rgba(212,175,55,0.55);
+            background: radial-gradient(ellipse at 38% 32%, #2a3d28, #111e12, #080e09);
+            border-color: rgba(212,175,55,0.52);
+            box-shadow: 2px 3px 6px rgba(0,0,0,0.75), inset 0 1px 2px rgba(212,175,55,0.12);
+        }
+
+        /* --- Animación de aparición — el pergamino se desenrolla --- */
+        @keyframes scrollUnfurl {
+            0%   {
+                opacity: 0;
+                transform: scaleY(0.04) translateY(-8px) rotate(var(--scroll-rest-tilt, 0deg));
+                filter: blur(4px);
+            }
+            35%  {
+                opacity: 0.7;
+                transform: scaleY(0.55) translateY(-3px) rotate(var(--scroll-rest-tilt, 0deg));
+                filter: blur(1px);
+            }
+            65%  {
+                transform: scaleY(1.04) translateY(2px) rotate(var(--scroll-rest-tilt, 0deg));
+                filter: blur(0);
+            }
+            80%  {
+                transform: scaleY(0.97) translateY(0px) rotate(var(--scroll-rest-tilt, 0deg));
+            }
+            100% {
+                opacity: 1;
+                transform: scaleY(1) translateY(0) rotate(var(--scroll-rest-tilt, 0deg));
+                filter: blur(0);
+            }
+        }
+        /* La tinta aparece después del papel */
+        @keyframes inkAppear {
+            0%,30% { opacity: 0; }
+            100%   { opacity: 1; }
+        }
+
+        .scroll-wrapper.active .scroll-container {
+            animation: scrollUnfurl 0.92s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .scroll-wrapper.active .scroll-paper > * {
+            animation: inkAppear 0.7s ease 0.45s both;
+        }
+
+        /* --- Reacción al viento — la esquina superior se levanta --- */
+        @keyframes windLiftCorner {
+            0%   { transform: rotate(var(--scroll-rest-tilt, 0deg)); }
+            40%  { transform: rotate(calc(var(--scroll-rest-tilt, 0deg) - 1.4deg)) translateY(-3px); }
+            70%  { transform: rotate(calc(var(--scroll-rest-tilt, 0deg) + 0.5deg)) translateY(-1px); }
+            100% { transform: rotate(var(--scroll-rest-tilt, 0deg)); }
+        }
+        .scroll-container.wind-react {
+            animation: windLiftCorner 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+        /* Sombra que cambia con el viento */
+        .scroll-wrapper.wind-react {
+            filter: drop-shadow(3px 24px 32px rgba(0,0,0,0.55))
+                    drop-shadow(-1px 4px 8px rgba(0,0,0,0.28)) !important;
+            transition: filter 0.3s ease;
         }
 
         /* =============================================
@@ -1947,19 +2161,60 @@
                          onclick="openGameModal('memorice')"
                          tabindex="0" role="button" aria-label="Abrir Super Memorice"
                          onkeydown="if(event.key==='Enter'||event.key===' ')openGameModal('memorice')">
+
+                        <!-- Vara superior -->
                         <div class="scroll-roller-top"></div>
+
+                        <!-- Borde rasgado superior -->
+                        <div class="scroll-edge-top">
+                            <svg viewBox="0 0 400 18" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0,18 L0,9 C8,12 14,7 22,10 C30,13 35,6 44,8 C52,10 57,4 66,7 C74,10 80,5 89,8 C97,11 103,4 112,6 C120,8 126,3 135,6 C143,9 148,2 157,5 C165,8 171,3 180,6 C188,9 193,2 202,5 C210,8 215,2 224,4 C232,6 238,1 247,4 C255,7 260,1 269,4 C277,7 282,2 291,5 C299,8 305,2 314,5 C322,8 327,3 336,6 C344,9 349,3 358,6 C366,9 372,5 380,7 C388,9 394,6 400,8 L400,18 Z" fill="currentColor"/>
+                            </svg>
+                        </div>
+
                         <div class="scroll-paper">
+                            <!-- Sello de cera -->
+                            <div class="scroll-seal" aria-hidden="true">
+                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="18" cy="18" r="16" fill="#8B1A1A" stroke="#6a1212" stroke-width="1"/>
+                                    <circle cx="18" cy="18" r="12" fill="none" stroke="rgba(255,200,160,0.25)" stroke-width="0.8"/>
+                                    <!-- Hoja central -->
+                                    <path d="M18 8 C20 11,22 13,21 16 C20 19,21 21,18 24 C15 21,16 19,15 16 C14 13,16 11,18 8Z" fill="rgba(255,200,160,0.45)" stroke="rgba(255,180,130,0.3)" stroke-width="0.5"/>
+                                    <!-- Runa pequeña -->
+                                    <text x="18" y="30" text-anchor="middle" font-size="5" fill="rgba(255,200,160,0.5)" font-family="serif">ᛗ</text>
+                                </svg>
+                            </div>
+
+                            <!-- Marca de agua: dados arcanos -->
+                            <div class="scroll-watermark" aria-hidden="true">
+                                <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                                    <rect x="8" y="8" width="20" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+                                    <circle cx="13" cy="13" r="2" fill="currentColor"/>
+                                    <circle cx="23" cy="23" r="2" fill="currentColor"/>
+                                    <circle cx="23" cy="13" r="2" fill="currentColor"/>
+                                    <circle cx="13" cy="23" r="2" fill="currentColor"/>
+                                    <circle cx="18" cy="18" r="2" fill="currentColor"/>
+                                    <rect x="32" y="20" width="20" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+                                    <circle cx="37" cy="25" r="2" fill="currentColor"/>
+                                    <circle cx="47" cy="35" r="2" fill="currentColor"/>
+                                    <circle cx="47" cy="25" r="2" fill="currentColor"/>
+                                    <circle cx="37" cy="35" r="2" fill="currentColor"/>
+                                </svg>
+                            </div>
+
+                            <!-- Doblez de esquina -->
+                            <div class="corner-fold" aria-hidden="true"></div>
+
                             <div>
-                                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-2xl sm:text-3xl mb-4 sm:mb-5 mx-auto"
-                                     style="background:radial-gradient(circle at 40% 35%,rgba(212,175,55,0.10),rgba(0,0,0,0.04));border:1px solid rgba(122,84,53,0.32);box-shadow:inset 0 1px 3px rgba(0,0,0,0.08),0 3px 10px rgba(0,0,0,0.08);color:#7A5435">
-                                    <i class="fa-solid fa-layer-group dark:text-elven-gold" aria-hidden="true"></i>
+                                <div class="text-center mb-1" aria-hidden="true">
+                                    <span class="text-[8px] font-fantasy font-bold tracking-widest" style="color:rgba(100,60,20,0.55);letter-spacing:0.20em">RELIQUIA DE MEMORIA</span>
                                 </div>
-                                <div class="text-center mb-2">
-                                    <span class="text-[8px] font-fantasy font-bold tracking-widest" style="color:rgba(122,84,53,0.65);letter-spacing:0.18em">✦ RELIQUIA DE MEMORIA ✦</span>
-                                </div>
-                                <h4 class="text-xl sm:text-2xl font-fantasy font-bold text-center text-forest-deep dark:text-parchment-light pb-3" style="border-bottom:1px solid rgba(122,84,53,0.18)">Super Memorice</h4>
-                                <p class="text-sm font-serif mt-4 text-center leading-relaxed text-forest-deep/73 dark:text-parchment-light/73">
+                                <h4 class="text-xl sm:text-2xl font-fantasy font-bold text-center text-forest-deep dark:text-parchment-light pb-3 mt-2" style="border-bottom:1px solid rgba(100,65,25,0.15)">Super Memorice</h4>
+                                <p class="text-sm font-serif mt-4 text-center leading-relaxed" style="color:rgba(50,28,8,0.72)">
                                     Descubre pares de cartas encantadas con figuras y símbolos musicales ocultos bajo sellos arcanos.
+                                </p>
+                                <p class="text-[10px] font-serif mt-3 text-center italic" style="color:rgba(100,65,25,0.48)">
+                                    "…grabado por el archivista del tercer claro, en el año sin luna…"
                                 </p>
                             </div>
                             <div class="mt-auto pt-5">
@@ -1972,7 +2227,7 @@
                                     </div>
                                 </div>
                                 <div class="flex gap-4 mb-4">
-                                    <span class="game-stat"><i class="fa-solid fa-hourglass text-[10px]" style="color:rgba(122,84,53,0.55)" aria-hidden="true"></i> 10 min</span>
+                                    <span class="game-stat"><i class="fa-solid fa-hourglass text-[10px]" style="color:rgba(100,65,25,0.5)" aria-hidden="true"></i> 10 min</span>
                                 </div>
                                 <button onclick="event.stopPropagation();openGameModal('memorice')"
                                         class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-6 py-3 w-full">
@@ -1980,6 +2235,15 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Borde rasgado inferior -->
+                        <div class="scroll-edge-bottom">
+                            <svg viewBox="0 0 400 18" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0,0 L0,9 C9,6 15,11 24,8 C33,5 38,12 47,9 C55,6 61,11 70,8 C78,5 84,10 93,7 C101,4 107,9 116,7 C124,5 130,10 139,7 C147,4 153,9 162,6 C170,3 176,8 185,6 C193,4 199,9 208,6 C216,3 222,8 231,6 C239,4 245,9 254,7 C262,5 268,10 277,7 C285,4 291,9 300,7 C308,5 314,10 323,8 C331,6 337,11 346,8 C354,5 360,10 369,8 C377,6 383,10 390,8 C395,7 398,9 400,8 L400,0 Z" fill="currentColor"/>
+                            </svg>
+                        </div>
+
+                        <!-- Vara inferior -->
                         <div class="scroll-roller-bottom"></div>
                     </div>
                 </div>
@@ -1991,19 +2255,54 @@
                          onclick="openGameModal('superpentagrama')"
                          tabindex="0" role="button" aria-label="Abrir Super Pentagrama"
                          onkeydown="if(event.key==='Enter'||event.key===' ')openGameModal('superpentagrama')">
+
                         <div class="scroll-roller-top"></div>
+                        <div class="scroll-edge-top">
+                            <svg viewBox="0 0 400 18" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0,18 L0,11 C7,8 13,13 21,10 C29,7 36,12 45,9 C53,6 59,11 68,8 C76,5 82,10 91,7 C99,4 105,9 114,6 C122,3 128,8 137,6 C145,4 151,9 160,7 C168,5 174,10 183,7 C191,4 197,9 206,7 C214,5 220,10 229,8 C237,6 243,11 252,9 C260,7 266,12 275,9 C283,6 289,11 298,9 C306,7 312,12 321,9 C329,6 335,11 344,8 C352,5 358,10 367,7 C375,4 381,9 390,7 C395,6 398,8 400,7 L400,18 Z" fill="currentColor"/>
+                            </svg>
+                        </div>
+
                         <div class="scroll-paper">
+                            <div class="scroll-seal" aria-hidden="true">
+                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="18" cy="18" r="16" fill="#1A3A1A" stroke="#122812" stroke-width="1"/>
+                                    <circle cx="18" cy="18" r="12" fill="none" stroke="rgba(180,220,160,0.22)" stroke-width="0.8"/>
+                                    <!-- Pentagrama estilizado -->
+                                    <line x1="12" y1="14" x2="24" y2="14" stroke="rgba(180,220,160,0.5)" stroke-width="0.8"/>
+                                    <line x1="12" y1="17" x2="24" y2="17" stroke="rgba(180,220,160,0.5)" stroke-width="0.8"/>
+                                    <line x1="12" y1="20" x2="24" y2="20" stroke="rgba(180,220,160,0.5)" stroke-width="0.8"/>
+                                    <line x1="12" y1="23" x2="24" y2="23" stroke="rgba(180,220,160,0.5)" stroke-width="0.8"/>
+                                    <line x1="12" y1="26" x2="24" y2="26" stroke="rgba(180,220,160,0.5)" stroke-width="0.8"/>
+                                    <text x="13" y="25" font-size="12" fill="rgba(180,220,160,0.5)" font-family="serif">𝄞</text>
+                                    <text x="18" y="32" text-anchor="middle" font-size="5" fill="rgba(180,220,160,0.45)" font-family="serif">ᚠ</text>
+                                </svg>
+                            </div>
+
+                            <!-- Marca de agua: clave de sol antigua -->
+                            <div class="scroll-watermark" aria-hidden="true">
+                                <svg viewBox="0 0 60 70" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                                    <text x="10" y="55" font-size="56" fill="currentColor" font-family="serif" opacity="1">𝄞</text>
+                                    <line x1="5" y1="25" x2="55" y2="25" stroke="currentColor" stroke-width="1.5"/>
+                                    <line x1="5" y1="32" x2="55" y2="32" stroke="currentColor" stroke-width="1.5"/>
+                                    <line x1="5" y1="39" x2="55" y2="39" stroke="currentColor" stroke-width="1.5"/>
+                                    <line x1="5" y1="46" x2="55" y2="46" stroke="currentColor" stroke-width="1.5"/>
+                                    <line x1="5" y1="53" x2="55" y2="53" stroke="currentColor" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+
+                            <div class="corner-fold" aria-hidden="true"></div>
+
                             <div>
-                                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-2xl sm:text-3xl mb-4 sm:mb-5 mx-auto"
-                                     style="background:radial-gradient(circle at 40% 35%,rgba(212,175,55,0.10),rgba(0,0,0,0.04));border:1px solid rgba(122,84,53,0.32);box-shadow:inset 0 1px 3px rgba(0,0,0,0.08),0 3px 10px rgba(0,0,0,0.08);color:#7A5435">
-                                    <i class="fa-solid fa-music dark:text-elven-gold" aria-hidden="true"></i>
+                                <div class="text-center mb-1" aria-hidden="true">
+                                    <span class="text-[8px] font-fantasy font-bold tracking-widest" style="color:rgba(100,60,20,0.55);letter-spacing:0.20em">TOMO DEL PENTAGRAMA</span>
                                 </div>
-                                <div class="text-center mb-2">
-                                    <span class="text-[8px] font-fantasy font-bold tracking-widest" style="color:rgba(122,84,53,0.65);letter-spacing:0.18em">✦ TOMO DEL PENTAGRAMA ✦</span>
-                                </div>
-                                <h4 class="text-xl sm:text-2xl font-fantasy font-bold text-center text-forest-deep dark:text-parchment-light pb-3" style="border-bottom:1px solid rgba(122,84,53,0.18)">Super Pentagrama</h4>
-                                <p class="text-sm font-serif mt-4 text-center leading-relaxed text-forest-deep/73 dark:text-parchment-light/73">
+                                <h4 class="text-xl sm:text-2xl font-fantasy font-bold text-center text-forest-deep dark:text-parchment-light pb-3 mt-2" style="border-bottom:1px solid rgba(100,65,25,0.15)">Super Pentagrama</h4>
+                                <p class="text-sm font-serif mt-4 text-center leading-relaxed" style="color:rgba(50,28,8,0.72)">
                                     Domina la clave de sol e identifica notas en el pentagrama en este desafío visual arcano.
+                                </p>
+                                <p class="text-[10px] font-serif mt-3 text-center italic" style="color:rgba(100,65,25,0.48)">
+                                    "…copiado de la piedra cantora del bosque oriental…"
                                 </p>
                             </div>
                             <div class="mt-auto pt-5">
@@ -2016,13 +2315,19 @@
                                     </div>
                                 </div>
                                 <div class="flex gap-4 mb-4">
-                                    <span class="game-stat"><i class="fa-solid fa-hourglass text-[10px]" style="color:rgba(122,84,53,0.55)" aria-hidden="true"></i> 12 min</span>
+                                    <span class="game-stat"><i class="fa-solid fa-hourglass text-[10px]" style="color:rgba(100,65,25,0.5)" aria-hidden="true"></i> 12 min</span>
                                 </div>
                                 <button onclick="event.stopPropagation();openGameModal('superpentagrama')"
                                         class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-6 py-3 w-full">
                                     Desenrolar Pergamino <i class="fa-solid fa-scroll ml-2" aria-hidden="true"></i>
                                 </button>
                             </div>
+                        </div>
+
+                        <div class="scroll-edge-bottom">
+                            <svg viewBox="0 0 400 18" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0,0 L0,7 C8,10 14,5 23,8 C31,11 37,6 46,9 C54,12 60,7 69,10 C77,13 83,8 92,11 C100,14 106,9 115,12 C123,15 129,10 138,12 C146,14 152,9 161,11 C169,13 175,8 184,10 C192,12 198,7 207,9 C215,11 221,6 230,8 C238,10 244,5 253,7 C261,9 267,4 276,6 C284,8 290,3 299,5 C307,7 313,2 322,4 C330,6 336,1 345,3 C353,5 359,0 368,2 C376,4 382,1 391,3 C396,4 398,2 400,2 L400,0 Z" fill="currentColor"/>
+                            </svg>
                         </div>
                         <div class="scroll-roller-bottom"></div>
                     </div>
@@ -2035,19 +2340,48 @@
                          onclick="openGameModal('supersolfeo')"
                          tabindex="0" role="button" aria-label="Abrir Super Solfeo"
                          onkeydown="if(event.key==='Enter'||event.key===' ')openGameModal('supersolfeo')">
+
                         <div class="scroll-roller-top"></div>
+                        <div class="scroll-edge-top">
+                            <svg viewBox="0 0 400 18" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0,18 L0,8 C6,11 11,6 19,9 C27,12 33,7 42,10 C50,13 56,8 65,11 C73,14 79,9 88,12 C96,15 102,9 111,12 C119,15 125,10 134,12 C142,14 148,9 157,11 C165,13 171,8 180,10 C188,12 194,7 203,9 C211,11 217,6 226,8 C234,10 240,5 249,7 C257,9 263,4 272,6 C280,8 286,3 295,5 C303,7 309,2 318,4 C326,6 332,2 341,4 C349,6 355,3 364,5 C372,7 378,4 387,6 C393,7 397,6 400,7 L400,18 Z" fill="currentColor"/>
+                            </svg>
+                        </div>
+
                         <div class="scroll-paper">
+                            <div class="scroll-seal" aria-hidden="true">
+                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="18" cy="18" r="16" fill="#2A1A08" stroke="#1a1005" stroke-width="1"/>
+                                    <circle cx="18" cy="18" r="12" fill="none" stroke="rgba(212,175,55,0.28)" stroke-width="0.8"/>
+                                    <!-- Pluma de escribir -->
+                                    <path d="M22 10 C20 12,16 16,14 22 C13 25,14 27,16 26 C18 20,20 16,25 12 Z" fill="rgba(212,175,55,0.45)" stroke="rgba(212,175,55,0.25)" stroke-width="0.5"/>
+                                    <line x1="14" y1="26" x2="16" y2="29" stroke="rgba(212,175,55,0.35)" stroke-width="0.8"/>
+                                    <text x="18" y="32" text-anchor="middle" font-size="5" fill="rgba(212,175,55,0.5)" font-family="serif">ᛟ</text>
+                                </svg>
+                            </div>
+
+                            <!-- Marca de agua: notas musicales -->
+                            <div class="scroll-watermark" aria-hidden="true">
+                                <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                                    <text x="2"  y="30" font-size="28" fill="currentColor" font-family="serif">♩</text>
+                                    <text x="28" y="24" font-size="22" fill="currentColor" font-family="serif">♪</text>
+                                    <text x="4"  y="52" font-size="18" fill="currentColor" font-family="serif">♫</text>
+                                    <text x="32" y="52" font-size="20" fill="currentColor" font-family="serif">♬</text>
+                                </svg>
+                            </div>
+
+                            <div class="corner-fold" aria-hidden="true"></div>
+
                             <div>
-                                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-2xl sm:text-3xl mb-4 sm:mb-5 mx-auto"
-                                     style="background:radial-gradient(circle at 40% 35%,rgba(212,175,55,0.10),rgba(0,0,0,0.04));border:1px solid rgba(122,84,53,0.32);box-shadow:inset 0 1px 3px rgba(0,0,0,0.08),0 3px 10px rgba(0,0,0,0.08);color:#7A5435">
-                                    <i class="fa-solid fa-book-journal-whills dark:text-elven-gold" aria-hidden="true"></i>
+                                <div class="text-center mb-1" aria-hidden="true">
+                                    <span class="text-[8px] font-fantasy font-bold tracking-widest" style="color:rgba(100,60,20,0.55);letter-spacing:0.20em">PERGAMINO DE SOLFEO</span>
                                 </div>
-                                <div class="text-center mb-2">
-                                    <span class="text-[8px] font-fantasy font-bold tracking-widest" style="color:rgba(122,84,53,0.65);letter-spacing:0.18em">✦ PERGAMINO DE SOLFEO ✦</span>
-                                </div>
-                                <h4 class="text-xl sm:text-2xl font-fantasy font-bold text-center text-forest-deep dark:text-parchment-light pb-3" style="border-bottom:1px solid rgba(122,84,53,0.18)">Super Solfeo</h4>
-                                <p class="text-sm font-serif mt-4 text-center leading-relaxed text-forest-deep/73 dark:text-parchment-light/73">
+                                <h4 class="text-xl sm:text-2xl font-fantasy font-bold text-center text-forest-deep dark:text-parchment-light pb-3 mt-2" style="border-bottom:1px solid rgba(100,65,25,0.15)">Super Solfeo</h4>
+                                <p class="text-sm font-serif mt-4 text-center leading-relaxed" style="color:rgba(50,28,8,0.72)">
                                     Ejercitador melódico interactivo para dominar las notas sagradas grabadas en el pentagrama.
+                                </p>
+                                <p class="text-[10px] font-serif mt-3 text-center italic" style="color:rgba(100,65,25,0.48)">
+                                    "…la voz que nombra las notas es la que las convoca…"
                                 </p>
                             </div>
                             <div class="mt-auto pt-5">
@@ -2060,13 +2394,19 @@
                                     </div>
                                 </div>
                                 <div class="flex gap-4 mb-4">
-                                    <span class="game-stat"><i class="fa-solid fa-hourglass text-[10px]" style="color:rgba(122,84,53,0.55)" aria-hidden="true"></i> 10 min</span>
+                                    <span class="game-stat"><i class="fa-solid fa-hourglass text-[10px]" style="color:rgba(100,65,25,0.5)" aria-hidden="true"></i> 10 min</span>
                                 </div>
                                 <button onclick="event.stopPropagation();openGameModal('supersolfeo')"
                                         class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-6 py-3 w-full">
                                     Desenrolar Pergamino <i class="fa-solid fa-scroll ml-2" aria-hidden="true"></i>
                                 </button>
                             </div>
+                        </div>
+
+                        <div class="scroll-edge-bottom">
+                            <svg viewBox="0 0 400 18" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0,0 L0,10 C7,7 13,12 22,9 C30,6 36,11 45,8 C53,5 59,10 68,7 C76,4 82,9 91,6 C99,3 105,8 114,5 C122,2 128,7 137,4 C145,1 151,6 160,3 C168,0 174,5 183,3 C191,1 197,6 206,4 C214,2 220,7 229,5 C237,3 243,8 252,6 C260,4 266,9 275,7 C283,5 289,10 298,8 C306,6 312,11 321,9 C329,7 335,12 344,10 C352,8 358,13 367,11 C375,9 381,13 390,11 C395,10 398,11 400,11 L400,0 Z" fill="currentColor"/>
+                            </svg>
                         </div>
                         <div class="scroll-roller-bottom"></div>
                     </div>
@@ -2079,19 +2419,50 @@
                          onclick="openGameModal('superritmo')"
                          tabindex="0" role="button" aria-label="Abrir Super Ritmo"
                          onkeydown="if(event.key==='Enter'||event.key===' ')openGameModal('superritmo')">
+
                         <div class="scroll-roller-top"></div>
+                        <div class="scroll-edge-top">
+                            <svg viewBox="0 0 400 18" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0,18 L0,10 C5,7 10,12 18,9 C26,6 32,11 41,8 C49,5 55,10 64,7 C72,4 78,9 87,6 C95,3 101,8 110,5 C118,2 124,7 133,5 C141,3 147,8 156,6 C164,4 170,9 179,7 C187,5 193,10 202,8 C210,6 216,11 225,9 C233,7 239,12 248,10 C256,8 262,13 271,11 C279,9 285,14 294,12 C302,10 308,14 317,12 C325,10 331,14 340,12 C348,10 354,13 363,11 C371,9 377,11 386,9 C392,8 396,9 400,8 L400,18 Z" fill="currentColor"/>
+                            </svg>
+                        </div>
+
                         <div class="scroll-paper">
+                            <div class="scroll-seal" aria-hidden="true">
+                                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="18" cy="18" r="16" fill="#1C1C3A" stroke="#111128" stroke-width="1"/>
+                                    <circle cx="18" cy="18" r="12" fill="none" stroke="rgba(160,180,220,0.25)" stroke-width="0.8"/>
+                                    <!-- Metrónomo estilizado -->
+                                    <line x1="18" y1="26" x2="18" y2="11" stroke="rgba(160,180,220,0.5)" stroke-width="1.2" stroke-linecap="round"/>
+                                    <line x1="18" y1="18" x2="23" y2="14" stroke="rgba(160,180,220,0.45)" stroke-width="1" stroke-linecap="round"/>
+                                    <circle cx="18" cy="26" r="2.5" fill="rgba(160,180,220,0.4)"/>
+                                    <text x="18" y="33" text-anchor="middle" font-size="5" fill="rgba(160,180,220,0.45)" font-family="serif">ᚺ</text>
+                                </svg>
+                            </div>
+
+                            <!-- Marca de agua: metrónomo / pulso -->
+                            <div class="scroll-watermark" aria-hidden="true">
+                                <svg viewBox="0 0 60 70" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+                                    <!-- Metrónomo -->
+                                    <polygon points="20,65 40,65 32,10 28,10" fill="currentColor" opacity="0.8" stroke="none"/>
+                                    <line x1="30" y1="38" x2="42" y2="22" stroke-width="2.5" stroke-linecap="round"/>
+                                    <circle cx="30" cy="60" r="5" fill="currentColor" opacity="0.8" stroke="none"/>
+                                    <line x1="15" y1="65" x2="45" y2="65" stroke-width="3" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+
+                            <div class="corner-fold" aria-hidden="true"></div>
+
                             <div>
-                                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-2xl sm:text-3xl mb-4 sm:mb-5 mx-auto"
-                                     style="background:radial-gradient(circle at 40% 35%,rgba(212,175,55,0.10),rgba(0,0,0,0.04));border:1px solid rgba(122,84,53,0.32);box-shadow:inset 0 1px 3px rgba(0,0,0,0.08),0 3px 10px rgba(0,0,0,0.08);color:#7A5435">
-                                    <i class="fa-solid fa-heart-pulse dark:text-elven-gold" aria-hidden="true"></i>
+                                <div class="text-center mb-1" aria-hidden="true">
+                                    <span class="text-[8px] font-fantasy font-bold tracking-widest" style="color:rgba(100,60,20,0.55);letter-spacing:0.20em">TOMO DEL PULSO</span>
                                 </div>
-                                <div class="text-center mb-2">
-                                    <span class="text-[8px] font-fantasy font-bold tracking-widest" style="color:rgba(122,84,53,0.65);letter-spacing:0.18em">✦ TOMO DEL PULSO ✦</span>
-                                </div>
-                                <h4 class="text-xl sm:text-2xl font-fantasy font-bold text-center text-forest-deep dark:text-parchment-light pb-3" style="border-bottom:1px solid rgba(122,84,53,0.18)">Super Ritmo</h4>
-                                <p class="text-sm font-serif mt-4 text-center leading-relaxed text-forest-deep/73 dark:text-parchment-light/73">
+                                <h4 class="text-xl sm:text-2xl font-fantasy font-bold text-center text-forest-deep dark:text-parchment-light pb-3 mt-2" style="border-bottom:1px solid rgba(100,65,25,0.15)">Super Ritmo</h4>
+                                <p class="text-sm font-serif mt-4 text-center leading-relaxed" style="color:rgba(50,28,8,0.72)">
                                     La base del latido: sigue el pulso constante del metrónomo de la naturaleza.
+                                </p>
+                                <p class="text-[10px] font-serif mt-3 text-center italic" style="color:rgba(100,65,25,0.48)">
+                                    "…el bosque respira. El bosque lleva compás…"
                                 </p>
                             </div>
                             <div class="mt-auto pt-5">
@@ -2104,13 +2475,19 @@
                                     </div>
                                 </div>
                                 <div class="flex gap-4 mb-4">
-                                    <span class="game-stat"><i class="fa-solid fa-hourglass text-[10px]" style="color:rgba(122,84,53,0.55)" aria-hidden="true"></i> 12 min</span>
+                                    <span class="game-stat"><i class="fa-solid fa-hourglass text-[10px]" style="color:rgba(100,65,25,0.5)" aria-hidden="true"></i> 12 min</span>
                                 </div>
                                 <button onclick="event.stopPropagation();openGameModal('superritmo')"
                                         class="btn-fantasy text-parchment-light text-[10px] font-fantasy tracking-widest font-bold px-6 py-3 w-full">
                                     Desenrolar Pergamino <i class="fa-solid fa-scroll ml-2" aria-hidden="true"></i>
                                 </button>
                             </div>
+                        </div>
+
+                        <div class="scroll-edge-bottom">
+                            <svg viewBox="0 0 400 18" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0,0 L0,8 C6,11 12,6 21,9 C29,12 35,7 44,10 C52,13 58,8 67,11 C75,14 81,9 90,12 C98,15 104,10 113,13 C121,16 127,11 136,14 C144,17 150,12 159,14 C167,16 173,11 182,13 C190,15 196,10 205,12 C213,14 219,9 228,11 C236,13 242,8 251,10 C259,12 265,7 274,9 C282,11 288,6 297,8 C305,10 311,5 320,7 C328,9 334,5 343,7 C351,9 357,6 366,8 C374,10 380,8 389,9 C394,9 397,10 400,10 L400,0 Z" fill="currentColor"/>
+                            </svg>
                         </div>
                         <div class="scroll-roller-bottom"></div>
                     </div>
@@ -2742,6 +3119,13 @@
         const cleanup = () => { leaf.remove(); styleTag.remove(); };
         leaf.addEventListener('animationend', cleanup, { once: true });
         setTimeout(cleanup, totalTime);
+
+        // Notificar a los pergaminos que hay viento — reaccionan sutilmente
+        setTimeout(() => {
+            if (typeof window.__scrollWindReact === 'function') {
+                window.__scrollWindReact();
+            }
+        }, pause + 200);
     }
     /* ============================================================
        PARALLAX HERO — throttled
@@ -2805,6 +3189,7 @@
 
     /* ============================================================
        REVEAL ON SCROLL — IntersectionObserver
+       Los scroll-wrapper se animan con desenrollado al aparecer.
     ============================================================ */
     function revealSections() {
         if ('IntersectionObserver' in window) {
@@ -2818,10 +3203,35 @@
             }, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
             document.querySelectorAll('.reveal-on-scroll').forEach(el => obs.observe(el));
         } else {
-            // Fallback
             document.querySelectorAll('.reveal-on-scroll').forEach(el => el.classList.add('active'));
         }
     }
+
+    /* ============================================================
+       REACCIÓN DE LOS PERGAMINOS AL VIENTO DEL BOSQUE
+       Cuando el sistema de hojas lanza una ráfaga, los pergaminos
+       visibles se mueven 1-2 grados como si el viento los rozara.
+       Sutil. Natural. El pergamino vive en el bosque.
+    ============================================================ */
+    function reactScrollsToWind() {
+        const wrappers = document.querySelectorAll('.scroll-wrapper.active');
+        wrappers.forEach((wrapper, i) => {
+            const container = wrapper.querySelector('.scroll-container');
+            if (!container) return;
+            // Retardo escalonado para que no reaccionen todos a la vez
+            setTimeout(() => {
+                container.classList.add('wind-react');
+                wrapper.classList.add('wind-react');
+                // Solo permitir la clase un ciclo de animación
+                container.addEventListener('animationend', () => {
+                    container.classList.remove('wind-react');
+                    wrapper.classList.remove('wind-react');
+                }, { once: true });
+            }, i * 85 + Math.random() * 120);
+        });
+    }
+    // Exponer para que el sistema de hojas lo pueda llamar
+    window.__scrollWindReact = reactScrollsToWind;
 
     /* ============================================================
        FILTROS DE JUEGOS
