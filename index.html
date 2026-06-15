@@ -1388,28 +1388,28 @@
             opacity: 0;
             filter: drop-shadow(0 4px 10px rgba(0,0,0,0.55)) drop-shadow(0 0 8px rgba(180,130,30,0.35));
             will-change: transform, opacity;
-            /* Animación principal: trayectoria horizontal con oscilaciones verticales de viento */
-            animation: cineLeafCross 5.0s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-            animation-delay: 3s;
+            /* cubic-bezier: arranque explosivo (ráfaga), desaceleración orgánica hacia la caída */
+            animation: cineLeafCross 4.8s cubic-bezier(0.12, 0.85, 0.38, 1) forwards;
+            animation-delay: 2.8s;
             transform-origin: 46% 52%;
         }
         .cine-leaf svg { width: 100%; height: 100%; display: block; }
 
-        /* Trayectoria natural del viento: sube y baja en ráfagas, gira orgánicamente */
+        /* Física real del viento:
+           — Eje X: avanza siempre (viento constante de izquierda a derecha)
+           — Eje Y: parte casi plano, luego la gravedad va curvando hacia abajo
+             de forma MONOTÓNA. Nunca sube. La hoja no puede recuperar altura.
+           — Rotación: acumulativa en un solo sentido, más rápida al inicio.
+           — Solo 4 waypoints para que el interpolador CSS no genere inflexiones. */
         @keyframes cineLeafCross {
-            0%   { opacity: 0;    transform: translate3d(0vw,   2vh, 0) rotate(-22deg) scale(0.76); }
-            5%   { opacity: 0.95; transform: translate3d(8vw,  -1vh, 0) rotate( 10deg) scale(1.0); }
-            13%  {                transform: translate3d(18vw, -9vh, 0) rotate(-14deg) scale(1.06); }  /* primera ráfaga sube */
-            21%  {                transform: translate3d(28vw, -5vh, 0) rotate( 28deg) scale(0.97); }  /* breve caída */
-            29%  {                transform: translate3d(40vw,-14vh, 0) rotate(-22deg) scale(1.04); }  /* ráfaga fuerte: asciende */
-            37%  {                transform: translate3d(50vw,-10vh, 0) rotate(  4deg) scale(1.01); }  /* planeo horizontal */
-            44%  {                transform: translate3d(59vw,-17vh, 0) rotate(-40deg) scale(0.97); }  /* trompo + sube */
-            53%  {                transform: translate3d(70vw,-11vh, 0) rotate( 32deg) scale(1.02); }  /* desciende girando */
-            62%  {                transform: translate3d(81vw,-19vh, 0) rotate( 58deg) scale(0.94); }  /* ráfaga final empuja arriba */
-            72%  { opacity: 0.88; transform: translate3d(94vw,-13vh, 0) rotate( 42deg) scale(0.97); }
-            82%  { opacity: 0.42; transform: translate3d(110vw,-21vh,0) rotate( 78deg) scale(0.89); }
-            92%  { opacity: 0.08; transform: translate3d(124vw,-16vh,0) rotate( 95deg) scale(0.84); }
-            100% { opacity: 0;    transform: translate3d(136vw,-11vh,0) rotate(110deg) scale(0.81); }
+            0%   { opacity: 0;    transform: translate3d(-2vw,  1vh, 0) rotate(-15deg); }
+            6%   { opacity: 0.94;                                                        }
+            /* Ráfaga — vuelo casi horizontal, mínima caída */
+            32%  {                transform: translate3d(38vw,  3vh, 0) rotate( 85deg); }
+            /* Gravedad domina — curva hacia abajo */
+            68%  { opacity: 0.82; transform: translate3d(76vw, 18vh, 0) rotate(195deg); }
+            /* Caída final — sale por el borde derecho descendiendo */
+            100% { opacity: 0;    transform: translate3d(114vw,48vh, 0) rotate(275deg); }
         }
 
         /* =============================================
@@ -2463,44 +2463,36 @@
     }
 
     /* ============================================================
-       HOJAS CAYENDO
-    ============================================================ */
-    /* ============================================================
-       HOJAS — SISTEMA DE RÁFAGA DE VIENTO
-       Una ráfaga inicial (1-2 s de bosque quieto) lanza 3-5 hojas
-       desde los laterales. Cada hoja tiene un @keyframes único
-       generado en JS con trayectoria en 3 fases:
-         1. Impulso: mucho horizontal, poca caída, rotación rápida.
-         2. Turbulencia: curvas irregulares, velocidad variable.
-         3. Caída: pierde fuerza horizontal, desciende y desaparece.
-       Las hojas se eliminan del DOM al terminar (sin bucles infinitos).
-       Sin will-change, sin filter, solo translate3d + rotate.
+       HOJA PROTAGONISTA — física de viento real
+       
+       DIAGNÓSTICO DEL ZIG-ZAG ANTERIOR:
+         El wrapper interior con rotación propia desfasaba el centro
+         visual respecto al centro geométrico del translate, creando
+         oscilaciones perceptuales aunque la trayectoria fuera suave.
+         
+       SOLUCIÓN:
+         Un solo elemento. Un solo @keyframes. translate3d + rotate
+         calculados juntos para que cada punto sea coherente.
+         La trayectoria de posición usa SOLO 4 puntos de control
+         (0%, 28%, 68%, 100%) para que el interpolador CSS no pueda
+         crear inflexiones no deseadas entre keyframes.
+         La X siempre aumenta. La Y siempre aumenta.
+         Sin wobbles, sin offsets, sin wrappers anidados.
     ============================================================ */
     function createLeaves() {
         const container = document.getElementById('leaf-container');
         if (!container) return;
 
-        /* SVGs de hojas (mismas formas, sin cambios) */
         const leafSVGs = [
             `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <path d="M50 4 C53 12,56 18,62 22 C68 18,76 16,84 18 C80 26,78 32,80 38 C88 38,95 42,98 50 C91 53,86 56,84 62 C90 66,94 72,95 80 C87 78,80 78,74 80 C75 86,74 92,70 98 C64 92,59 88,50 86 C41 88,36 92,30 98 C26 92,25 86,26 80 C20 78,13 78,5 80 C6 72,10 66,16 62 C14 56,9 53,2 50 C5 42,12 38,20 38 C22 32,20 26,16 18 C24 16,32 18,38 22 C44 18,47 12,50 4 Z" fill="currentColor"/>
                 <path d="M50 6 C50 30,50 60,50 96" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
                 <path d="M50 30 C42 26,33 24,24 24" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
                 <path d="M50 30 C58 26,67 24,76 24" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
-                <path d="M50 52 C38 50,26 52,14 58" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none"/>
-                <path d="M50 52 C62 50,74 52,86 58" stroke="rgba(0,0,0,0.10)" stroke-width="1" fill="none"/>
             </svg>`,
             `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <path d="M50 4 C56 10,58 16,56 22 C64 20,72 24,73 32 C81 30,89 35,88 44 C96 45,100 53,95 60 C100 66,97 75,88 76 C90 84,84 92,75 90 C73 97,64 100,58 95 C55 99,50 99,47 95 C41 100,32 97,30 90 C21 92,15 84,17 76 C8 75,5 66,10 60 C5 53,9 45,17 44 C16 35,24 30,32 32 C33 24,41 20,49 22 C47 16,49 10,50 4 Z" fill="currentColor"/>
                 <path d="M50 8 C50 32,50 64,50 97" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-                <path d="M50 28 C42 28,35 30,28 34" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
-                <path d="M50 28 C58 28,65 30,72 34" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
-                <path d="M50 50 C40 50,30 53,20 58" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
-                <path d="M50 50 C60 50,70 53,80 58" stroke="rgba(0,0,0,0.12)" stroke-width="1" fill="none"/>
-            </svg>`,
-            `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 4 C56 9 53 12 58 14 C63 14 61 19 66 20 C70 22 67 26 72 28 C76 30 73 35 78 37 C82 40 79 45 83 48 C86 52 82 56 85 60 C87 65 83 68 84 73 C85 78 80 80 79 85 C77 90 72 90 69 94 C65 97 62 93 58 96 C54 99 51 96 50 98 C49 96 46 99 42 96 C38 93 35 97 31 94 C28 90 23 90 21 85 C20 80 15 78 16 73 C17 68 13 65 15 60 C18 56 14 52 17 48 C21 45 18 40 22 37 C27 35 24 30 28 28 C33 26 30 22 34 20 C39 19 37 14 42 14 C47 12 44 9 50 4 Z" fill="currentColor"/>
-                <path d="M50 6 C50 32,50 64,50 98" stroke="rgba(0,0,0,0.18)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
             </svg>`,
             `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <path d="M50 4 C54 12,58 18,64 22 C72 18,82 18,90 24 C84 30,80 34,80 40 C90 42,97 50,96 58 C88 56,81 57,76 60 C82 66,86 74,84 84 C76 78,69 75,62 76 C64 84,62 92,56 98 C53 92,51 88,50 84 C49 88,47 92,44 98 C38 92,36 84,38 76 C31 75,24 78,16 84 C14 74,18 66,24 60 C19 57,12 56,4 58 C3 50,10 42,20 40 C20 34,16 30,10 24 C18 18,28 18,36 22 C42 18,46 12,50 4 Z" fill="currentColor"/>
@@ -2508,142 +2500,110 @@
             </svg>`
         ];
 
-        const colors = ['#D4AF37','#C98A28','#8a6d1c','#A67B27','#b8960c','#9e7d1a'];
+        const colors = ['#D4AF37','#C98A28','#8a6d1c','#A67B27','#b8960c'];
         const isMobile = window.__isMobile;
 
-        /* ── Plantilla de perfil por profundidad ──────────────────
-           Crea sensación cinematográfica sin capas adicionales.
-           "near"  → grande, rápida, opaca  (paralaje cercano)
-           "mid"   → normal
-           "far"   → pequeña, lenta, tenue  (paralaje lejano)
+        const kfIdx = (window.__windLeafKfIndex || 0);
+        window.__windLeafKfIndex = kfIdx + 1;
+        const kfName = 'wl' + kfIdx;
+
+        const szPx = isMobile
+            ? Math.round(22 + Math.random() * 10)
+            : Math.round(30 + Math.random() * 14);
+
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        /* Posición de entrada: borde izquierdo, zona alta */
+        const startX = -(szPx + 20);
+        const startY = Math.round(vh * (0.08 + Math.random() * 0.20));
+
+        /* ── TRAYECTORIA: 3 puntos intermedios + fin ──────────────
+           Regla estricta: Xn > Xn-1 siempre. Yn >= Yn-1 siempre.
+           Solo 3 waypoints para minimizar inflexiones del interpolador.
+           
+           A: fin de ráfaga   (~30% del tiempo, ~40% del ancho)
+           B: transición       (~65% del tiempo, ~70% del ancho)  
+           C: caída final      (100% del tiempo, ~85% del ancho)
+           
+           La curva ease de CSS entre cada par de keyframes es lineal
+           en este contexto (se controla con el cubic-bezier global),
+           así que 3 waypoints = 3 segmentos curvos bien definidos.
         ─────────────────────────────────────────────────────────── */
-        const depthProfiles = [
-            { label:'near', sizeMin:28, sizeMax:38, speedFactor:0.78, opacityMax:0.82 },
-            { label:'mid',  sizeMin:18, sizeMax:26, speedFactor:1.00, opacityMax:0.62 },
-            { label:'mid',  sizeMin:18, sizeMax:26, speedFactor:1.00, opacityMax:0.58 },
-            { label:'far',  sizeMin:11, sizeMax:17, speedFactor:1.30, opacityMax:0.38 },
-            { label:'far',  sizeMin:10, sizeMax:15, speedFactor:1.40, opacityMax:0.32 },
-        ];
+        const ax = Math.round(vw * (0.38 + Math.random() * 0.06));  // 38–44% del ancho
+        const ay = Math.round(vh * (0.03 + Math.random() * 0.03));  // 3–6% de altura: casi plano
 
-        /* Ajuste móvil: menos hojas, tamaños menores */
-        const count = isMobile ? 3 : 5;
-        /* Barajar perfiles y tomar los primeros `count` */
-        const shuffled = depthProfiles.sort(() => Math.random() - 0.5).slice(0, count);
+        const bx = Math.round(vw * (0.65 + Math.random() * 0.06));  // 65–71%
+        const by = Math.round(vh * (0.22 + Math.random() * 0.10));  // 22–32%: curva notable
 
-        /* ── Contador de keyframes únicos para evitar colisiones ── */
-        let kfIndex = (window.__windLeafKfIndex || 0);
+        const cx = Math.round(vw * (0.80 + Math.random() * 0.06));  // 80–86%
+        const cy = Math.round(vh * (0.72 + Math.random() * 0.12));  // 72–84%: caída profunda
 
-        /* ── Ráfaga inicial: 1-2 s de quietud antes de lanzar ──── */
-        const gust = 1000 + Math.random() * 1000; // 1000–2000 ms
+        /* ── ROTACIÓN: acumulativa en un solo sentido ─────────────
+           Siempre suma ángulo (o siempre resta). Nunca invierte.
+           El CSS interpola directamente entre valores acumulados,
+           por lo que no puede crear reversiones de dirección.
+           
+           Velocidad angular decrece con el tiempo (como fricción del aire).
+        ─────────────────────────────────────────────────────────── */
+        const spin = Math.random() < 0.55 ? 1 : -1;
+        // Ángulo inicial: hoja entra inclinada por el viento
+        const rStart = spin * (5 + Math.random() * 10);
+        // En A (ráfaga): giro rápido — acumula 160–260°
+        const rA = rStart + spin * (160 + Math.random() * 100);
+        // En B (transición): giro moderado — acumula 80–130° más
+        const rB = rA + spin * (80 + Math.random() * 50);
+        // En C (caída): giro lento — acumula 25–50° más
+        const rC = rB + spin * (25 + Math.random() * 25);
 
-        shuffled.forEach((profile, i) => {
-            /* Retraso escalonado: la ráfaga lanza hojas en cascada */
-            const launchDelay = gust + i * (200 + Math.random() * 300);
+        /* ── Duración: 3.8–5.2 s ──────────────────────────────── */
+        const duration = Math.round(3800 + Math.random() * 1400);
+        const opMax = (0.72 + Math.random() * 0.18).toFixed(2);
 
-            setTimeout(() => {
-                const kfName = `wl${kfIndex++}`;
-                window.__windLeafKfIndex = kfIndex;
+        /* ── @keyframes: translate3d y rotate en el MISMO elemento
+           Esto elimina el desfase visual del wrapper anidado.
+           La interpolación CSS combina ambos en cada frame sin
+           generar trayectorias parasitarias.
+        ─────────────────────────────────────────────────────────── */
+        const css = [
+            '@keyframes ' + kfName + ' {',
+            '  0%   { transform: translate3d(0px, 0px, 0) rotate(' + rStart.toFixed(1) + 'deg); opacity: 0; }',
+            '  6%   { opacity: ' + opMax + '; }',
+            '  30%  { transform: translate3d(' + ax + 'px, ' + ay + 'px, 0) rotate(' + rA.toFixed(1) + 'deg); opacity: ' + opMax + '; }',
+            '  65%  { transform: translate3d(' + bx + 'px, ' + by + 'px, 0) rotate(' + rB.toFixed(1) + 'deg); opacity: ' + (opMax * 0.88).toFixed(2) + '; }',
+            '  100% { transform: translate3d(' + cx + 'px, ' + cy + 'px, 0) rotate(' + rC.toFixed(1) + 'deg); opacity: 0; }',
+            '}'
+        ].join('\n');
 
-                /* ── Tamaño según profundidad ─────────────────────── */
-                const size = profile.sizeMin + Math.random() * (profile.sizeMax - profile.sizeMin);
-                const szPx = Math.round(size);
+        const styleTag = document.createElement('style');
+        styleTag.textContent = css;
+        document.head.appendChild(styleTag);
 
-                /* ── Posición de entrada: siempre desde borde natural ─
-                   Alterna entre lateral izquierdo (árbol) y zona alta
-                   con algo de variación vertical.                      */
-                const fromLeft = Math.random() < 0.65; // 65% entra por la izq
-                const startX = fromLeft
-                    ? -(szPx + 10)                          // justo fuera del borde izq
-                    : window.innerWidth + szPx + 10;        // justo fuera del borde der
-                /* Altura de entrada: zona superior del bosque (15–55%) */
-                const startY = window.innerHeight * (0.15 + Math.random() * 0.40);
+        const leaf = document.createElement('div');
+        leaf.className = 'wind-leaf';
+        leaf.style.cssText =
+            'left:' + startX + 'px;' +
+            'top:' + startY + 'px;' +
+            'width:' + szPx + 'px;' +
+            'height:' + szPx + 'px;' +
+            'color:' + colors[Math.floor(Math.random() * colors.length)] + ';' +
+            'transform-origin: 50% 50%;' +
+            /* cubic-bezier: arranque explosivo, desaceleración orgánica */
+            'animation:' + kfName + ' ' + duration + 'ms cubic-bezier(0.12, 0.8, 0.4, 1) forwards;';
 
-                /* ── Dirección del viento ─────────────────────────── */
-                const windDir = fromLeft ? 1 : -1; // positivo = derecha
+        leaf.innerHTML = leafSVGs[Math.floor(Math.random() * leafSVGs.length)];
 
-                /* ── Duración según profundidad ───────────────────── */
-                const baseDuration = isMobile ? 5500 : 7000;
-                const duration = Math.round(baseDuration * profile.speedFactor + Math.random() * 1500);
+        /* Pausa de calma inicial */
+        const pause = Math.round(400 + Math.random() * 600);
+        leaf.style.animationDelay = pause + 'ms';
 
-                /* ── Opacidad máxima según profundidad ────────────── */
-                const opMax = profile.opacityMax;
+        container.appendChild(leaf);
 
-                /* ── Construir keyframes: 3 fases ─────────────────── */
-                /* Valores base de desplazamiento */
-                const vw = window.innerWidth;
-                const vh = window.innerHeight;
-
-                /* Fase 1 — Impulso (0–35%): mucho X, poco Y, rot rápida */
-                const imp1x = windDir * (vw * (0.18 + Math.random() * 0.12));
-                const imp1y = vh *  (0.04 + Math.random() * 0.06);
-                const imp1r = windDir * (20 + Math.random() * 35);
-
-                const imp2x = windDir * (vw * (0.30 + Math.random() * 0.15));
-                const imp2y = vh *  (0.10 + Math.random() * 0.08);
-                const imp2r = windDir * (45 + Math.random() * 40);
-
-                /* Fase 2 — Turbulencia (35–70%): curvas irregulares */
-                const tur1x = windDir * (vw * (0.44 + Math.random() * 0.12));
-                const tur1y = vh *  (0.22 + Math.random() * 0.12);
-                const tur1r = windDir * (30 + Math.random() * 50) * (Math.random() < 0.5 ? 1 : -1);
-
-                const tur2x = windDir * (vw * (0.58 + Math.random() * 0.12));
-                const tur2y = vh *  (0.38 + Math.random() * 0.15);
-                const tur2r = windDir * (60 + Math.random() * 55);
-
-                /* Fase 3 — Caída (70–100%): más Y, menos X, giros finales */
-                const fal1x = windDir * (vw * (0.70 + Math.random() * 0.10));
-                const fal1y = vh *  (0.58 + Math.random() * 0.18);
-                const fal1r = windDir * (80 + Math.random() * 60);
-
-                const fal2x = windDir * (vw * (0.80 + Math.random() * 0.10));
-                const fal2y = vh *  (0.80 + Math.random() * 0.15);
-                const fal2r = windDir * (110 + Math.random() * 70);
-
-                /* ── Generar @keyframes en una hoja de estilo temporal ── */
-                const kfCSS = `
-@keyframes ${kfName} {
-  0%   { transform: translate3d(0px, 0px, 0) rotate(${windDir * -8}deg); opacity: 0; }
-  4%   { opacity: ${opMax}; }
-  15%  { transform: translate3d(${Math.round(imp1x)}px, ${Math.round(imp1y)}px, 0) rotate(${Math.round(imp1r)}deg); opacity: ${opMax}; }
-  35%  { transform: translate3d(${Math.round(imp2x)}px, ${Math.round(imp2y)}px, 0) rotate(${Math.round(imp2r)}deg); opacity: ${opMax}; }
-  50%  { transform: translate3d(${Math.round(tur1x)}px, ${Math.round(tur1y)}px, 0) rotate(${Math.round(tur1r)}deg); opacity: ${opMax * 0.9}; }
-  65%  { transform: translate3d(${Math.round(tur2x)}px, ${Math.round(tur2y)}px, 0) rotate(${Math.round(tur2r)}deg); opacity: ${opMax * 0.8}; }
-  80%  { transform: translate3d(${Math.round(fal1x)}px, ${Math.round(fal1y)}px, 0) rotate(${Math.round(fal1r)}deg); opacity: ${(opMax * 0.4).toFixed(2)}; }
-  100% { transform: translate3d(${Math.round(fal2x)}px, ${Math.round(fal2y)}px, 0) rotate(${Math.round(fal2r)}deg); opacity: 0; }
-}`;
-
-                const styleTag = document.createElement('style');
-                styleTag.textContent = kfCSS;
-                document.head.appendChild(styleTag);
-
-                /* ── Crear el elemento hoja ─────────────────────────── */
-                const leaf = document.createElement('div');
-                leaf.className = 'wind-leaf';
-                leaf.style.cssText = `
-                    left:${Math.round(startX)}px;
-                    top:${Math.round(startY)}px;
-                    width:${szPx}px;
-                    height:${szPx}px;
-                    color:${colors[Math.floor(Math.random() * colors.length)]};
-                    animation:${kfName} ${duration}ms cubic-bezier(0.22,0.61,0.36,1) forwards;
-                `;
-                leaf.innerHTML = leafSVGs[Math.floor(Math.random() * leafSVGs.length)];
-                container.appendChild(leaf);
-
-                /* ── Destruir hoja y limpiar keyframes al terminar ──── */
-                const cleanup = () => {
-                    leaf.remove();
-                    styleTag.remove();
-                };
-                leaf.addEventListener('animationend', cleanup, { once: true });
-                /* Fallback por si animationend no dispara */
-                setTimeout(cleanup, duration + 500);
-
-            }, launchDelay);
-        });
+        const totalTime = pause + duration + 300;
+        const cleanup = () => { leaf.remove(); styleTag.remove(); };
+        leaf.addEventListener('animationend', cleanup, { once: true });
+        setTimeout(cleanup, totalTime);
     }
-
     /* ============================================================
        PARALLAX HERO — throttled
     ============================================================ */
