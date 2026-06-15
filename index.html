@@ -1499,16 +1499,18 @@
             pointer-events: none;
             overflow: visible;
         }
-        /* Cada trazo se mueve de izquierda a derecha con un dash offset */
+        /* Espirales de viento: dash-offset revela el arco de izq. a der.
+           Opacidades bajas para efecto sutil, no dominante. */
         .cine-ws {
             fill: none;
             stroke-linecap: round;
+            stroke-linejoin: round;
             animation: windDash linear forwards;
         }
         @keyframes windDash {
-            0%   { stroke-dashoffset: 1200; opacity: 0; }
-            8%   { opacity: 1; }
-            88%  { opacity: 0.6; }
+            0%   { stroke-dashoffset: var(--dl); opacity: 0; }
+            10%  { opacity: var(--op); }
+            82%  { opacity: var(--op); }
             100% { stroke-dashoffset: 0; opacity: 0; }
         }
 
@@ -1636,29 +1638,56 @@
         <div class="cine-light" aria-hidden="true"></div>
         <div class="cine-fog" aria-hidden="true"></div>
 
-        <!-- Ráfagas de viento: trazos SVG con dash-offset animation -->
+        <!-- Ráfagas en espiral: arcos curvos con dash-offset, sutiles -->
         <svg class="cine-wind-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-            <!-- Trazos curvos del viento — dash-offset crea la ilusión de flujo continuo -->
-            <!-- Líneas gruesas / zona central -->
-            <path class="cine-ws" d="M-60,195 C120,190 280,185 440,192 C600,199 750,194 920,188"
-                stroke="rgba(255,255,255,0.10)" stroke-width="2.2" stroke-dasharray="1200" style="animation-duration:2.0s;animation-delay:2.7s;"/>
-            <path class="cine-ws" d="M-60,230 C150,224 320,218 500,226 C660,232 820,225 960,220"
-                stroke="rgba(212,175,55,0.08)" stroke-width="1.8" stroke-dasharray="1200" style="animation-duration:2.3s;animation-delay:2.85s;"/>
-            <!-- Líneas finas / zona alta -->
-            <path class="cine-ws" d="M-60,130 C100,126 240,122 400,128 C560,134 720,130 940,124"
-                stroke="rgba(255,255,255,0.07)" stroke-width="1.2" stroke-dasharray="1200" style="animation-duration:1.9s;animation-delay:3.0s;"/>
-            <path class="cine-ws" d="M-60,158 C200,152 380,148 560,154 C720,160 870,154 1020,148"
-                stroke="rgba(255,255,255,0.06)" stroke-width="1.0" stroke-dasharray="1200" style="animation-duration:2.6s;animation-delay:3.2s;"/>
-            <!-- Líneas medianas / zona media-baja -->
-            <path class="cine-ws" d="M-60,280 C130,275 300,270 480,277 C640,284 800,278 980,272"
-                stroke="rgba(255,255,255,0.07)" stroke-width="1.5" stroke-dasharray="1200" style="animation-duration:2.1s;animation-delay:3.4s;"/>
-            <path class="cine-ws" d="M-60,310 C170,304 350,298 530,305 C700,312 860,306 1020,300"
-                stroke="rgba(180,140,50,0.06)" stroke-width="1.2" stroke-dasharray="1200" style="animation-duration:2.8s;animation-delay:3.6s;"/>
-            <!-- Segunda ola — acompañan la caída de la hoja -->
-            <path class="cine-ws" d="M-60,175 C140,170 310,165 490,172 C660,178 820,173 980,167"
-                stroke="rgba(255,255,255,0.08)" stroke-width="1.6" stroke-dasharray="1200" style="animation-duration:2.2s;animation-delay:4.2s;"/>
-            <path class="cine-ws" d="M-60,250 C120,244 290,239 470,246 C640,253 810,247 1000,241"
-                stroke="rgba(255,255,255,0.06)" stroke-width="1.0" stroke-dasharray="1200" style="animation-duration:2.5s;animation-delay:4.5s;"/>
+
+            <!-- ESPIRAL 1 — centro, grande, curva amplia hacia abajo luego sube -->
+            <path class="cine-ws"
+                d="M-80,220 C80,215 200,195 320,205 C440,215 500,240 580,225 C660,210 720,185 820,195 C900,203 960,215 1040,208"
+                stroke="rgba(255,255,255,0.055)" stroke-width="2.0"
+                stroke-dasharray="1350" style="--dl:1350;--op:0.7;animation-duration:2.6s;animation-delay:2.7s;"/>
+
+            <!-- ESPIRAL 2 — zona alta, curva ascendente-descendente -->
+            <path class="cine-ws"
+                d="M-80,140 C60,135 160,120 280,130 C380,138 440,158 540,148 C640,138 720,115 840,122 C920,127 980,138 1060,132"
+                stroke="rgba(212,175,55,0.045)" stroke-width="1.4"
+                stroke-dasharray="1280" style="--dl:1280;--op:0.6;animation-duration:2.9s;animation-delay:2.9s;"/>
+
+            <!-- ESPIRAL 3 — más abajo, ondulación marcada tipo S -->
+            <path class="cine-ws"
+                d="M-80,300 C60,295 180,275 300,288 C420,301 490,325 600,312 C710,299 780,272 900,280 C960,284 1010,292 1070,285"
+                stroke="rgba(255,255,255,0.04)" stroke-width="1.6"
+                stroke-dasharray="1300" style="--dl:1300;--op:0.55;animation-duration:3.1s;animation-delay:3.05s;"/>
+
+            <!-- ESPIRAL 4 — fina, alta, bucle pequeño en el centro -->
+            <path class="cine-ws"
+                d="M-80,95 C80,90 200,80 310,88 C390,94 430,108 500,100 C570,92 640,75 760,82 C860,88 950,95 1060,90"
+                stroke="rgba(255,255,255,0.032)" stroke-width="1.0"
+                stroke-dasharray="1200" style="--dl:1200;--op:0.5;animation-duration:2.4s;animation-delay:3.2s;"/>
+
+            <!-- ESPIRAL 5 — zona media, giro profundo hacia abajo y recupera -->
+            <path class="cine-ws"
+                d="M-80,260 C60,255 170,235 290,248 C410,261 470,285 570,272 C670,259 750,235 870,242 C940,246 1000,255 1070,250"
+                stroke="rgba(255,255,255,0.038)" stroke-width="1.2"
+                stroke-dasharray="1250" style="--dl:1250;--op:0.52;animation-duration:2.8s;animation-delay:3.4s;"/>
+
+            <!-- ESPIRAL 6 — acompaña la caída de la hoja, zona 200-250 -->
+            <path class="cine-ws"
+                d="M-80,180 C100,174 240,160 360,170 C480,180 540,200 640,190 C740,180 820,158 940,165 C1000,168 1040,175 1080,170"
+                stroke="rgba(200,160,50,0.038)" stroke-width="1.3"
+                stroke-dasharray="1260" style="--dl:1260;--op:0.5;animation-duration:3.3s;animation-delay:3.7s;"/>
+
+            <!-- ESPIRAL 7 — muy fina, zona baja, curva suave -->
+            <path class="cine-ws"
+                d="M-80,355 C80,350 220,335 340,345 C460,355 520,372 620,360 C720,348 810,328 930,334 C990,337 1040,344 1080,340"
+                stroke="rgba(255,255,255,0.028)" stroke-width="0.9"
+                stroke-dasharray="1220" style="--dl:1220;--op:0.45;animation-duration:3.5s;animation-delay:4.0s;"/>
+
+            <!-- ESPIRAL 8 — segunda ola, zona alta-media, más tardía -->
+            <path class="cine-ws"
+                d="M-80,165 C70,160 190,145 310,155 C420,163 490,180 580,170 C680,160 760,140 880,147 C950,151 1010,160 1070,155"
+                stroke="rgba(255,255,255,0.03)" stroke-width="1.1"
+                stroke-dasharray="1240" style="--dl:1240;--op:0.48;animation-duration:2.7s;animation-delay:4.4s;"/>
         </svg>
 
         <!-- Hoja protagonista -->
