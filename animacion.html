@@ -96,8 +96,8 @@
         <button id="btn-idle" class="active-state" onclick="setAnimationState('idle')">Idle Tranquilo</button>
         <button id="btn-normal" onclick="setAnimationState('normal')">Tocando Normal</button>
         <button id="btn-alegre" onclick="setAnimationState('alegre')">Taberna Alegre</button>
-        <button id="btn-epica" onclick="setAnimationState('epica')">Canción Épica</button>
-        <button id="btn-nostalgica" onclick="setAnimationState('nostalgica')">Nostálgica</button>
+        <button id="btn-epica" onclick="setAnimationState('epica')">CanciÃ³n Ã‰pica</button>
+        <button id="btn-nostalgica" onclick="setAnimationState('nostalgica')">NostÃ¡lgica</button>
     </div>
 
     <script>
@@ -145,12 +145,20 @@
             fireYellow: '#edd55e',
             fireWhite: '#fffde7',
 
-            // Colores cálidos y carismáticos para el Poodle
+            // Colores cÃ¡lidos y carismÃ¡ticos para el Poodle
             dogDark: '#a3713f',
             dogLight: '#cc964e',
             dogHighlight: '#e6bd75',
             dogNose: '#301d1d',
             dogTongue: '#e57373', 
+            treeBarkDark: '#2b1a12',
+            treeBark: '#4a2b18',
+            treeBarkLight: '#6f4728',
+            treeLeafDark: '#182a19',
+            treeLeaf: '#254327',
+            treeLeafLight: '#38623a',
+            treeLeafGold: '#516b35',
+            rainDrop: 'rgba(166, 210, 230, 0.72)',
 
             fluteDark: '#d4e157',
             fluteLight: '#f4ff81',
@@ -169,10 +177,197 @@
         let dogState = 'lying'; // 'lying' (acostado), 'standing' (pararse)
         let dogTimer = 0;
         let dogTailWag = 0;
+        const dogAI = {
+            action: 'rest',
+            actionLeft: 0,
+            nextAction: 7000 + Math.random() * 9000,
+            earFlick: 0,
+            dreamLeft: 0,
+            eyePeek: 0,
+            xOffset: 0,
+            targetOffset: 0
+        };
 
-        // Pool de partículas y conteo de cuadros
+        // Pool de partÃ­culas y conteo de cuadros
         let particles = [];
         let frameCounter = 0;
+        let rainActive = false;
+        let visible = true;
+
+        // Micro-vida del bardo: no cambia estados ni silueta, solo detalles de 1px.
+        const bardLife = {
+            time: 0,
+            breathRate: 360,
+            breathDepth: 0.4,
+            breathTarget: 0.4,
+            breathHold: 0,
+            blinkTimer: 1200 + Math.random() * 2600,
+            blinkLeft: 0,
+            blinkStep: 0,
+            lookTimer: 1800 + Math.random() * 3200,
+            eyeLook: 0,
+            eventTimer: 20000 + Math.random() * 40000,
+            eventType: null,
+            eventLeft: 0,
+            forcedEvent: null,
+            featherLag: 0,
+            capeDrift: 0,
+            fingerTap: 0,
+            postureBias: 0,
+            hatAdjust: 0,
+            musicMood: 'calma',
+            rainDropLeft: 0,
+            restLeft: 0
+        };
+
+        const sessionMemory = {
+            startedAt: Date.now(),
+            openedGames: {},
+            music: {},
+            weatherChanges: 0,
+            lastPromptAt: 0
+        };
+
+        function randRange(min, max) {
+            return min + Math.random() * (max - min);
+        }
+
+        function chooseWeighted(items) {
+            const total = items.reduce((sum, item) => sum + item.weight, 0);
+            let pick = Math.random() * total;
+            for (const item of items) {
+                pick -= item.weight;
+                if (pick <= 0) return item.value;
+            }
+            return items[items.length - 1].value;
+        }
+
+        function startBardEvent(type, duration) {
+            bardLife.eventType = type;
+            bardLife.eventLeft = duration || randRange(1600, 4200);
+            bardLife.eventTimer = randRange(14000, 52000);
+        }
+
+        function updateBardMicroLife(deltaTime) {
+            bardLife.time += deltaTime;
+
+            if (bardLife.breathHold > 0) {
+                bardLife.breathHold -= deltaTime;
+            } else if (Math.random() < 0.003) {
+                bardLife.breathTarget = randRange(0.25, Math.random() < 0.18 ? 0.85 : 0.55);
+                bardLife.breathRate = randRange(330, 520);
+                if (Math.random() < 0.12) bardLife.breathHold = randRange(350, 900);
+            }
+            bardLife.breathDepth += (bardLife.breathTarget - bardLife.breathDepth) * 0.015;
+
+            bardLife.blinkTimer -= deltaTime;
+            if (bardLife.blinkTimer <= 0 && bardLife.blinkLeft <= 0) {
+                bardLife.blinkLeft = Math.random() < 0.16 ? 2 : 1;
+                bardLife.blinkStep = 95;
+                bardLife.blinkTimer = randRange(2200, 7200);
+            }
+            if (bardLife.blinkLeft > 0) {
+                bardLife.blinkStep -= deltaTime;
+                if (bardLife.blinkStep <= 0) {
+                    bardLife.blinkLeft--;
+                    bardLife.blinkStep = bardLife.blinkLeft > 0 ? 135 : 0;
+                }
+            }
+
+            bardLife.lookTimer -= deltaTime;
+            if (bardLife.lookTimer <= 0) {
+                const r = Math.random();
+                bardLife.eyeLook = r < 0.35 ? -1 : (r < 0.7 ? 1 : 0);
+                bardLife.lookTimer = randRange(900, 4200);
+            }
+
+            bardLife.eventTimer -= deltaTime;
+            if (bardLife.eventTimer <= 0 && bardLife.eventLeft <= 0) {
+                if (rainActive && Math.random() < 0.28) {
+                    startBardEvent(chooseWeighted([
+                        { value: 'rainLook', weight: 3 },
+                        { value: 'cloak', weight: 3 },
+                        { value: 'fire', weight: 2 },
+                        { value: 'raindrop', weight: 1 }
+                    ]), randRange(1800, 4200));
+                    if (bardLife.eventType === 'raindrop') bardLife.rainDropLeft = 900;
+                } else {
+                    startBardEvent(chooseWeighted([
+                        { value: 'fire', weight: 3 },
+                        { value: 'dog', weight: 3 },
+                        { value: 'user', weight: 2 },
+                        { value: 'smile', weight: 2 },
+                        { value: 'sigh', weight: 2 },
+                        { value: 'hat', weight: 2 },
+                        { value: 'posture', weight: 2 },
+                        { value: 'hands', weight: 2 },
+                        { value: 'rest', weight: 1 },
+                        { value: 'enjoy', weight: 2 }
+                    ]), randRange(1500, 5200));
+                    if (bardLife.eventType === 'rest') bardLife.restLeft = bardLife.eventLeft;
+                }
+            }
+            if (bardLife.eventLeft > 0) {
+                bardLife.eventLeft -= deltaTime;
+                if (bardLife.rainDropLeft > 0) bardLife.rainDropLeft -= deltaTime;
+                if (bardLife.restLeft > 0) bardLife.restLeft -= deltaTime;
+                if (bardLife.eventLeft <= 0) {
+                    bardLife.eventType = null;
+                    bardLife.postureBias = 0;
+                    bardLife.hatAdjust = 0;
+                }
+            }
+
+            const fingerRate = bardLife.musicMood === 'alegre' ? 80 : (bardLife.musicMood === 'epica' ? 70 : 130);
+            bardLife.fingerTap = bardLife.eventType === 'rest' ? 0 : (Math.sin(bardLife.time / fingerRate) > 0.35 ? 1 : 0);
+            bardLife.capeDrift = Math.round(Math.sin(bardLife.time / 820) * 0.6);
+            bardLife.postureBias = bardLife.eventType === 'posture' ? Math.round(Math.sin(bardLife.time / 540)) : 0;
+            bardLife.hatAdjust = (bardLife.eventType === 'hat' || bardLife.eventType === 'raindrop') ? 1 : 0;
+        }
+
+        function updateDogAI(deltaTime) {
+            dogAI.nextAction -= deltaTime;
+            if (dogAI.earFlick > 0) dogAI.earFlick -= deltaTime;
+            if (dogAI.dreamLeft > 0) dogAI.dreamLeft -= deltaTime;
+            if (dogAI.eyePeek > 0) dogAI.eyePeek -= deltaTime;
+            dogAI.xOffset += (dogAI.targetOffset - dogAI.xOffset) * 0.035;
+
+            if (dogAI.actionLeft > 0) {
+                dogAI.actionLeft -= deltaTime;
+                if (dogAI.actionLeft <= 0) {
+                    dogAI.action = 'rest';
+                    dogState = 'lying';
+                    dogAI.targetOffset = 0;
+                    dogAI.nextAction = randRange(rainActive ? 7000 : 9000, rainActive ? 17000 : 26000);
+                }
+                return;
+            }
+
+            if (dogState === 'lying') {
+                if (Math.random() < 0.006) dogAI.earFlick = randRange(250, 700);
+                if (Math.random() < 0.002) dogAI.dreamLeft = randRange(1200, 3000);
+                if (Math.random() < 0.0018) dogAI.eyePeek = randRange(450, 1200);
+            }
+
+            if (dogAI.nextAction <= 0 && currentState !== 'dormido') {
+                const action = rainActive ? chooseWeighted([
+                    { value: 'shake', weight: 4 },
+                    { value: 'cuddle', weight: 5 },
+                    { value: 'fire', weight: 2 },
+                    { value: 'circle', weight: 2 }
+                ]) : chooseWeighted([
+                    { value: 'stretch', weight: 3 },
+                    { value: 'walk', weight: 3 },
+                    { value: 'circle', weight: 3 },
+                    { value: 'fire', weight: 2 },
+                    { value: 'cuddle', weight: 2 }
+                ]);
+                dogAI.action = action;
+                dogAI.actionLeft = randRange(2500, action === 'walk' ? 5200 : 4300);
+                dogState = action === 'circle' ? 'lying' : 'standing';
+                dogAI.targetOffset = action === 'fire' ? -18 : (action === 'cuddle' ? -9 : (action === 'walk' ? -12 + Math.random() * 20 : 0));
+            }
+        }
 
         const animations = {
             'dormido': { speed: 800, frames: 4, name: "Dormido" },
@@ -180,14 +375,16 @@
             'idle': { speed: 400, frames: 4, name: "Idle Tranquilo" },
             'normal': { speed: 200, frames: 4, name: "Tocando Normal" },
             'alegre': { speed: 120, frames: 4, name: "Taberna Alegre" },
-            'epica': { speed: 120, frames: 6, name: "Canción Épica" },
-            'nostalgica': { speed: 400, frames: 4, name: "Canción Nostálgica" }
+            'epica': { speed: 120, frames: 6, name: "CanciÃ³n Ã‰pica" },
+            'nostalgica': { speed: 400, frames: 4, name: "CanciÃ³n NostÃ¡lgica" }
         };
 
         window.setAnimationState = function(state) {
             currentState = state;
             currentFrame = 0;
             animationTimer = 0;
+            bardLife.eyeLook = 0;
+            bardLife.blinkStep = 0;
             
             if(state === 'idle' || state === 'dormido' || state === 'despertar' || state === 'nostalgica') {
                  currentInstrument = 'lute';
@@ -206,6 +403,101 @@
         function drawR(x, y, w, h, color) {
             ctx.fillStyle = color;
             ctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h));
+        }
+
+        function resolveBardEyes(baseEyes, state) {
+            if (state === 'dormido') return 'closed';
+            if (bardLife.eventType === 'enjoy') return 'closed';
+            if (bardLife.eventType === 'sigh') return 'half';
+            if (bardLife.blinkLeft > 0 && bardLife.blinkStep > 35) return 'closed';
+            if (bardLife.blinkLeft > 0) return 'half';
+            return baseEyes;
+        }
+
+        function drawBardEyes(hx, hy, eyes) {
+            const look = bardLife.eventType === 'fire' ? -1 : (bardLife.eventType === 'dog' ? 1 : (bardLife.eventType === 'user' ? 0 : bardLife.eyeLook));
+            if(eyes === 'closed') {
+                drawR(hx - 4, hy - 1, 3, 1, colors.outline); drawR(hx + 1, hy - 1, 3, 1, colors.outline);
+            } else if (eyes === 'half') {
+                drawR(hx - 4, hy - 2, 3, 1, colors.outline); drawR(hx - 4, hy - 1, 3, 1, colors.skinDark);
+                drawR(hx + 1, hy - 2, 3, 1, colors.outline); drawR(hx + 1, hy - 1, 3, 1, colors.skinDark);
+            } else {
+                drawR(hx - 4, hy - 2, 3, 3, '#fff');
+                drawR(hx + 1, hy - 2, 3, 3, '#fff');
+                if (look === 0) {
+                    drawR(hx - 3, hy - 1, 2, 2, colors.outline); 
+                    drawR(hx + 2, hy - 1, 2, 2, colors.outline);
+                } else {
+                    drawR(look < 0 ? hx - 4 : hx - 2, hy - 1, 1, 2, colors.outline);
+                    drawR(look < 0 ? hx + 1 : hx + 3, hy - 1, 1, 2, colors.outline);
+                }
+                if (look !== 0) {
+                    drawR(look < 0 ? hx - 4 : hx - 2, hy - 2, 1, 1, '#fff');
+                    drawR(look < 0 ? hx + 1 : hx + 3, hy - 2, 1, 1, '#fff');
+                }
+            }
+        }
+
+        function drawBardMicroDetails(cx, cy, hx, hy, bodyX, bodyY, capeSway) {
+            if (frameCounter % 2 === 0) {
+                drawR(hx - 7, hy + 3, 2, 1, '#6f615a');
+                drawR(hx + 5, hy + 3, 2, 1, '#6f615a');
+            }
+            drawR(hx - 5, hy + 5, 2, 1, '#8f6f64');
+            drawR(hx + 2, hy + 5, 2, 1, '#8f6f64');
+            drawR(cx - 11 + capeSway, cy + 2 + bodyY, 2, 9, colors.capeDark);
+            drawR(cx + 12 + capeSway, cy + 1 + bodyY, 1, 10, colors.capeDark);
+            drawR(cx - 3 + bodyX, cy - 4 + bodyY, 1, 8, '#dadada');
+            drawR(cx + 2 + bodyX, cy - 3 + bodyY, 1, 7, '#8f6a42');
+        }
+
+        function drawTree() {
+            // Capa de fondo: arbol bajo y lateral para no tapar al bardo.
+            drawR(38, 8, 5, 40, colors.treeBarkDark);
+            drawR(43, 6, 9, 43, colors.treeBark);
+            drawR(50, 10, 4, 36, colors.treeBarkDark);
+            drawR(46, 8, 2, 38, colors.treeBarkLight);
+            drawR(41, 20, 15, 3, colors.treeBarkLight);
+            drawR(36, 43, 12, 3, colors.treeBarkDark);
+            drawR(49, 43, 17, 3, colors.treeBarkDark);
+            drawR(33, 47, 18, 2, colors.treeBark);
+            drawR(53, 47, 18, 2, colors.treeBark);
+
+            drawR(22, 2, 33, 12, colors.treeLeafDark);
+            drawR(16, 10, 49, 15, colors.treeLeafDark);
+            drawR(24, 5, 41, 16, colors.treeLeaf);
+            drawR(7, 20, 47, 14, colors.treeLeafDark);
+            drawR(18, 18, 55, 16, colors.treeLeaf);
+            drawR(29, 25, 35, 11, colors.treeLeafLight);
+            drawR(16, 14, 8, 5, colors.treeLeafLight);
+            drawR(52, 11, 9, 5, colors.treeLeafLight);
+            drawR(37, 4, 10, 3, colors.treeLeafGold);
+            drawR(11, 28, 13, 4, colors.treeLeafGold);
+            drawR(59, 23, 9, 4, colors.treeLeafGold);
+            drawR(31, 34, 30, 3, 'rgba(0,0,0,0.18)');
+        }
+
+        function drawRainReactions(hx, hy, cx, cy) {
+            if (!rainActive) return;
+            if (frameCounter % 18 === 0 && particles.length < 44) {
+                particles.push({
+                    x: 53 + Math.random() * 34,
+                    y: 0,
+                    type: 'rain',
+                    vx: -0.35,
+                    vy: 1.8 + Math.random() * 0.5,
+                    life: 1,
+                    decay: 0.035
+                });
+            }
+            if (bardLife.rainDropLeft > 0) {
+                drawR(hx - 2, hy - 18, 2, 1, colors.rainDrop);
+                drawR(hx - 1, hy - 17, 1, 2, colors.rainDrop);
+            }
+            if (bardLife.eventType === 'cloak') {
+                drawR(cx - 15, cy - 3, 4, 16, colors.capeDark);
+                drawR(cx + 12, cy - 3, 3, 14, colors.capeDark);
+            }
         }
 
         function updateAndDrawParticles() {
@@ -235,12 +527,15 @@
                     let size = p.life > 0.5 ? 1 : 1;
                     ctx.fillStyle = `rgba(217, 129, 59, ${opacity})`;
                     ctx.fillRect(Math.floor(p.x), Math.floor(p.y), size, size);
+                } else if (p.type === 'rain') {
+                    ctx.fillStyle = colors.rainDrop;
+                    ctx.fillRect(Math.floor(p.x), Math.floor(p.y), 1, 3);
                 }
             }
         }
 
         function generateEnvironmentParticles() {
-            const fireX = 22; // Alineado exactamente con la posición de la fogata a la izquierda
+            const fireX = 22; // Alineado exactamente con la posiciÃ³n de la fogata a la izquierda
             const fireY = 38;
 
             // Humo lento hacia el cielo
@@ -272,6 +567,9 @@
 
         function drawDog(dx, dy, state, frame, timer) {
             let breathe = Math.sin(timer / 300) * 0.3;
+            let actionBob = dogAI.action === 'walk' ? Math.sin(timer / 120) : 0;
+            let shake = dogAI.action === 'shake' ? Math.round(Math.sin(timer / 45) * 2) : 0;
+            dx += dogAI.xOffset + shake;
             ctx.save();
 
             // Volteamos horizontalmente para que el perrito mire hacia el bardo (izquierda)
@@ -279,11 +577,12 @@
             ctx.scale(-1, 1);
 
             if (state === 'lying') {
-                // --- PERRO ACOSTADO (Posición predeterminada/defensiva y relajada) ---
-                let headY = 4 + breathe;
+                // --- PERRO ACOSTADO (PosiciÃ³n predeterminada/defensiva y relajada) ---
+                let headY = 4 + breathe + (dogAI.action === 'circle' ? Math.sin(timer / 130) : 0);
                 
                 // Cola descansando en el suelo
-                drawR(-10, dy + 8, 3, 3, colors.dogDark);
+                const tailLift = dogAI.dreamLeft > 0 ? Math.sin(timer / 90) * 2 : 0;
+                drawR(-10, dy + 8 - tailLift, 3, 3, colors.dogDark);
                 
                 // Cuerpo echado
                 drawR(-8, dy + 6, 15, 6, colors.dogDark); 
@@ -300,22 +599,26 @@
                 
                 drawR(hx - 2, hy, 9, 6, colors.dogLight);
                 drawR(hx - 1, hy - 2, 7, 5, colors.dogHighlight); 
-                drawR(hx, hy + 2, 3, 4, colors.dogDark); // Orejita caída
+                drawR(hx, hy + 2, 3, 4, colors.dogDark); // Orejita caÃ­da
                 
                 drawR(hx + 5, hy + 2, 5, 3, colors.dogLight);
                 drawR(hx + 8, hy + 2, 2, 2, colors.dogNose); 
                 
                 // Ojos entrecerrados o parpadeando
-                if (currentState === 'dormido') {
+                if (currentState === 'dormido' || (dogAI.dreamLeft > 0 && Math.sin(timer / 160) > -0.4)) {
                     drawR(hx + 4, hy + 1, 2, 1, colors.dogNose); 
                 } else {
                     drawR(hx + 4, hy, 2, 2, colors.outline);
-                    drawR(hx + 5, hy, 1, 1, '#fff');
+                    if (dogAI.eyePeek > 0 || dogAI.action !== 'rest') drawR(hx + 5, hy, 1, 1, '#fff');
+                }
+                if (dogAI.dreamLeft > 0) {
+                    drawR(hx - 4, hy - 5, 2, 1, '#fff');
+                    drawR(hx - 3, hy - 7, 3, 1, '#fff');
                 }
             } 
             else if (state === 'standing') {
                 // --- PERRO PARADO (Ocurre ocasionalmente, mira atento) ---
-                let headY = breathe;
+                let headY = breathe + (dogAI.action === 'stretch' ? 2 : 0);
                 let tailRot = Math.sin(timer / 100) * 1.5;
 
                 // Cuerpo erguido
@@ -324,8 +627,8 @@
                 drawR(-7, dy, 10, 8, colors.dogHighlight); 
                 
                 // Patas levantadas y extendidas
-                drawR(-6, dy + 11, 3, 3, colors.dogDark);
-                drawR(2, dy + 11, 3, 3, colors.dogDark);
+                drawR(-6, dy + 11 + (actionBob > 0 ? 1 : 0), 3, 3, colors.dogDark);
+                drawR(2, dy + 11 + (actionBob < 0 ? 1 : 0), 3, 3, colors.dogDark);
                 
                 // Cola feliz
                 drawR(-11, dy + 2 - tailRot, 4, 4, colors.dogHighlight);
@@ -349,6 +652,10 @@
                 // Lengua sutil
                 if (currentState === 'alegre' || currentState === 'epica') {
                     drawR(hx + 6, hy + 6, 2, 2, colors.dogTongue);
+                }
+                if (dogAI.action === 'shake') {
+                    drawR(hx - 5, hy - 3, 2, 1, colors.rainDrop);
+                    drawR(hx + 9, hy - 2, 2, 1, colors.rainDrop);
                 }
             }
 
@@ -436,7 +743,7 @@
         function drawBard(state, frame) {
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
 
-            // --- DISEÑO DE COMPOSICIÓN BALANCEADO Y SEGURO ---
+            // --- DISEÃ‘O DE COMPOSICIÃ“N BALANCEADO Y SEGURO ---
             const fireX = 22; // Fuego a la izquierda
             const cx = 64;    // Bardo al centro
             const dogX = 106; // Perro a la derecha
@@ -446,13 +753,15 @@
 
             const currentTime = animationTimer + lastTime;
 
+            drawTree();
+
             // 1. Dibujar el Fuego
             drawFireplace(fireX, fireY, frame + Math.floor(animationTimer/110)); 
 
             let headY = 0, headX = 0, armR_Y = 0, armR_X = 0, armL_X = 0; 
             let bodyY = 0, bodyX = 0, footY = 0, footX = 0, luteY = 0, luteX = 0;
             let featherRot = 0, capeSway = 0, smile = false, eyes = 'open';
-            let breathY = (state !== 'dormido') ? Math.sin(currentTime / 350) * 0.4 : 0;
+            let breathY = (state !== 'dormido') ? Math.sin(currentTime / bardLife.breathRate) * bardLife.breathDepth : 0;
 
             switch(state) {
                 case 'dormido':
@@ -490,6 +799,23 @@
                     headY = 1; headX = 1; bodyY = (frame === 1) ? 1 : 0;
                     featherRot = 1; smile = true; eyes = 'half'; break;
             }
+            if (bardLife.eventType === 'fire') headX -= 1;
+            if (bardLife.eventType === 'dog') headX += 1;
+            if (bardLife.eventType === 'user') headY -= 1;
+            if (bardLife.eventType === 'rainLook') headY -= 1;
+            if (bardLife.eventType === 'smile' || bardLife.eventType === 'enjoy') smile = true;
+            if (bardLife.eventType === 'sigh') { headY += 1; breathY += 0.35; }
+            if (bardLife.eventType === 'rest') { armR_Y += 2; luteY += 1; }
+            if (bardLife.musicMood === 'epica') { bodyY -= 0.5; capeSway -= 1; }
+            if (bardLife.musicMood === 'calma') eyes = 'half';
+            bodyX += bardLife.postureBias;
+            capeSway += bardLife.capeDrift;
+            armR_Y += Math.round(breathY * 0.7);
+            armL_X += Math.round(Math.sin(currentTime / 760) * 0.4);
+            luteY += Math.round(Math.sin(currentTime / 680) * 0.35);
+            bardLife.featherLag += (featherRot - bardLife.featherLag) * 0.08;
+            featherRot = bardLife.featherLag + Math.sin(currentTime / 430) * 0.35 - (bodyX * 0.2);
+            eyes = resolveBardEyes(eyes, state);
             bodyY += breathY;
 
             // 2. Capa, Banco, Cuerpo del Bardo
@@ -511,10 +837,10 @@
             drawR(cx + 16, cy + 18, 4, 12, colors.benchLegs); 
             drawR(cx - 18, cy + 22, 36, 2, colors.benchLegs);
 
-            // Piernas y diseño de botas
+            // Piernas y diseÃ±o de botas
             drawR(cx - 10, cy + 12 + bodyY, 8, 12, colors.outline);
             drawR(cx - 9, cy + 12 + bodyY, 6, 12, colors.pants);
-            drawR(cx - 7, cy + 13 + bodyY, 2, 10, '#3f3f4e'); // Sombra/diseño de pantalones
+            drawR(cx - 7, cy + 13 + bodyY, 2, 10, '#3f3f4e'); // Sombra/diseÃ±o de pantalones
             drawR(cx - 11, cy + 24 + bodyY, 10, 6, colors.bootsLight); 
             drawR(cx - 12, cy + 30 + bodyY, 12, 6, colors.bootsDark);
             drawR(cx - 12, cy + 34 + bodyY, 12, 2, colors.outline);
@@ -553,15 +879,7 @@
             drawR(hx - 2, hy, 4, 4, colors.skinDark);
             drawR(hx - 1, hy + 1, 2, 2, colors.skinLight); 
             
-            if(eyes === 'closed') {
-                drawR(hx - 4, hy - 1, 3, 1, colors.outline); drawR(hx + 1, hy - 1, 3, 1, colors.outline);
-            } else if (eyes === 'half') {
-                drawR(hx - 4, hy - 2, 3, 1, colors.outline); drawR(hx - 4, hy - 1, 3, 1, colors.skinDark);
-                drawR(hx + 1, hy - 2, 3, 1, colors.outline); drawR(hx + 1, hy - 1, 3, 1, colors.skinDark);
-            } else {
-                drawR(hx - 4, hy - 2, 3, 3, '#fff'); drawR(hx - 3, hy - 1, 2, 2, colors.outline); 
-                drawR(hx + 1, hy - 2, 3, 3, '#fff'); drawR(hx + 2, hy - 1, 2, 2, colors.outline);
-            }
+            drawBardEyes(hx, hy, eyes);
 
             if(smile) {
                 drawR(hx - 3, hy + 4, 6, 2, colors.outline); drawR(hx - 2, hy + 5, 4, 1, '#fff'); 
@@ -569,10 +887,13 @@
                 drawR(hx - 2, hy + 4, 4, 1, colors.outline);
             }
 
+            drawBardMicroDetails(cx, cy, hx, hy, bodyX, bodyY, capeSway);
+            drawRainReactions(hx, hy, cx, cy);
+
             drawR(hx - 9, hy - 8, 18, 4, colors.hatLight); 
             drawR(hx - 8, hy - 12, 16, 5, colors.hatDark); 
             drawR(hx - 6, hy - 14, 12, 3, colors.hatDark);
-            drawR(hx - 3, hy - 16, 6, 2, colors.hatDark); 
+            drawR(hx - 3, hy - 16 - bardLife.hatAdjust, 6, 2, colors.hatDark); 
             
             let fx = hx - 6; let fly = hy - 14;
             drawR(fx - 1 - featherRot, fly - 6, 3, 6, colors.featherDark);
@@ -599,39 +920,45 @@
 
             drawInstrument(instX, instY, currentInstrument);
 
-            // Soporte físico inteligente de manos
+            // Soporte fÃ­sico inteligente de manos
             if (currentInstrument === 'drum') {
                 drawR(instX + 4 + armL_X, instY - 8, 2, 8, colors.drumStick);
                 drawR(instX + 3 + armL_X, instY - 10, 4, 3, colors.drumTop);
                 drawR(instX + 2 + armL_X, instY - 2, 5, 5, colors.skinLight);
+                drawR(instX + 3 + armL_X + bardLife.fingerTap, instY + 1, 2, 1, colors.skinDark);
                 drawR(cx - 14 + armR_X, cy - 4 + bodyY + armR_Y, 12, 12, colors.shirtDark);
                 drawR(cx - 12 + armR_X, cy - 3 + bodyY + armR_Y, 10, 10, colors.shirtLight);
                 drawR(instX - 4 + armR_X, instY - 6 + armR_Y, 2, 10, colors.drumStick);
                 drawR(instX - 5 + armR_X, instY - 8 + armR_Y, 4, 3, colors.drumTop);
                 drawR(instX - 6 + armR_X, instY - 1 + armR_Y, 6, 6, colors.skinLight);
+                drawR(instX - 5 + armR_X - bardLife.fingerTap, instY + 2 + armR_Y, 2, 1, colors.skinDark);
             } else if (currentInstrument === 'flute') {
                 drawR(instX + 10 + armL_X, instY - 2, 5, 5, colors.skinLight); 
                 drawR(instX + 11 + armL_X, instY - 1, 1, 3, colors.outline); 
+                drawR(instX + 13 + armL_X + bardLife.fingerTap, instY, 1, 2, colors.skinDark); 
                 drawR(cx - 14 + armR_X, cy - 4 + bodyY + armR_Y, 12, 12, colors.shirtDark);
                 drawR(cx - 12 + armR_X, cy - 3 + bodyY + armR_Y, 10, 10, colors.shirtLight);
                 drawR(instX - 6 + armR_X, instY - 1 + armR_Y, 6, 6, colors.skinLight);
                 drawR(instX - 5 + armR_X, instY + armR_Y, 3, 1, colors.outline); 
+                drawR(instX - 3 + armR_X - bardLife.fingerTap, instY + 1 + armR_Y, 1, 2, colors.skinDark); 
             } else {
                 drawR(instX + 16 + armL_X, instY - 3, 5, 5, colors.skinLight); 
                 drawR(instX + 17 + armL_X, instY - 2, 1, 3, colors.outline); 
+                drawR(instX + 19 + armL_X + bardLife.fingerTap, instY - 1, 1, 2, colors.skinDark); 
                 drawR(cx - 14 + armR_X, cy - 4 + bodyY + armR_Y, 12, 12, colors.shirtDark);
                 drawR(cx - 12 + armR_X, cy - 3 + bodyY + armR_Y, 10, 10, colors.shirtLight);
                 drawR(instX - 6 + armR_X, instY - 1 + armR_Y, 6, 6, colors.skinLight);
                 drawR(instX - 5 + armR_X, instY + armR_Y, 3, 1, colors.outline); 
+                drawR(instX - 3 + armR_X - bardLife.fingerTap, instY + 1 + armR_Y, 1, 2, colors.skinDark); 
             }
 
             // 3. Dibujar al Perro Poodle (Capa superior absoluta)
             drawDog(dogX, dogY, dogState, frame, currentTime);
-            // 3. CAPA FINAL MÁXIMA (Z-INDEX TOP): Dibujar al perro Poodle
-            // Esto asegura 100% que NINGÚN pixel de la banca o del bardo cubra al perrito.
+            // 3. CAPA FINAL MÃXIMA (Z-INDEX TOP): Dibujar al perro Poodle
+            // Esto asegura 100% que NINGÃšN pixel de la banca o del bardo cubra al perrito.
             drawDog(dogX, dogY, dogState, frame, currentTime);
 
-            // 4. Dibujar partículas (Humo lento, Brasas lentas)
+            // 4. Dibujar partÃ­culas (Humo lento, Brasas lentas)
             generateEnvironmentParticles();
             updateAndDrawParticles();
         }
@@ -639,36 +966,29 @@
         function runAIStateControllers(deltaTime) {
             frameCounter++;
             dogTimer += deltaTime;
+            updateBardMicroLife(deltaTime);
+            updateDogAI(deltaTime);
 
-            // Transición inteligente: El perro está casi siempre acostado. A veces se para brevemente.
             if (currentState === 'dormido') {
-                // Si el bardo duerme, el poodle duerme/se acuesta inmediatamente
-                if (dogState !== 'lying') {
-                    dogState = 'lying';
-                }
-            } else {
-                if (dogState === 'lying') {
-                    // Cada 12 segundos, hay una baja probabilidad (20%) de que decida pararse
-                    if (dogTimer > 12000) {
-                        if (Math.random() < 0.20) {
-                            dogState = 'standing';
-                        }
-                        dogTimer = 0;
-                    }
-                } else if (dogState === 'standing') {
-                    // Se queda parado durante 4 segundos antes de volver a echarse
-                    if (dogTimer > 4000) {
-                        dogState = 'lying';
-                        dogTimer = 0;
-                    }
-                }
+                dogState = 'lying';
+                dogAI.action = 'rest';
+                dogAI.targetOffset = 0;
             }
         }
 
         function gameLoop(timestamp) {
+            if (!visible) {
+                lastTime = timestamp;
+                requestAnimationFrame(gameLoop);
+                return;
+            }
             if (!lastTime) lastTime = timestamp;
-            const deltaTime = timestamp - lastTime;
+            let deltaTime = timestamp - lastTime;
             lastTime = timestamp;
+
+            // Si el deltaTime es muy grande (ej. > 200ms), ignoramos el exceso.
+            // Esto evita que la animaciÃ³n se acelere al volver de otra pestaÃ±a.
+            if (deltaTime > 200) deltaTime = 0;
 
             const anim = animations[currentState];
             animationTimer += deltaTime;
@@ -691,6 +1011,43 @@
             drawBard(currentState, currentFrame);
             requestAnimationFrame(gameLoop);
         }
+
+        window.__bardoScene = {
+            react(type, detail = {}) {
+                if (type === 'rain-start') {
+                    rainActive = true;
+                    sessionMemory.weatherChanges++;
+                    startBardEvent('rainLook', 2800);
+                    dogAI.action = 'cuddle';
+                    dogAI.actionLeft = 3600;
+                    dogAI.targetOffset = -9;
+                    dogState = 'standing';
+                } else if (type === 'rain-stop') {
+                    rainActive = false;
+                    startBardEvent('smile', 1800);
+                } else if (type === 'game-open') {
+                    const id = detail.id || 'juego';
+                    sessionMemory.openedGames[id] = (sessionMemory.openedGames[id] || 0) + 1;
+                    startBardEvent('user', 2600);
+                    bardLife.fingerTap = 1;
+                } else if (type === 'game-win') {
+                    startBardEvent('smile', 3600);
+                } else if (type === 'game-lose') {
+                    startBardEvent('sigh', 2600);
+                } else if (type === 'music') {
+                    const mood = detail.mood || 'calma';
+                    bardLife.musicMood = mood;
+                    sessionMemory.music[mood] = (sessionMemory.music[mood] || 0) + 1;
+                }
+            },
+            getMemory() {
+                return { ...sessionMemory, elapsedMs: Date.now() - sessionMemory.startedAt };
+            }
+        };
+
+        document.addEventListener('visibilitychange', () => {
+            visible = !document.hidden;
+        });
 
         window.onload = function() {
             ctx.imageSmoothingEnabled = false;
