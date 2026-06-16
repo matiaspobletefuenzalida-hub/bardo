@@ -303,6 +303,143 @@
             100% { transform: translateX(-15%) scaleY(1); }
         }
 
+        #bard-runtime-container {
+            position: fixed;
+            bottom: 2px;
+            left: 24px;
+            z-index: 45;
+            width: 256px;
+            height: 160px;
+            pointer-events: none;
+            background: transparent;
+        }
+        .bard-dialog-bubble {
+            position: absolute;
+            left: 50%;
+            top: -34px;
+            transform: translateX(-50%) translateY(4px);
+            max-width: min(280px, calc(100vw - 28px));
+            padding: 7px 12px 8px;
+            border: 1px solid rgba(212,175,55,0.72);
+            background:
+                linear-gradient(180deg, rgba(249,246,240,0.98), rgba(231,219,188,0.98));
+            color: #070D09;
+            font-family: 'EB Garamond', Georgia, serif;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.1;
+            text-align: center;
+            white-space: nowrap;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.55);
+            box-shadow: 0 8px 22px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.72);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+            pointer-events: none;
+        }
+        .bard-dialog-bubble::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -6px;
+            width: 10px;
+            height: 10px;
+            transform: translateX(-50%) rotate(45deg);
+            border-right: 1px solid rgba(212,175,55,0.72);
+            border-bottom: 1px solid rgba(212,175,55,0.72);
+            background: rgba(231,219,188,0.98);
+        }
+        .bard-dialog-bubble.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+        #bard-runtime-container::before,
+        #bard-runtime-container::after {
+            content: '';
+            position: absolute;
+            pointer-events: none;
+            transform-origin: 22% 72%;
+            mix-blend-mode: screen;
+        }
+        #bard-runtime-container::before {
+            width: 620px;
+            height: 420px;
+            left: -190px;
+            bottom: -155px;
+            z-index: -1;
+            opacity: 0.42;
+            background:
+                radial-gradient(ellipse 38% 28% at 34% 62%, rgba(255,194,93,0.34) 0%, rgba(214,111,35,0.16) 38%, transparent 72%),
+                radial-gradient(ellipse 56% 36% at 32% 72%, rgba(255,139,46,0.16) 0%, transparent 68%);
+            filter: blur(2px);
+            animation: bardFireGlow 4.6s ease-in-out infinite;
+        }
+        #bard-runtime-container::after {
+            width: 360px;
+            height: 240px;
+            left: -80px;
+            bottom: -82px;
+            z-index: -1;
+            opacity: 0.34;
+            background: radial-gradient(ellipse 46% 34% at 30% 66%, rgba(255,225,150,0.28) 0%, rgba(255,130,42,0.11) 42%, transparent 74%);
+            animation: bardFirePulse 1.75s steps(4, end) infinite;
+        }
+        #bard-runtime-canvas {
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        @keyframes bardFireGlow {
+            0%   { opacity: 0.34; transform: scale(0.98) translate(0, 1px); }
+            28%  { opacity: 0.47; transform: scale(1.02) translate(2px, -1px); }
+            57%  { opacity: 0.39; transform: scale(1.00) translate(-1px, 0); }
+            82%  { opacity: 0.50; transform: scale(1.03) translate(1px, -2px); }
+            100% { opacity: 0.36; transform: scale(0.99) translate(0, 1px); }
+        }
+        @keyframes bardFirePulse {
+            0%   { opacity: 0.22; transform: scale(0.96); }
+            35%  { opacity: 0.38; transform: scale(1.02); }
+            70%  { opacity: 0.28; transform: scale(0.99); }
+            100% { opacity: 0.34; transform: scale(1.01); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #bard-runtime-container::before,
+            #bard-runtime-container::after {
+                animation: none;
+            }
+        }
+        @media (max-width: 768px) {
+            #bard-runtime-container {
+                width: 160px;
+                height: 100px;
+                bottom: 0;
+                left: 5px;
+            }
+            .bard-dialog-bubble {
+                top: -36px;
+                max-width: min(230px, calc(100vw - 18px));
+                font-size: 12px;
+                padding: 6px 10px 7px;
+            }
+            #bard-runtime-container::before {
+                width: 360px;
+                height: 250px;
+                left: -120px;
+                bottom: -95px;
+                opacity: 0.32;
+                filter: blur(1px);
+            }
+            #bard-runtime-container::after {
+                width: 230px;
+                height: 150px;
+                left: -58px;
+                bottom: -50px;
+                opacity: 0.26;
+            }
+        }
+
         /* =============================================
            MÓVIL — NIEBLA: una sola capa, blur ligero,
            animación simplificada sin will-change
@@ -374,11 +511,17 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             pointer-events: none;
-            z-index: 1;
+            z-index: 48;
             opacity: 0;
             transition: opacity 0.8s ease;
+            contain: strict;
         }
-        #rain-canvas.active { opacity: 1; }
+        #rain-canvas.active { opacity: 0.56; }
+
+        body.rain-active #particle-canvas,
+        body.rain-active .leaf-container {
+            opacity: 0.35;
+        }
 
         /* =============================================
            HOJAS CAYENDO
@@ -1514,8 +1657,6 @@
             100% { stroke-dashoffset: 0; opacity: 0; }
         }
 
-
-
         /* --- Título emerge (4.0s) --- */
         .cine-title {
             position: relative;
@@ -1624,6 +1765,8 @@
             /* Brillos: medalla logo y marco retrato */
             .logo-medallion::after { animation: none !important; }
             .portrait-frame::before { animation: none !important; }
+
+            #rain-canvas.active { opacity: 0.42; }
 
             /* Halo de luna (moonPulse) */
             .night-moon::after { animation: none !important; }
@@ -2298,6 +2441,11 @@
         </div>
     </div>
 
+    <!-- Bardo Animado -->
+    <div id="bard-runtime-container" style="pointer-events: auto;">
+        <canvas id="bard-runtime-canvas" width="128" height="80" style="cursor: pointer;"></canvas>
+    </div>
+
     <!-- Orbe de sonido -->
     <button class="sound-orb" id="sound-orb" onclick="toggleSound()"
             title="Sonido ambiental del bosque" aria-label="Activar sonido ambiental del bosque">
@@ -2849,10 +2997,15 @@
         'superritmo':      { title: "Super Ritmo",       category: "Sincronía Rítmica",     icon: "fa-solid fa-heart-pulse",         file: "superritmo.html" }
     };
 
-    function openGameModal(gameId) {
+    window.openGameModal = function(gameId) {
         const modal = document.getElementById('game-modal');
         const data = GAMES_INFO[gameId];
         if (!data) return;
+
+        if (window.__bardoRenderer) {
+            window.__bardoRenderer.react('game-open', { id: gameId, title: data.title });
+            window.__bardoRenderer.say("A jugar se ha dicho!");
+        }
 
         document.getElementById('modal-game-title').textContent    = data.title;
         document.getElementById('modal-game-category').textContent = data.category;
@@ -2870,6 +3023,7 @@
                </div>`;
 
         modal.classList.remove('hidden');
+        modal.classList.add('flex');
         document.body.style.overflow = 'hidden';
 
         // Foco accesible
@@ -2879,10 +3033,32 @@
         }, 100);
     }
 
-    function closeGameModal() {
-        document.getElementById('game-modal').classList.add('hidden');
+    window.closeGameModal = function() {
+        const modal = document.getElementById('game-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
         document.body.style.overflow = '';
         document.getElementById('game-active-container').innerHTML = '';
+        if (window.__bardoRenderer) window.__bardoRenderer.startBehavior('smile', 1600);
+    }
+
+    function initGameParchments() {
+        document.querySelectorAll('.scroll-container[onclick*="openGameModal"]').forEach(scroll => {
+            if (scroll.dataset.modalListenerReady === 'true') return;
+            const match = scroll.getAttribute('onclick').match(/openGameModal\('([^']+)'\)/);
+            if (!match) return;
+            const gameId = match[1];
+            scroll.removeAttribute('onclick');
+            scroll.removeAttribute('onkeydown');
+            scroll.addEventListener('click', () => openGameModal(gameId));
+            scroll.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openGameModal(gameId);
+                }
+            });
+            scroll.dataset.modalListenerReady = 'true';
+        });
     }
 
     /* ============================================================
@@ -2919,24 +3095,30 @@
         let canvas, ctx, raf = null;
         let drops = [];
         let splashes = [];
-        const splashPoolSize = 60;
+        const splashPoolSize = 24;
         let splashCursor = 0;
         let running = false;
         let w = 0, h = 0;
         let dpr = 1;
+        let lastTs = 0;
+        let isMobileViewport = false;
+        let collisionRects = [];
+        let collisionRefresh = 0;
 
         const LAYERS = [
-            { count: 0, speedMin: 4,  speedMax: 7,  len: [10, 16], alpha: 0.18, width: 1 },
-            { count: 0, speedMin: 7,  speedMax: 11, len: [14, 22], alpha: 0.32, width: 1 },
-            { count: 0, speedMin: 11, speedMax: 16, len: [18, 30], alpha: 0.5,  width: 1.5 }
+            { count: 0, speedMin: 3.4, speedMax: 5.6, len: [9, 14],  alpha: 0.14, width: 1 },
+            { count: 0, speedMin: 5.4, speedMax: 8.3, len: [12, 19], alpha: 0.22, width: 1 },
+            { count: 0, speedMin: 7.6, speedMax: 10.8, len: [15, 24], alpha: 0.30, width: 1.15 }
         ];
 
         function computeCounts() {
-            const isMobile = w < 768;
-            const base = isMobile ? 40 : 90;
-            LAYERS[0].count = Math.round(base * 0.35);
-            LAYERS[1].count = Math.round(base * 0.35);
-            LAYERS[2].count = Math.round(base * 0.30);
+            isMobileViewport = w < 768;
+            const area = Math.min(w * h, 1920 * 1080);
+            const density = isMobileViewport ? 0.000023 : 0.000038;
+            const base = Math.max(isMobileViewport ? 18 : 34, Math.round(area * density));
+            LAYERS[0].count = Math.round(base * 0.42);
+            LAYERS[1].count = Math.round(base * 0.36);
+            LAYERS[2].count = Math.round(base * 0.22);
         }
 
         function createDrop(layerIndex) {
@@ -2959,19 +3141,54 @@
         }
 
         function spawnSplash(x, y) {
+            if (isMobileViewport) return;
             const s = splashes[splashCursor];
             s.x = x; s.y = y;
             s.life = 0;
-            s.maxLife = 14 + Math.random() * 10;
-            s.r = 1 + Math.random() * 2;
+            s.maxLife = 12 + Math.random() * 9;
+            s.r = 1 + Math.random() * 1.8;
             s.active = true;
             splashCursor = (splashCursor + 1) % splashPoolSize;
         }
 
+        function updateCollisionRects() {
+            const selectors = [
+                '#bard-runtime-container',
+                '#game-modal:not(.hidden) .game-modal-frame',
+                '.scroll-container',
+                '.theme-orb',
+                '.sound-orb'
+            ];
+            collisionRects = [];
+            document.querySelectorAll(selectors.join(',')).forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.bottom < 0 || rect.top > h || rect.right < 0 || rect.left > w) return;
+                if (rect.width < 8 || rect.height < 8) return;
+                collisionRects.push({
+                    left: rect.left,
+                    right: rect.right,
+                    top: rect.top,
+                    bottom: Math.min(rect.bottom, h),
+                    splash: rect.top
+                });
+            });
+        }
+
+        function findRainCollision(x, y, prevY) {
+            for (let i = 0; i < collisionRects.length; i++) {
+                const r = collisionRects[i];
+                if (x >= r.left && x <= r.right && y >= r.top && prevY <= r.bottom) {
+                    return r;
+                }
+            }
+            return null;
+        }
+
         function resize() {
-            dpr = Math.min(window.devicePixelRatio || 1, 2);
             w = window.innerWidth;
             h = window.innerHeight;
+            isMobileViewport = w < 768;
+            dpr = Math.min(window.devicePixelRatio || 1, isMobileViewport ? 1 : 1.5);
             canvas.width = w * dpr;
             canvas.height = h * dpr;
             canvas.style.width = w + 'px';
@@ -2982,46 +3199,68 @@
             LAYERS.forEach((layer, i) => {
                 for (let n = 0; n < layer.count; n++) drops.push(createDrop(i));
             });
+            updateCollisionRects();
         }
 
-        function step() {
+        function step(ts) {
             if (!running) return;
+            const delta = lastTs ? Math.min((ts - lastTs) / 16.67, 1.6) : 1;
+            lastTs = ts;
+            collisionRefresh += delta;
+            if (collisionRefresh > 18) {
+                updateCollisionRects();
+                collisionRefresh = 0;
+            }
             ctx.clearRect(0, 0, w, h);
+            const groundLine = h * 0.94;
 
-            for (let i = 0; i < drops.length; i++) {
-                const d = drops[i];
-                const layer = LAYERS[d.layer];
+            for (let layerIndex = 0; layerIndex < LAYERS.length; layerIndex++) {
+                const layer = LAYERS[layerIndex];
                 ctx.strokeStyle = `rgba(180,200,220,${layer.alpha})`;
                 ctx.lineWidth = layer.width;
                 ctx.beginPath();
-                ctx.moveTo(d.x, d.y);
-                ctx.lineTo(d.x + d.drift * 2, d.y + d.len);
-                ctx.stroke();
+                for (let i = 0; i < drops.length; i++) {
+                    const d = drops[i];
+                    if (d.layer !== layerIndex) continue;
+                    ctx.moveTo(d.x, d.y);
+                    ctx.lineTo(d.x + d.drift * 2, d.y + d.len);
 
-                d.y += d.speed;
-                d.x += d.drift;
+                    const prevY = d.y;
+                    d.y += d.speed * delta;
+                    d.x += d.drift * delta;
 
-                const groundLine = h * 0.94;
-                if (d.y > groundLine) {
-                    if (d.layer === LAYERS.length - 1 && Math.random() > 0.55) {
-                        spawnSplash(d.x, groundLine + Math.random() * (h - groundLine));
+                    const hit = findRainCollision(d.x, d.y + d.len, prevY);
+                    if (hit) {
+                        if (d.layer > 0 && Math.random() > 0.74) {
+                            spawnSplash(d.x, hit.splash + 1);
+                        }
+                        d.y = -20 - Math.random() * 60;
+                        d.x = Math.random() * w;
+                        continue;
                     }
-                    d.y = -20 - Math.random() * 40;
-                    d.x = Math.random() * w;
+
+                    if (d.y > groundLine) {
+                        if (d.layer === LAYERS.length - 1 && Math.random() > 0.86) {
+                            spawnSplash(d.x, groundLine + Math.random() * (h - groundLine));
+                        }
+                        d.y = -20 - Math.random() * 40;
+                        d.x = Math.random() * w;
+                    }
+                    if (d.x > w + 10) d.x = -10;
+                    if (d.x < -10) d.x = w + 10;
                 }
-                if (d.x > w + 10) d.x = -10;
-                if (d.x < -10) d.x = w + 10;
+                ctx.stroke();
             }
 
             for (let i = 0; i < splashes.length; i++) {
                 const s = splashes[i];
                 if (!s.active) continue;
-                s.life++;
+                s.life += delta;
                 const progress = s.life / s.maxLife;
                 if (progress >= 1) { s.active = false; continue; }
 
-                const radius = s.r * (1 + progress * 2.2);
-                const alpha = 0.35 * (1 - progress);
+                const radius = s.r * (1 + progress * 1.8);
+                const alpha = 0.26 * (1 - progress);
                 ctx.strokeStyle = `rgba(200,215,230,${alpha})`;
                 ctx.lineWidth = 1;
                 ctx.beginPath();
@@ -3045,18 +3284,24 @@
             canvas = document.getElementById('rain-canvas');
             if (!canvas) return;
             ctx = canvas.getContext('2d', { alpha: true });
+            if (!ctx) return;
+            running = true;
+            lastTs = 0;
+            canvas.classList.add('active');
+            document.body.classList.add('rain-active');
             initSplashPool();
             resize();
+            updateCollisionRects();
             window.addEventListener('resize', resize, { passive: true });
+            window.addEventListener('scroll', updateCollisionRects, { passive: true });
             document.addEventListener('visibilitychange', handleVisibility);
-            running = true;
-            canvas.classList.add('active');
             raf = requestAnimationFrame(step);
         }
 
         function stop() {
             running = false;
             if (raf) { cancelAnimationFrame(raf); raf = null; }
+            document.body.classList.remove('rain-active');
             if (canvas) {
                 canvas.classList.remove('active');
                 const ctxRef = ctx, wRef = w, hRef = h;
@@ -3065,10 +3310,12 @@
                 }, 850);
             }
             window.removeEventListener('resize', resize);
+            window.removeEventListener('scroll', updateCollisionRects);
             document.removeEventListener('visibilitychange', handleVisibility);
             // Liberar referencias para que el GC pueda recolectar
             drops = [];
             splashes = [];
+            collisionRects = [];
             ctx = null;
             canvas = null;
         }
@@ -3085,6 +3332,7 @@
         constructor(sharedCtx) {
             this.ctx = sharedCtx;
             this.masterGain = null;
+            this.analyser = null;
             this.reverbInput = null;
             this.reverbWet = null;
             this.noiseBuffer = null;
@@ -3111,12 +3359,12 @@
                 'D':'D3','G':'G2','A':'A2','Bm':'B2','F':'F2','Bb':'Bb2','Eb':'Eb3'
             };
 
-            this.cancionesFamosas = [
-                { id:'lotr', titulo:'Balada de la Comarca', inst1:'flauta', inst2:'arpa', percursion:true, tempo:1.2,
+            this.bibliotecaFantasia = [
+                { id:'claro', titulo:'CANCION DE BARDO', inst1:'flauta', inst2:'arpa', percursion:true, tempo:1.2,
                   melodiaCompleta:[{n:'D4',d:1.5},{n:'E4',d:0.5},{n:'F#4',d:1},{n:'A4',d:1},{n:'B4',d:0.5},{n:'A4',d:1.5},{n:'F#4',d:1},{n:'E4',d:1},{n:'D4',d:4}],
                   bajoCompleto:[{n:'D3',d:4},{n:'G2',d:2},{n:'A2',d:2},{n:'D3',d:4}],
                   percursionCompleta:[{n:'X',d:2},{n:'-',d:2},{n:'X',d:2},{n:'-',d:2},{n:'X',d:4}] },
-                { id:'toss', titulo:'Moneda al Brujo', inst1:'laud', inst2:'laud', percursion:true, tempo:1.3,
+                { id:'taberna', titulo:'TABERNA DEL CLARO', inst1:'laud', inst2:'laud', percursion:true, tempo:1.3,
                   melodiaCompleta:[{n:'D4',d:0.5},{n:'E4',d:0.5},{n:'F4',d:1},{n:'D4',d:1},{n:'C4',d:1},{n:'D4',d:0.5},{n:'E4',d:0.5},{n:'F4',d:1},{n:'A4',d:1},{n:'G4',d:2}],
                   bajoCompleto:[{n:'D3',d:2},{n:'A2',d:2},{n:'F2',d:2},{n:'C3',d:2}],
                   percursionCompleta:[{n:'X',d:1},{n:'-',d:1},{n:'X',d:1},{n:'-',d:1},{n:'X',d:1},{n:'-',d:1},{n:'X',d:1},{n:'-',d:1}] }
@@ -3124,14 +3372,20 @@
         }
 
         despertar() {
+            if (!this.ctx) return; // Prevent errors if AudioContext is not available
             if (this.activo) return;
             this.activo = true;
 
             // Nodo maestro con fade-in suave
             this.masterGain = this.ctx.createGain();
             this.masterGain.gain.setValueAtTime(0, this.ctx.currentTime);
-            this.masterGain.gain.linearRampToValueAtTime(0.42, this.ctx.currentTime + 3);
+            this.masterGain.gain.linearRampToValueAtTime(0.70, this.ctx.currentTime + 3);
             this.masterGain.connect(this.ctx.destination);
+
+            // Analizador para que el Bardo "escuche"
+            this.analyser = this.ctx.createAnalyser();
+            this.analyser.fftSize = 32;
+            this.masterGain.connect(this.analyser);
 
             // Reverb cálida de madera
             this.reverbInput = this.ctx.createGain();
@@ -3168,9 +3422,22 @@
             }
         }
 
+        obtenerIntensidad() {
+            if (!this.activo || !this.analyser) return 0;
+            const data = new Uint8Array(this.analyser.frequencyBinCount);
+            this.analyser.getByteFrequencyData(data);
+            let sum = 0;
+            for(let i=0; i<data.length; i++) sum += data[i];
+            return sum / data.length; // 0 a 255
+        }
+
+        estaSonando() {
+            return this.activo && this.obtenerIntensidad() > 2;
+        }
+
         reactivar() {
             if (!this.activo || !this.masterGain) return;
-            this.masterGain.gain.linearRampToValueAtTime(0.42, this.ctx.currentTime + 1.5);
+            this.masterGain.gain.linearRampToValueAtTime(0.70, this.ctx.currentTime + 1.5);
         }
 
         _tocarNota(inst, nota, durSeg, t) {
@@ -3195,9 +3462,9 @@
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(ft, t);
                 filt.type = 'lowpass';
-                filt.frequency.setValueAtTime(inst==='arpa'?2500:1800, t);
+                filt.frequency.setValueAtTime(inst==='arpa'?2800:2000, t);
                 filt.frequency.exponentialRampToValueAtTime(400, Math.max(t+0.1, t+durSeg));
-                const vol = (inst==='arpa'?0.2:0.15)*dyn;
+                const vol = (inst==='arpa'?0.28:0.22)*dyn;
                 gain.gain.setValueAtTime(0,t);
                 gain.gain.linearRampToValueAtTime(vol, t+atk);
                 gain.gain.exponentialRampToValueAtTime(0.001, t+durSeg);
@@ -3212,8 +3479,8 @@
                 lfoG.gain.value = ft*0.008;
                 lfo.connect(lfoG); lfoG.connect(osc.frequency);
                 lfo.start(t); lfo.stop(t+durSeg);
-                filt.type='lowpass'; filt.frequency.value=1200;
-                const vol = 0.12*dyn;
+                filt.type='lowpass'; filt.frequency.value=1400;
+                const vol = 0.18*dyn;
                 gain.gain.setValueAtTime(0,t);
                 gain.gain.linearRampToValueAtTime(vol, t+atk);
                 gain.gain.setValueAtTime(vol, sus);
@@ -3240,7 +3507,7 @@
                 filt.type='lowpass'; filt.frequency.value=600;
                 const ca = Math.min(0.5, durSeg*0.4);
                 gain.gain.setValueAtTime(0,t);
-                gain.gain.linearRampToValueAtTime(0.08*dyn, t+ca);
+                gain.gain.linearRampToValueAtTime(0.12*dyn, t+ca);
                 gain.gain.linearRampToValueAtTime(0, t+durSeg);
                 osc.start(t); osc.stop(t+durSeg);
             }
@@ -3261,27 +3528,39 @@
         _generarObra() {
             const r = Math.random();
             let animo, escala, bajo, tempo, patrones, i1, i2, perc;
-            const misterioReciente = this.historialModos.slice(-2).includes('misterio');
+            const nocturnaReciente = this.historialModos.slice(-2).includes('nocturna');
 
-            if (r < 0.50) {
+            if (r < 0.28) {
                 animo='alegre'; escala=this.escalas.jonica;   bajo=['D','G','A','D'];
                 tempo=1.4+Math.random()*0.4; i1='flauta'; i2='laud'; perc=true;
                 patrones=[[1,0.5,0.5,1,1],[0.5,0.5,1,0.5,0.5,1]];
-            } else if (r < 0.75) {
+            } else if (r < 0.46) {
+                animo='taberna'; escala=this.escalas.jonica; bajo=['D','A','G','D'];
+                tempo=1.25+Math.random()*0.25; i1='laud'; i2='laud'; perc=true;
+                patrones=[[0.5,0.5,1,1,1],[1,0.5,0.5,0.5,0.5,1]];
+            } else if (r < 0.62) {
                 animo='bosque'; escala=this.escalas.dorica;   bajo=['D','Bm','G','A'];
                 tempo=1.0+Math.random()*0.2; i1='flauta'; i2='arpa'; perc=false;
                 patrones=[[1,1,1,1],[1.5,0.5,1,1],[2,1,1]];
-            } else if (r < 0.90) {
+            } else if (r < 0.76) {
                 animo='epico';  escala=this.escalas.dorica;   bajo=['D','A','Bm','G'];
                 tempo=1.2+Math.random()*0.2; i1='laud'; i2='arpa'; perc=true;
                 patrones=[[1.5,0.5,1,1],[1,1,0.5,0.5,1]];
+            } else if (r < 0.84) {
+                animo='castillo'; escala=this.escalas.jonica; bajo=['D','G','D','A'];
+                tempo=0.95+Math.random()*0.15; i1='arpa'; i2='coro'; perc=false;
+                patrones=[[2,1,1],[1,1,2],[3,1]];
+            } else if (r < 0.91) {
+                animo='batalla'; escala=this.escalas.dorica; bajo=['D','A','D','Bb'];
+                tempo=1.35+Math.random()*0.15; i1='laud'; i2='coro'; perc=true;
+                patrones=[[0.5,0.5,0.5,0.5,1,1],[1,0.5,0.5,1,1]];
             } else if (r < 0.97) {
                 animo='lluvia'; escala=this.escalas.eolica;   bajo=['D','Bb','F','A'];
                 tempo=0.8+Math.random()*0.2; i1='flauta'; i2='arpa'; perc=false;
                 patrones=[[2,2],[1.5,0.5,2],[1,1,2]];
             } else {
-                if (misterioReciente) return this._generarObra();
-                animo='misterio'; escala=this.escalas.armonica; bajo=['D','Eb','D','A'];
+                if (nocturnaReciente) return this._generarObra();
+                animo='nocturna'; escala=this.escalas.armonica; bajo=['D','Eb','D','A'];
                 tempo=0.7; i1='arpa'; i2='coro'; perc=false;
                 patrones=[[2,2],[3,1],[4]];
             }
@@ -3310,6 +3589,12 @@
 
         _interpretar(obra) {
             if (!this.activo) return;
+            if (window.__bardoRenderer) {
+                const mood = (obra.titulo.includes('EPICO') || obra.titulo.includes('BATALLA')) ? 'epica'
+                    : (obra.titulo.includes('ALEGRE') || obra.titulo.includes('TABERNA')) ? 'alegre'
+                    : 'calma';
+                window.__bardoRenderer.react('music', { mood, title: obra.titulo });
+            }
             let t0 = this.ctx.currentTime + 0.5;
             const beat = 1.0 / obra.tempo;
             let maxDur = 0;
@@ -3340,7 +3625,7 @@
 
             // Pausa dramática entre canciones (el bardo descansa)
             let dMin = 12000, dMax = 40000;
-            if (obra.titulo.includes('LLUVIA')||obra.titulo.includes('MISTERIO')) { dMin=30000; dMax=90000; }
+            if (obra.titulo.includes('LLUVIA')||obra.titulo.includes('NOCTURNA')) { dMin=30000; dMax=90000; }
             else if (obra.titulo.includes('BOSQUE')) { dMin=20000; dMax=60000; }
             const silencio = dMin + Math.random()*(dMax-dMin);
 
@@ -3350,17 +3635,673 @@
         _decidir() {
             if (!this.activo) return;
             const obra = Math.random() < 0.20
-                ? this.cancionesFamosas[Math.floor(Math.random()*this.cancionesFamosas.length)]
+                ? this.bibliotecaFantasia[Math.floor(Math.random()*this.bibliotecaFantasia.length)]
                 : this._generarObra();
             this._interpretar(obra);
         }
     }
 
     /* ============================================================
+       COMPONENTE BARDO RENDERER (Integración animacion.html)
+    ============================================================ */
+    class BardRenderer {
+        constructor(canvasId) {
+            this.canvas = document.getElementById(canvasId);
+            this.ctx = this.canvas.getContext('2d');
+            this.ctx.imageSmoothingEnabled = false;
+
+            this.colors = {
+                // Colores integrados con la web (index.html)
+                outline: '#070D09', // forest-deep
+                skinDark: '#c88267', 
+                skinLight: '#eec39a', 
+                hair: '#3d1f0a', 
+                stubble: '#5d4037',
+                hatDark: '#121F16', // forest-moss
+                hatLight: '#1A3321', // forest-leaf
+                featherDark: '#9e2835', 
+                featherLight: '#d95763',
+                shirtDark: '#D5C4A1', // parchment-dark
+                shirtLight: '#F9F6F0', // parchment-light
+                vestDark: '#3d1f0a', 
+                vestLight: '#7A5435', // elven-bronze
+                belt: '#070D09', 
+                buckle: '#D4AF37', // elven-gold
+                capeDark: '#070D09', 
+                capeLight: '#121F16',
+                pants: '#2b2b36', pantsDetail: '#3f3f4e', bootsDark: '#362222', bootsLight: '#593e36', luteDark: '#754020',
+                luteWood: '#bd6a35', luteHole: '#1a1c2c', strings: '#eec39a', benchTop: '#8d6e63',
+                benchFront: '#5d4037', benchLegs: '#3e2723', 
+                stoneDark: '#4a4a4f', stoneLight: '#747480',
+                woodLog: '#4d2b18', woodLogLight: '#754020', fireRed: '#cb4d4d', fireOrange: '#d9813b',
+                fireYellow: '#edd55e', fireWhite: '#fffde7', fireBlue: '#5e9ed6',
+                dogDark: '#a3713f', dogLight: '#cc964e',
+                dogHighlight: '#e6bd75', dogNose: '#301d1d', dogTongue: '#e57373',
+                treeBarkDark: '#2b1a12', treeBark: '#4a2b18', treeBarkLight: '#6f4728',
+                treeLeafDark: '#182a19', treeLeaf: '#254327', treeLeafLight: '#38623a', treeLeafGold: '#516b35',
+                grassDark: '#0d1b10', grass: '#1f3c22', grassLight: '#3f6b34',
+                rainDrop: 'rgba(166, 210, 230, 0.72)', fluteDark: '#d4e157',
+                fluteLight: '#f4ff81', drumBase: '#795548', drumTop: '#ffe082', drumStick: '#5d4037'
+            };
+
+            this.state = 'dormido';
+            this.frame = 0;
+            this.timer = 0;
+            this.lastTime = 0;
+            this.dogState = 'lying';
+            this.dogTimer = 0;
+            this.dogAI = { action: 'rest', actionLeft: 0, nextAction: 9000 + Math.random() * 11000, xOffset: 0, targetOffset: 0, dreamLeft: 0, eyePeek: 0 };
+            this.instrument = 'lute';
+            this.particles = [];
+            this.frameCounter = 0;
+            this.rainActive = false;
+            this.sessionMemory = { startedAt: Date.now(), openedGames: {}, music: {}, weatherChanges: 0, lastPromptAt: 0 };
+            this.behavior = { eventType: null, eventLeft: 0, promptTimer: 210000 + Math.random() * 160000, musicMood: 'calma', rainDropLeft: 0 };
+            
+            // Sistema de Diálogos
+            this.bubbleText = "";
+            this.bubbleTimer = 0;
+            this.dialogEl = null;
+            this.dialogs = [
+                "¡Salud, viajero!",
+                "¿Oyes el ritmo?",
+                "Melodías arcanas...",
+                "ᚠᚨᚱᛟ",
+                "El Claro susurra.",
+                "¡Música, maestro!",
+                "Un laúd, un alma.",
+                "Explora el Baúl...",
+                "Pura magia rítmica.",
+                "¿Listo para jugar?",
+                "Notas del bosque."
+            ];
+
+            this.animations = {
+                'dormido': { speed: 800, frames: 4 },
+                'despertar': { speed: 300, frames: 4, loop: false, nextState: 'idle' },
+                'idle': { speed: 400, frames: 4 },
+                'normal': { speed: 200, frames: 4 },
+                'alegre': { speed: 120, frames: 4 },
+                'epica': { speed: 120, frames: 6 },
+                'nostalgica': { speed: 400, frames: 4 }
+            };
+
+            this.setupDialogBubble();
+        }
+
+        setupDialogBubble() {
+            const host = this.canvas.parentElement;
+            if (!host) return;
+            this.dialogEl = host.querySelector('.bard-dialog-bubble');
+            if (!this.dialogEl) {
+                this.dialogEl = document.createElement('div');
+                this.dialogEl.className = 'bard-dialog-bubble';
+                this.dialogEl.setAttribute('aria-live', 'polite');
+                host.appendChild(this.dialogEl);
+            }
+        }
+
+        drawR(x, y, w, h, color) {
+            this.ctx.fillStyle = color;
+            this.ctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(w), Math.floor(h));
+        }
+
+        randRange(min, max) {
+            return min + Math.random() * (max - min);
+        }
+
+        startBehavior(type, duration) {
+            this.behavior.eventType = type;
+            this.behavior.eventLeft = duration || this.randRange(1600, 4200);
+        }
+
+        react(type, detail = {}) {
+            if (type === 'rain-start') {
+                this.rainActive = true;
+                this.sessionMemory.weatherChanges++;
+                this.startBehavior('rainLook', 2800);
+                this.dogAI.action = 'cuddle';
+                this.dogAI.actionLeft = 3800;
+                this.dogAI.targetOffset = -8;
+                this.dogState = 'standing';
+                this.say("Me acercare al fuego...");
+            } else if (type === 'rain-stop') {
+                this.rainActive = false;
+                this.startBehavior('smile', 1800);
+            } else if (type === 'game-open') {
+                const id = detail.id || 'juego';
+                this.sessionMemory.openedGames[id] = (this.sessionMemory.openedGames[id] || 0) + 1;
+                this.startBehavior('curious', 2800);
+                this.say("Veamos ese pergamino...");
+            } else if (type === 'game-win') {
+                this.startBehavior('celebrate', 3600);
+                this.say("Bien tocado, viajero.");
+            } else if (type === 'game-lose') {
+                this.startBehavior('support', 2600);
+                this.say("Otra ronda puede cambiar la historia.");
+            } else if (type === 'music') {
+                const mood = detail.mood || 'calma';
+                this.behavior.musicMood = mood;
+                this.sessionMemory.music[mood] = (this.sessionMemory.music[mood] || 0) + 1;
+            }
+        }
+
+        getMemory() {
+            return { ...this.sessionMemory, elapsedMs: Date.now() - this.sessionMemory.startedAt };
+        }
+
+        updateBehavior(deltaTime) {
+            this.behavior.promptTimer -= deltaTime;
+            if (this.behavior.eventLeft > 0) {
+                this.behavior.eventLeft -= deltaTime;
+                if (this.behavior.eventLeft <= 0) this.behavior.eventType = null;
+            }
+            if (this.behavior.rainDropLeft > 0) this.behavior.rainDropLeft -= deltaTime;
+
+            if (this.rainActive && this.behavior.eventLeft <= 0 && Math.random() < 0.0012) {
+                const evt = Math.random() < 0.5 ? 'rainLook' : 'cloak';
+                this.startBehavior(evt, this.randRange(1800, 3400));
+                if (Math.random() < 0.25) this.behavior.rainDropLeft = 900;
+            }
+
+            this.dogAI.nextAction -= deltaTime;
+            this.dogAI.xOffset += (this.dogAI.targetOffset - this.dogAI.xOffset) * 0.035;
+            if (this.dogAI.dreamLeft > 0) this.dogAI.dreamLeft -= deltaTime;
+            if (this.dogAI.eyePeek > 0) this.dogAI.eyePeek -= deltaTime;
+            if (this.dogAI.actionLeft > 0) {
+                this.dogAI.actionLeft -= deltaTime;
+                if (this.dogAI.actionLeft <= 0) {
+                    this.dogAI.action = 'rest';
+                    this.dogAI.targetOffset = 0;
+                    this.dogState = 'lying';
+                    this.dogAI.nextAction = this.randRange(this.rainActive ? 8000 : 12000, this.rainActive ? 18000 : 30000);
+                }
+            } else if (this.state !== 'dormido' && this.dogAI.nextAction <= 0) {
+                const actions = this.rainActive ? ['shake', 'cuddle', 'cuddle', 'fire'] : ['stretch', 'walk', 'circle', 'fire', 'cuddle'];
+                this.dogAI.action = actions[Math.floor(Math.random() * actions.length)];
+                this.dogAI.actionLeft = this.randRange(2400, 5200);
+                this.dogAI.targetOffset = this.dogAI.action === 'fire' ? -18 : (this.dogAI.action === 'cuddle' ? -8 : (this.dogAI.action === 'walk' ? -10 + Math.random() * 16 : 0));
+                this.dogState = this.dogAI.action === 'circle' ? 'lying' : 'standing';
+            } else if (this.dogState === 'lying') {
+                if (Math.random() < 0.002) this.dogAI.dreamLeft = this.randRange(1200, 3000);
+                if (Math.random() < 0.0018) this.dogAI.eyePeek = this.randRange(450, 1200);
+            }
+
+            if (this.behavior.promptTimer <= 0 && this.bubbleTimer <= 0 && this.state !== 'dormido') {
+                const prompts = [
+                    "Viajero, que historia escribiras hoy?",
+                    "Ese desafio parece dificil, necesitas inspiracion?",
+                    "Mi viejo laud conoce canciones de heroes.",
+                    "El bosque esta tranquilo esta noche..."
+                ];
+                this.say(prompts[Math.floor(Math.random() * prompts.length)]);
+                this.sessionMemory.lastPromptAt = Date.now();
+                this.behavior.promptTimer = this.randRange(240000, 520000);
+            }
+        }
+
+        drawTree() {
+            this.drawR(38, 22, 5, 45, this.colors.treeBarkDark);
+            this.drawR(43, 18, 9, 50, this.colors.treeBark);
+            this.drawR(50, 25, 4, 40, this.colors.treeBarkDark);
+            this.drawR(46, 20, 2, 45, this.colors.treeBarkLight);
+            this.drawR(36, 65, 12, 3, this.colors.treeBarkDark);
+            this.drawR(49, 65, 19, 3, this.colors.treeBarkDark);
+            this.drawR(30, 69, 21, 2, this.colors.treeBark);
+            this.drawR(53, 69, 20, 2, this.colors.treeBark);
+            this.drawR(22, 4, 33, 12, this.colors.treeLeafDark);
+            this.drawR(16, 12, 49, 15, this.colors.treeLeafDark);
+            this.drawR(24, 7, 41, 16, this.colors.treeLeaf);
+            this.drawR(8, 24, 48, 14, this.colors.treeLeafDark);
+            this.drawR(18, 20, 55, 16, this.colors.treeLeaf);
+            this.drawR(29, 29, 35, 11, this.colors.treeLeafLight);
+            this.drawR(16, 16, 8, 5, this.colors.treeLeafLight);
+            this.drawR(52, 13, 9, 5, this.colors.treeLeafLight);
+            this.drawR(37, 6, 10, 3, this.colors.treeLeafGold);
+            this.drawR(12, 32, 13, 4, this.colors.treeLeafGold);
+            this.drawR(59, 25, 9, 4, this.colors.treeLeafGold);
+            this.drawR(31, 56, 34, 4, 'rgba(0,0,0,0.18)');
+        }
+
+        drawGround() {
+            this.drawR(0, 73, 128, 7, 'rgba(3, 8, 5, 0.34)');
+            this.drawR(0, 75, 128, 5, this.colors.grassDark);
+            this.drawR(6, 72, 18, 2, this.colors.grass);
+            this.drawR(28, 73, 24, 2, this.colors.grass);
+            this.drawR(58, 72, 28, 2, this.colors.grass);
+            this.drawR(92, 73, 25, 2, this.colors.grass);
+            for (let x = 3; x < 126; x += 7) {
+                const h = (x % 3) + 2;
+                this.drawR(x, 74 - h, 1, h, this.colors.grassLight);
+                this.drawR(x + 2, 75 - Math.max(1, h - 1), 1, Math.max(1, h - 1), this.colors.grass);
+            }
+            this.drawR(43, 71, 42, 2, 'rgba(0, 0, 0, 0.22)');
+            this.drawR(96, 72, 22, 2, 'rgba(0, 0, 0, 0.18)');
+            this.drawR(8, 72, 27, 2, 'rgba(0, 0, 0, 0.16)');
+        }
+
+        drawDialogBubble(cx, cy) {
+            if (!this.dialogEl) return;
+            if (this.bubbleTimer <= 0 || !this.bubbleText) {
+                this.dialogEl.classList.remove('active');
+                return;
+            }
+            if (this.dialogEl.textContent !== this.bubbleText) {
+                this.dialogEl.textContent = this.bubbleText;
+            }
+            this.dialogEl.classList.add('active');
+        }
+
+        updateAndDrawParticles() {
+            for (let i = this.particles.length - 1; i >= 0; i--) {
+                let p = this.particles[i];
+                p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+                if (p.life <= 0) { this.particles.splice(i, 1); continue; }
+                if (p.type === 'smoke') {
+                    p.vx += Math.sin(p.y / 10 + this.frameCounter / 40) * 0.005; 
+                    let size = Math.floor(1 + (1.0 - p.life) * 3);
+                    this.ctx.fillStyle = `rgba(120, 120, 130, ${p.life * 0.4})`;
+                    this.ctx.fillRect(Math.floor(p.x), Math.floor(p.y), size, size);
+                } else if (p.type === 'ember') {
+                    p.vx += Math.sin(p.y / 5 + this.frameCounter / 20) * 0.01;
+                    this.ctx.fillStyle = `rgba(217, 129, 59, ${p.life})`;
+                    this.ctx.fillRect(Math.floor(p.x), Math.floor(p.y), 1, 1);
+                } else if (p.type === 'rain') {
+                    this.ctx.fillStyle = this.colors.rainDrop;
+                    this.ctx.fillRect(Math.floor(p.x), Math.floor(p.y), 1, 3);
+                }
+            }
+        }
+
+        generateEnvironmentParticles() {
+            const fireX = 22, fireY = 52;
+            if (this.frameCounter % 35 === 0) {
+                this.particles.push({ x: fireX - 2 + Math.random() * 4, y: fireY - 4, type: 'smoke', vx: (Math.random() * 0.02 - 0.01), vy: -(0.15 + Math.random() * 0.05), life: 1.0, decay: 0.003 });
+            }
+            if (this.frameCounter % 40 === 0 && Math.random() < 0.6) {
+                this.particles.push({ x: fireX - 4 + Math.random() * 8, y: fireY, type: 'ember', vx: (Math.random() * 0.04 - 0.02), vy: -(0.2 + Math.random() * 0.1), life: 1.0, decay: 0.005 });
+            }
+            if (this.rainActive && this.frameCounter % 20 === 0 && this.particles.length < 48) {
+                this.particles.push({ x: 53 + Math.random() * 35, y: 0, type: 'rain', vx: -0.35, vy: 1.9 + Math.random() * 0.45, life: 1.0, decay: 0.035 });
+            }
+        }
+
+        drawFireplace(fx, fy, frame) {
+            this.drawR(fx - 14, fy + 12, 28, 4, this.colors.stoneDark);
+            this.drawR(fx - 12, fy + 10, 24, 2, this.colors.stoneLight);
+            this.drawR(fx - 16, fy + 14, 32, 2, this.colors.stoneDark);
+            this.drawR(fx - 10, fy + 8, 20, 4, this.colors.woodLog);
+            this.drawR(fx - 8, fy + 6, 16, 2, this.colors.woodLogLight);
+            let f = frame % 4;
+            this.drawR(fx - 4, fy + 6, 8, 4, this.colors.fireBlue); // Núcleo caliente
+            this.drawR(fx - 8, fy + 4, 16, 4, this.colors.fireRed);
+            this.drawR(fx - 6, fy + 2, 12, 4, this.colors.fireOrange);
+            this.drawR(fx - 4, fy + 4, 8, 2, this.colors.fireYellow);
+            if (f === 0) {
+                this.drawR(fx - 4, fy - 2, 8, 4, this.colors.fireRed); this.drawR(fx - 2, fy - 6, 4, 8, this.colors.fireOrange);
+                this.drawR(fx - 1, fy - 4, 2, 6, this.colors.fireYellow);
+            } else if (f === 1) {
+                this.drawR(fx - 6, fy - 4, 6, 6, this.colors.fireRed); this.drawR(fx - 4, fy - 8, 4, 6, this.colors.fireOrange);
+                this.drawR(fx - 3, fy - 6, 2, 4, this.colors.fireYellow);
+            } else if (f === 2) {
+                this.drawR(fx - 2, fy - 4, 8, 6, this.colors.fireRed); this.drawR(fx, fy - 8, 4, 8, this.colors.fireOrange);
+                this.drawR(fx + 1, fy - 6, 2, 6, this.colors.fireYellow);
+            } else if (f === 3) {
+                this.drawR(fx - 4, fy - 2, 10, 4, this.colors.fireRed); this.drawR(fx - 2, fy - 4, 6, 4, this.colors.fireOrange);
+                this.drawR(fx - 8, fy - 6, 4, 8, this.colors.fireRed);
+            }
+        }
+
+        drawDog(dx, dy, state, frame, timer) {
+            let breathe = Math.sin(timer / 300) * 0.3;
+            const actionBob = this.dogAI.action === 'walk' ? Math.sin(timer / 120) : 0;
+            const shake = this.dogAI.action === 'shake' ? Math.round(Math.sin(timer / 45) * 2) : 0;
+            dx += this.dogAI.xOffset + shake;
+            this.ctx.save();
+            this.ctx.translate(dx, 0);
+            this.ctx.scale(-1, 1);
+            if (state === 'lying') {
+                let headY = 4 + breathe + (this.dogAI.action === 'circle' ? Math.sin(timer / 130) : 0);
+                const tailLift = this.dogAI.dreamLeft > 0 ? Math.sin(timer / 90) * 2 : 0;
+                this.drawR(-10, dy + 8 - tailLift, 3, 3, this.colors.dogDark);
+                this.drawR(-8, dy + 6, 15, 6, this.colors.dogDark); 
+                this.drawR(-9, dy + 5, 13, 6, this.colors.dogLight); 
+                this.drawR(-7, dy + 4, 11, 5, this.colors.dogHighlight);
+                this.drawR(-4, dy + 5, 1, 1, '#fff'); // Brillo de pelo
+                this.drawR(-6, dy + 10, 4, 2, this.colors.dogDark);
+                this.drawR(3,  dy + 10, 4, 2, this.colors.dogDark);
+                const hx = 4, hy = dy + headY;
+                this.drawR(hx, hy + 2, 8, 1, this.colors.featherDark); // Collar
+                this.drawR(hx - 2, hy, 9, 6, this.colors.dogLight); this.drawR(hx + 8, hy + 2, 2, 2, this.colors.dogNose); 
+                if (this.state === 'dormido' || (this.dogAI.dreamLeft > 0 && Math.sin(timer / 160) > -0.4)) this.drawR(hx + 4, hy + 1, 2, 1, this.colors.dogNose); 
+                else {
+                    this.drawR(hx + 4, hy, 2, 2, this.colors.outline);
+                    if (this.dogAI.eyePeek > 0 || this.dogAI.action !== 'rest') this.drawR(hx + 5, hy, 1, 1, '#fff');
+                }
+                if (this.dogAI.dreamLeft > 0) {
+                    this.drawR(hx - 4, hy - 5, 2, 1, '#fff');
+                    this.drawR(hx - 3, hy - 7, 3, 1, '#fff');
+                }
+            } else {
+                let headY = breathe + (this.dogAI.action === 'stretch' ? 2 : 0);
+                let tailRot = Math.sin(timer / 100) * 1.5;
+                this.drawR(-8, dy + 2, 14, 10, this.colors.dogDark); 
+                this.drawR(-9, dy + 1, 12, 10, this.colors.dogLight); 
+                this.drawR(-6, dy + 11 + (actionBob > 0 ? 1 : 0), 3, 3, this.colors.dogDark);
+                this.drawR(2, dy + 11 + (actionBob < 0 ? 1 : 0), 3, 3, this.colors.dogDark);
+                this.drawR(-11, dy + 2 - tailRot, 4, 4, this.colors.dogHighlight);
+                const hx = 6, hy = dy - 3 + headY;
+                this.drawR(hx - 2, hy, 10, 8, this.colors.dogLight);
+                this.drawR(hx + 10, hy + 3, 3, 2, this.colors.dogNose); 
+                this.drawR(hx + 5, hy + 1, 2, 2, this.colors.outline);
+                if (this.state === 'alegre' || this.state === 'epica') this.drawR(hx + 6, hy + 6, 2, 2, this.colors.dogTongue);
+                if (this.dogAI.action === 'shake') {
+                    this.drawR(hx - 5, hy - 3, 2, 1, this.colors.rainDrop);
+                    this.drawR(hx + 9, hy - 2, 2, 1, this.colors.rainDrop);
+                }
+            }
+            this.ctx.restore();
+        }
+
+        saySomething() {
+            if (this.state === 'dormido') return;
+            this.bubbleText = this.dialogs[Math.floor(Math.random() * this.dialogs.length)];
+            this.bubbleTimer = 2500; // 2.5 segundos
+        }
+
+        say(text) {
+            this.bubbleText = text;
+            this.bubbleTimer = 2500;
+        }
+
+        drawInstrument(lx, ly, type) {
+            if (type === 'lute') {
+                this.drawR(lx - 12, ly - 6, 12, 16, this.colors.luteDark); 
+                this.drawR(lx - 14, ly - 4, 16, 12, this.colors.luteWood); 
+                this.drawR(lx + 8, ly - 2, 18, 5, this.colors.luteWood); 
+                this.drawR(lx + 26, ly - 4, 6, 7, this.colors.luteDark);
+                this.drawR(lx - 5, ly, 4, 5, this.colors.luteHole);
+                this.drawR(lx - 14, ly, 38, 1, this.colors.strings);
+            } else if (type === 'flute') {
+                this.drawR(lx - 12, ly, 30, 3, this.colors.fluteDark); this.drawR(lx - 12, ly + 1, 30, 1, this.colors.fluteLight);
+            } else if (type === 'drum') {
+                this.drawR(lx - 8, ly - 2, 16, 14, this.colors.drumBase); this.drawR(lx - 10, ly - 4, 20, 6, this.colors.drumTop);
+            }
+        }
+
+        render(timestamp, audioEngine) {
+            if (!this.lastTime) {
+                this.lastTime = timestamp;
+                return;
+            }
+            let deltaTime = timestamp - this.lastTime;
+            this.lastTime = timestamp;
+
+            // Limitar el deltaTime para evitar el efecto de "recuperación" acelerada
+            if (deltaTime > 200) deltaTime = 0;
+
+            this.frameCounter++;
+            this.updateBehavior(deltaTime);
+
+            // State Controller
+            this.bubbleTimer -= deltaTime;
+            if (audioEngine && audioEngine.estaSonando()) {
+                if (this.state === 'dormido') {
+                    // Solo despertar si el motor está realmente activo
+                    if (audioEngine.activo) this.state = 'despertar';
+                    this.frame = 0;
+                    this.timer = 0;
+                    this.saySomething();
+                } else if (this.state !== 'despertar') {
+                const nrg = audioEngine.obtenerIntensidad();
+                    const oldState = this.state;
+                    if (nrg > 40) this.state = 'epica';
+                    else if (nrg > 20) this.state = 'alegre';
+                    else this.state = 'normal';
+                    
+                    if (oldState === 'idle' || oldState === 'dormido') {
+                        const r = Math.random();
+                        if(r < 0.5) this.instrument = 'lute';
+                        else if(r < 0.75) this.instrument = 'flute';
+                        else this.instrument = 'drum';
+                        
+                        if (Math.random() < 0.3) this.saySomething();
+                    }
+                }
+            } else {
+                if (audioEngine && !audioEngine.activo && this.state !== 'dormido') {
+                    this.state = 'dormido';
+                } else if (this.state !== 'dormido' && this.state !== 'despertar') {
+                    this.state = 'idle';
+                }
+                if (this.dogAI.action === 'rest') this.dogState = 'lying';
+            }
+
+            this.dogTimer += deltaTime;
+            const anim = this.animations[this.state];
+            this.timer += deltaTime;
+            if (this.timer >= anim.speed) {
+                this.timer -= anim.speed;
+                this.frame++;
+                if (this.frame >= anim.frames) {
+                    if (anim.loop === false) { this.state = anim.nextState; this.frame = 0; }
+                    else { this.frame = 0; }
+                }
+            }
+
+            this.ctx.clearRect(0, 0, 128, 80);
+            const fireX = 22, cx = 64, dogX = 106, fireY = 52, cy = 48, dogY = 66;
+            const currentTime = timestamp;
+
+            this.drawTree();
+            this.drawGround();
+            this.drawFireplace(fireX, fireY, this.frame + Math.floor(timestamp/110));
+            this.generateEnvironmentParticles();
+            this.updateAndDrawParticles();
+
+            let headY = 0, headX = 0, armR_Y = 0, armR_X = 0, armL_X = 0; 
+            let bodyY = 0, bodyX = 0, footY = 0, footX = 0, luteY = 0, luteX = 0;
+            let featherRot = 0, capeSway = 0, smile = false, eyes = 'open';
+            let breathY = (this.state !== 'dormido') ? Math.sin(currentTime / 350) * 0.4 : 0;
+
+            switch(this.state) {
+                case 'dormido':
+                    headY = 2; headX = 1; bodyY = 1; armR_Y = 1; featherRot = 2; luteY = 1; capeSway = 1;
+                    eyes = 'closed'; if(this.frame === 1 || this.frame === 2) { headY = 3; bodyY = 2; }
+                    break;
+                case 'despertar':
+                    headY = 3 - this.frame; eyes = this.frame === 0 ? 'closed' : (this.frame === 1 ? 'half' : 'open');
+                    featherRot = 2 - (this.frame * 0.5); break;
+                case 'idle':
+                    if(this.frame === 1) { headY = 1; bodyY = 1; featherRot = 1; capeSway = 1; }
+                    if(this.frame === 3) { featherRot = -1; capeSway = -1; }
+                    if(this.frame === 2) eyes = 'half'; 
+                    // Azar de parpadeo
+                    if(Math.sin(currentTime/200) > 0.9) eyes = 'closed';
+                    break;
+                case 'normal':
+                    armR_Y = (this.frame % 2 === 0) ? 0 : 2; armR_X = (this.frame % 2 === 0) ? 0 : -2;
+                    armL_X = (this.frame === 2) ? 1 : 0; if(this.frame === 2) headY = 1; 
+                    featherRot = (this.frame % 2 === 0) ? 0 : 1; smile = true; if(Math.sin(currentTime/300) > 0.8) eyes='closed'; break;
+                case 'alegre':
+                    armR_Y = (this.frame % 2 === 0) ? -2 : 3; armR_X = (this.frame % 2 === 0) ? 1 : -3;
+                    headY = (this.frame % 2 === 0) ? 0 : 1; headX = (this.frame === 1) ? 1 : (this.frame === 3 ? -1 : 0);
+                    bodyY = (this.frame === 1 || this.frame === 3) ? 1 : 0; footY = (this.frame % 2 === 0) ? -2 : 0; 
+                    footX = (this.frame % 2 === 0) ? 1 : 0; luteY = (this.frame % 2 === 0) ? 0 : 1;
+                    capeSway = (this.frame % 2 === 0) ? 1 : -2; featherRot = (this.frame % 2 === 0) ? -1 : 2; smile = true; break;
+                case 'epica':
+                    armR_Y = [-3, -1, 3, 4, 1, -2][this.frame]; armR_X = [2, 0, -2, -3, 0, 1][this.frame];
+                    armL_X = [-1, -1, 1, 2, 0, -1][this.frame]; headY = [-1, -2, 0, 1, 0, -1][this.frame]; 
+                    headX = [-1, -2, 0, 1, 0, -1][this.frame]; bodyX = [-1, -1, 0, 1, 0, 0][this.frame]; 
+                    luteX = [-1, -1, 0, 1, 0, 0][this.frame]; luteY = [-1, -2, 0, 2, 0, -1][this.frame];
+                    capeSway = [-2, -3, 1, 3, 0, -1][this.frame]; footY = (this.frame === 3 || this.frame === 4) ? -3 : 0; 
+                    featherRot = [-2, -4, 1, 3, 0, -1][this.frame]; smile = true;
+                    eyes = (this.frame === 1 || this.frame === 2) ? 'closed' : 'open'; break;
+                case 'nostalgica':
+                    armR_Y = (this.frame % 2 === 0) ? 0 : 1; armL_X = (this.frame === 2) ? 1 : 0; 
+                    headY = 1; headX = 1; bodyY = (this.frame === 1) ? 1 : 0;
+                    featherRot = 1; smile = true; eyes = 'half'; break;
+            }
+            if (this.behavior.eventType === 'curious') headX -= 1;
+            if (this.behavior.eventType === 'rainLook') headY -= 1;
+            if (this.behavior.eventType === 'cloak') capeSway -= 1;
+            if (this.behavior.eventType === 'celebrate') { smile = true; armR_Y -= 3; headY -= 1; }
+            if (this.behavior.eventType === 'support') { headY += 1; eyes = 'half'; }
+            if (this.behavior.eventType === 'smile') smile = true;
+            if (this.behavior.musicMood === 'calma' && this.state === 'normal') eyes = 'half';
+            if (this.behavior.musicMood === 'epica') { bodyY -= 0.5; capeSway -= 1; }
+            bodyY += breathY;
+
+            // 2. Capa, Banco, Cuerpo del Bardo
+            this.drawR(cx - 12 + capeSway, cy - 6 + bodyY, 26, 22, this.colors.capeDark);
+            this.drawR(cx - 14 + capeSway, cy - 4 + bodyY, 30, 16, this.colors.capeLight);
+
+            if (this.state === 'dormido') {
+                let p = (this.frame + this.timer / anim.speed) % 4;
+                if (p > 1.5) {
+                    let px = cx - 18 - (p*2); let py = cy - 20 - (p*3);
+                    this.drawR(px, py, 3, 1, '#fff'); this.drawR(px+1, py+1, 1, 1, '#fff'); this.drawR(px, py+2, 3, 1, '#fff');
+                }
+            }
+
+            // Banca de madera
+            this.drawR(cx - 24, cy + 12, 48, 4, this.colors.benchTop); 
+            this.drawR(cx - 24, cy + 16, 48, 2, this.colors.benchFront); 
+            this.drawR(cx - 20, cy + 18, 4, 12, this.colors.benchLegs); 
+            this.drawR(cx + 16, cy + 18, 4, 12, this.colors.benchLegs); 
+            this.drawR(cx - 18, cy + 22, 36, 2, this.colors.benchLegs);
+
+            // Piernas y botas
+            this.drawR(cx - 10, cy + 12 + bodyY, 8, 12, this.colors.outline);
+            this.drawR(cx - 9, cy + 12 + bodyY, 6, 12, this.colors.pants);
+            this.drawR(cx - 7, cy + 13 + bodyY, 2, 10, this.colors.pantsDetail);
+            this.drawR(cx - 11, cy + 24 + bodyY, 10, 6, this.colors.bootsLight); 
+            this.drawR(cx - 12, cy + 30 + bodyY, 12, 6, this.colors.bootsDark);
+            this.drawR(cx - 10, cy + 26 + bodyY, 2, 4, this.colors.buckle);
+            
+            this.drawR(cx + 2, cy + 12 + bodyY, 10, 12, this.colors.outline);
+            this.drawR(cx + 3, cy + 12 + bodyY, 8, 12, this.colors.pants);
+            this.drawR(cx + 5, cy + 13 + bodyY, 2, 10, this.colors.pantsDetail);
+            this.drawR(cx + 1 + footX, cy + 24 + bodyY + footY, 12, 8, this.colors.bootsLight); 
+            this.drawR(cx + 1 + footX, cy + 32 + bodyY + footY, 14, 6, this.colors.bootsDark); 
+            this.drawR(cx + 4 + footX, cy + 26 + bodyY + footY, 2, 4, this.colors.buckle);
+
+            // Chaleco y Camisa
+            this.drawR(cx - 8 + bodyX, cy - 6 + bodyY, 16, 16, this.colors.shirtLight);
+            this.drawR(cx - 10 + bodyX, cy - 6 + bodyY, 6, 14, this.colors.vestDark); 
+            this.drawR(cx - 9 + bodyX, cy - 6 + bodyY, 4, 14, this.colors.vestLight);
+            this.drawR(cx - 8 + bodyX, cy + 1 + bodyY, 1, 1, this.colors.buckle); // Botón chaleco
+            this.drawR(cx + 4 + bodyX, cy - 6 + bodyY, 6, 14, this.colors.vestDark); 
+            this.drawR(cx + 5 + bodyX, cy - 6 + bodyY, 4, 14, this.colors.vestLight);
+            this.drawR(cx + 5 + bodyX, cy + 1 + bodyY, 1, 1, this.colors.buckle); // Botón chaleco
+            this.drawR(cx - 9 + bodyX, cy + 8 + bodyY, 18, 3, this.colors.belt);
+            this.drawR(cx - 3 + bodyX, cy + 7 + bodyY, 6, 5, this.colors.buckle);
+
+            // Cabeza
+            const hx = cx + headX, hy = cy - 18 + headY + bodyY;
+            this.drawR(hx - 8, hy + 2, 16, 6, this.colors.hair);
+            this.drawR(hx - 6, hy - 5, 12, 12, this.colors.skinDark); 
+            this.drawR(hx - 5, hy - 4, 10, 10, this.colors.skinLight); 
+            this.drawR(hx - 5, hy + 4, 10, 3, this.colors.stubble);
+            
+            if(eyes === 'closed') {
+                this.drawR(hx - 4, hy - 1, 3, 1, this.colors.outline); this.drawR(hx + 1, hy - 1, 3, 1, this.colors.outline);
+            } else if (eyes === 'half') {
+                this.drawR(hx - 4, hy - 2, 3, 1, this.colors.outline); this.drawR(hx + 1, hy - 2, 3, 1, this.colors.outline);
+            } else {
+                this.drawR(hx - 4, hy - 2, 3, 3, '#fff'); this.drawR(hx - 3, hy - 1, 2, 2, this.colors.outline); 
+                this.drawR(hx + 1, hy - 2, 3, 3, '#fff'); this.drawR(hx + 2, hy - 1, 2, 2, this.colors.outline);
+            }
+            if(smile) this.drawR(hx - 3, hy + 4, 6, 2, this.colors.outline); 
+            else this.drawR(hx - 2, hy + 4, 4, 1, this.colors.outline);
+            if (this.behavior.rainDropLeft > 0) {
+                this.drawR(hx - 2, hy - 18, 2, 1, this.colors.rainDrop);
+                this.drawR(hx - 1, hy - 17, 1, 2, this.colors.rainDrop);
+            }
+
+            this.drawR(hx - 9, hy - 8, 18, 4, this.colors.hatLight); 
+            this.drawR(hx - 8, hy - 12, 16, 5, this.colors.hatDark); 
+            this.drawR(hx - 7, hy - 9, 14, 1, this.colors.hatDark); // Sombra ala
+            // Pluma más detallada
+            this.drawR(hx - 6 - featherRot, hy - 18, 3, 6, this.colors.featherDark);
+            this.drawR(hx - 7 - featherRot, hy - 22, 5, 5, this.colors.featherLight);
+
+            // Brazos e instrumento
+            let instX = cx - 2 + luteX, instY = cy + 4 + bodyY + luteY;
+            this.drawInstrument(instX, instY, this.instrument);
+
+            this.drawR(cx - 14 + armR_X, cy - 4 + bodyY + armR_Y, 12, 12, this.colors.shirtDark);
+            this.drawR(cx - 12 + armR_X, cy - 3 + bodyY + armR_Y, 10, 10, this.colors.shirtLight);
+            this.drawR(cx + 8 + armL_X, cy - 4 + bodyY, 10, 8, this.colors.shirtDark);
+            this.drawR(cx + 10 + armL_X, cy - 3 + bodyY, 8, 6, this.colors.shirtLight);
+            this.drawR(cx + 16 + armL_X, cy - 3 + bodyY, 5, 5, this.colors.skinLight); 
+
+            // 3. Dibujar al Perro Poodle
+            this.drawDog(dogX, dogY, this.dogState, this.frame, currentTime);
+
+            // 4. Dibujar partículas
+            this.generateEnvironmentParticles();
+            this.updateAndDrawParticles();
+            
+            // 5. Diálogos
+            this.drawDialogBubble(cx, cy);
+        }
+    }
+
+    /* ============================================================
+       CONTROLADOR DE CICLO DE VIDA DEL BARDO
+    ============================================================ */
+    const BardController = (() => {
+        let renderer = null;
+        let tabernaEngine = null;
+        let rafId = null;
+        let isVisible = true;
+
+        function loop(ts) {
+            if (isVisible && renderer) {
+                renderer.render(ts, tabernaEngine);
+            }
+            rafId = requestAnimationFrame(loop);
+        }
+
+        function init() {
+            ensureAudioCtx();
+            tabernaEngine = new BardoTabernaEngine(audioCtx);
+            renderer = new BardRenderer('bard-runtime-canvas');
+            
+            // Inyectar el motor en el objeto global para acceso desde toggleSound
+            window.__bardoEngine = tabernaEngine;
+            window.__bardoRenderer = renderer;
+
+            // Listener de clic para interactividad
+            renderer.canvas.addEventListener('click', () => { renderer.saySomething(); });
+
+            // Iniciar música en la primera interacción (independiente de la lluvia)
+            const startOnInteraction = () => {
+                ensureAudioCtx();
+                if (tabernaEngine) tabernaEngine.despertar();
+                document.removeEventListener('click', startOnInteraction);
+                document.removeEventListener('keydown', startOnInteraction);
+            };
+            document.addEventListener('click', startOnInteraction);
+            document.addEventListener('keydown', startOnInteraction);
+
+            // Optimización: Page Visibility API
+            document.addEventListener('visibilitychange', () => {
+                isVisible = !document.hidden;
+            });
+
+            rafId = requestAnimationFrame(loop);
+            console.log("Bardo ambiental inicializado y vinculado al motor de audio.");
+        }
+
+        return { init };
+    })();
+
+    /* ============================================================
        SONIDO AMBIENTAL DEL BOSQUE
     ============================================================ */
     let audioCtx = null, noiseNode = null, soundActive = false;
-    let bardoEngine = null; // Motor del Bardo — invisible, siempre en segundo plano
 
     function buildForestSound(ctx) {
         const bufferSize = 3 * ctx.sampleRate;
@@ -3389,31 +4330,40 @@
 
     // Inicializa el AudioContext compartido y el Bardo en primer uso
     function ensureAudioCtx() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-        if (!bardoEngine) {
-            bardoEngine = new BardoTabernaEngine(audioCtx);
-            bardoEngine.despertar();
-        }
+        try {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        } catch (e) { console.error("AudioContext no soportado:", e); }
     }
 
-    function toggleSound() {
+    window.toggleSound = async function() {
         const btn = document.getElementById('sound-orb');
         const icon = document.getElementById('sound-icon');
+        
+        ensureAudioCtx();
+        if (audioCtx.state === 'suspended') {
+            await audioCtx.resume();
+        }
+        
+        // Inicializar el motor de música si no existe
+        if (!window.__bardoEngine && audioCtx) {
+            window.__bardoEngine = new BardoTabernaEngine(audioCtx);
+        }
+
         if (!soundActive) {
-            ensureAudioCtx();
             noiseNode = buildForestSound(audioCtx);
+            if (window.__bardoEngine) window.__bardoEngine.despertar();
+            if (window.__bardoRenderer) window.__bardoRenderer.say("¡Ah, el aroma de la lluvia!");
             soundActive = true;
             btn.classList.add('active');
             icon.className = 'fa-solid fa-volume-high';
             btn.setAttribute('aria-label', 'Silenciar sonido ambiental');
             Rain.start();
-            // Restaurar volumen del Bardo si estaba atenuado
-            if (bardoEngine) bardoEngine.reactivar();
+            if (window.__bardoRenderer) window.__bardoRenderer.react('rain-start');
         } else {
             if (noiseNode) {
                 noiseNode.gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
@@ -3422,13 +4372,14 @@
                     try { noiseNode.source.stop(); noiseNode.osc.stop(); } catch(e) {}
                 }, 1100);
             }
+            if (window.__bardoEngine) window.__bardoEngine.silenciar();
+            if (window.__bardoRenderer) window.__bardoRenderer.say("El cielo se aclara...");
             soundActive = false;
             btn.classList.remove('active');
             icon.className = 'fa-solid fa-volume-xmark';
             btn.setAttribute('aria-label', 'Activar sonido ambiental del bosque');
             Rain.stop();
-            // Silenciar el Bardo junto con el ambiente
-            if (bardoEngine) bardoEngine.silenciar();
+            if (window.__bardoRenderer) window.__bardoRenderer.react('rain-stop');
         }
     }
 
@@ -3452,7 +4403,7 @@
         CineIntro.init();
         initializeTheme();
         syncForestImage();
-        if (!window.__isMobile) {
+        if (!window.__isMobile || window.innerWidth >= 768) {
             createStars();
             createLeaves();
             initParticles();
@@ -3461,6 +4412,9 @@
         revealSections();
         initReadProgress();
         updateParticleMode();
+        initGameParchments();
+        
+        BardController.init();
 
         // Cerrar modal con backdrop o Escape
         document.getElementById('game-modal').addEventListener('click', function(e) {
@@ -3483,16 +4437,6 @@
         // Actualizar modo partículas al cambiar tema desde fuera
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateParticleMode);
 
-        // ── Motor del Bardo: arranque silencioso en primer contacto ──
-        // Los navegadores exigen interacción del usuario antes de crear AudioContext.
-        // En cuanto el visitante haga cualquier clic o toque la pantalla, el Bardo
-        // despierta en segundo plano, sin mostrar ningún elemento en la interfaz.
-        const _bardoInit = () => {
-            ensureAudioCtx();
-        };
-        document.addEventListener('click',      _bardoInit, { once: true, passive: true });
-        document.addEventListener('touchstart', _bardoInit, { once: true, passive: true });
-        document.addEventListener('keydown',    _bardoInit, { once: true, passive: true });
     });
     </script>
 </body>
